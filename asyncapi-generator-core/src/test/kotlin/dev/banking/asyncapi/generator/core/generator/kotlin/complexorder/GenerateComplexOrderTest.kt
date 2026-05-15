@@ -42,26 +42,28 @@ class GenerateComplexOrderTest : AbstractKotlinGeneratorClass() {
         )
         val dataClass = extractElement(generated)
         val expected = """
-        data class ComplexOrderPayloadType(
+            data class ComplexOrderPayloadType(
 
-            val orderId: UUID,
-
-            val createdAt: OffsetDateTime,
-
-            @field:Size(min = 3, max = 30)
-            val status: String,
-
-            @field:Valid
-            val customer: CustomerWithContacts,
-
-            @field:Valid
-            val orderLines: List<OrderLineType>,
-
-            @field:Size(max = 2000)
-            val notes: String? = null
-        ) {
-        }
-    """.trimIndent()
+                val metadata: Map<String, String>? = null,
+            
+                val orderId: UUID,
+            
+                val createdAt: OffsetDateTime,
+            
+                @field:Size(min = 3, max = 30)
+                val status: String,
+            
+                @field:Valid
+                val customer: CustomerWithContacts,
+            
+                @field:Valid
+                val orderLines: List<OrderLineType>,
+            
+                @field:Size(max = 2000)
+                val notes: String? = null
+            ) {
+            }
+            """.trimIndent()
         assertEquals(expected, dataClass)
     }
 

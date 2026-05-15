@@ -17,6 +17,11 @@ components:
         - customer
         - orderLines
       properties:
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
         orderId:
           description: Unique identifier for the order.
           type: string
