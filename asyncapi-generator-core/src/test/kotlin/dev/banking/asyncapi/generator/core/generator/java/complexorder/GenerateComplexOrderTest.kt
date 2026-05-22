@@ -145,204 +145,228 @@ class GenerateComplexOrderTest : AbstractJavaGeneratorClass() {
         )
         val classBody = extractClassBody(generated)
         val expected = """
-               public class ComplexOrderPayloadType implements Serializable {
-
-                   @NotNull
-                   private UUID orderId;
-
-                   @NotNull
-                   private OffsetDateTime createdAt;
-
-                   @Size(min = 3, max = 30)
-                   @NotNull
-                   private String status;
-
-                   @NotNull
-                   @Valid
-                   private CustomerWithContacts customer;
-
-                   @NotNull
-                   @Valid
-                   private List<OrderLineType> orderLines;
-
-                   @Size(max = 2000)
-                   private String notes;
-
-                   public ComplexOrderPayloadType() {
-                       // Default constructor
-                   }
-
-                   // All-args constructor
-                   public ComplexOrderPayloadType(
-                       UUID orderId,
-                       OffsetDateTime createdAt,
-                       String status,
-                       CustomerWithContacts customer,
-                       List<OrderLineType> orderLines,
-                       String notes
-                   ) {
-                       this.orderId = orderId;
-                       this.createdAt = createdAt;
-                       this.status = status;
-                       this.customer = customer;
-                       this.orderLines = orderLines;
-                       this.notes = notes;
-                   }
-
-                   /**
-                    * Get orderId.
-                    * Unique identifier for the order.
-                    * @return UUID
-                    */
-                   public UUID getOrderId() {
-                       return orderId;
-                   }
-
-                   /**
-                    * Set orderId.
-                    * @param orderId Unique identifier for the order.
-                    */
-                   public void setOrderId(UUID orderId) {
-                       this.orderId = orderId;
-                   }
-
-                   /**
-                    * Get createdAt.
-                    * Timestamp for when the order was created.
-                    * @return OffsetDateTime
-                    */
-                   public OffsetDateTime getCreatedAt() {
-                       return createdAt;
-                   }
-
-                   /**
-                    * Set createdAt.
-                    * @param createdAt Timestamp for when the order was created.
-                    */
-                   public void setCreatedAt(OffsetDateTime createdAt) {
-                       this.createdAt = createdAt;
-                   }
-
-                   /**
-                    * Get status.
-                    * Current status of the order. Valid values include:
-                    * * `NEW`
-                    * * `PROCESSING`
-                    * * `COMPLETED`
-                    * * `CANCELLED`
-                    * @return String
-                    */
-                   public String getStatus() {
-                       return status;
-                   }
-
-                   /**
-                    * Set status.
-                    * @param status Current status of the order. Valid values include:
-                    */
-                   public void setStatus(String status) {
-                       this.status = status;
-                   }
-
-                   /**
-                    * Get customer.
-                    * Customer object with nested contact points and primitive lists.
-                    * @return CustomerWithContacts
-                    */
-                   public CustomerWithContacts getCustomer() {
-                       return customer;
-                   }
-
-                   /**
-                    * Set customer.
-                    * @param customer Customer object with nested contact points and primitive lists.
-                    */
-                   public void setCustomer(CustomerWithContacts customer) {
-                       this.customer = customer;
-                   }
-
-                   /**
-                    * Get orderLines.
-                    * One or more order lines included in the order.
-                    * @return List<OrderLineType>
-                    */
-                   public List<OrderLineType> getOrderLines() {
-                       return orderLines;
-                   }
-
-                   /**
-                    * Set orderLines.
-                    * @param orderLines One or more order lines included in the order.
-                    */
-                   public void setOrderLines(List<OrderLineType> orderLines) {
-                       this.orderLines = orderLines;
-                   }
-
-                   /**
-                    * Get notes.
-                    * Optional free-text notes attached to the order.
-                    * @return String
-                    */
-                   public String getNotes() {
-                       return notes;
-                   }
-
-                   /**
-                    * Set notes.
-                    * @param notes Optional free-text notes attached to the order.
-                    */
-                   public void setNotes(String notes) {
-                       this.notes = notes;
-                   }
-
-                   @Override
-                   public boolean equals(Object o) {
-                       if (this == o) return true;
-                       if (o == null || getClass() != o.getClass()) return false;
-                       ComplexOrderPayloadType that = (ComplexOrderPayloadType) o;
-                       return
-                           Objects.equals(orderId, that.orderId) &&
-
-                           Objects.equals(createdAt, that.createdAt) &&
-
-                           Objects.equals(status, that.status) &&
-
-                           Objects.equals(customer, that.customer) &&
-
-                           Objects.equals(orderLines, that.orderLines) &&
-
-                           Objects.equals(notes, that.notes)
-               ;
-                   }
-
-                   @Override
-                   public int hashCode() {
-                       return Objects.hash(
-               
-                           orderId,
-                           createdAt,
-                           status,
-                           customer,
-                           orderLines,
-                           notes
-                       );
-                   }
-
-                   @Override
-                   public String toString() {
-                       StringBuilder sb = new StringBuilder();
-                       sb.append("class ComplexOrderPayloadType {\n");
-                       sb.append("    orderId: ").append(orderId).append("\n");
-                       sb.append("    createdAt: ").append(createdAt).append("\n");
-                       sb.append("    status: ").append(status).append("\n");
-                       sb.append("    customer: ").append(customer).append("\n");
-                       sb.append("    orderLines: ").append(orderLines).append("\n");
-                       sb.append("    notes: ").append(notes).append("\n");
-                       sb.append("}");
-                       return sb.toString();
-                   }
-               }
-           """.trimIndent()
+            public class ComplexOrderPayloadType implements Serializable {
+            
+                private Map<String, String> metadata;
+            
+                @NotNull
+                private UUID orderId;
+            
+                @NotNull
+                private OffsetDateTime createdAt;
+            
+                @Size(min = 3, max = 30)
+                @NotNull
+                private String status;
+            
+                @NotNull
+                @Valid
+                private CustomerWithContacts customer;
+            
+                @NotNull
+                @Valid
+                private List<OrderLineType> orderLines;
+            
+                @Size(max = 2000)
+                private String notes;
+            
+                public ComplexOrderPayloadType() {
+                    // Default constructor
+                }
+            
+                // All-args constructor
+                public ComplexOrderPayloadType(
+                    Map<String, String> metadata,
+                    UUID orderId,
+                    OffsetDateTime createdAt,
+                    String status,
+                    CustomerWithContacts customer,
+                    List<OrderLineType> orderLines,
+                    String notes
+                ) {
+                    this.metadata = metadata;
+                    this.orderId = orderId;
+                    this.createdAt = createdAt;
+                    this.status = status;
+                    this.customer = customer;
+                    this.orderLines = orderLines;
+                    this.notes = notes;
+                }
+            
+                /**
+                 * Get metadata.
+                 * @return Map<String, String>
+                 */
+                public Map<String, String> getMetadata() {
+                    return metadata;
+                }
+            
+                /**
+                 * Set metadata.
+                 * @param metadata
+                 */
+                public void setMetadata(Map<String, String> metadata) {
+                    this.metadata = metadata;
+                }
+            
+                /**
+                 * Get orderId.
+                 * Unique identifier for the order.
+                 * @return UUID
+                 */
+                public UUID getOrderId() {
+                    return orderId;
+                }
+            
+                /**
+                 * Set orderId.
+                 * @param orderId Unique identifier for the order.
+                 */
+                public void setOrderId(UUID orderId) {
+                    this.orderId = orderId;
+                }
+            
+                /**
+                 * Get createdAt.
+                 * Timestamp for when the order was created.
+                 * @return OffsetDateTime
+                 */
+                public OffsetDateTime getCreatedAt() {
+                    return createdAt;
+                }
+            
+                /**
+                 * Set createdAt.
+                 * @param createdAt Timestamp for when the order was created.
+                 */
+                public void setCreatedAt(OffsetDateTime createdAt) {
+                    this.createdAt = createdAt;
+                }
+            
+                /**
+                 * Get status.
+                 * Current status of the order. Valid values include:
+                 * * `NEW`
+                 * * `PROCESSING`
+                 * * `COMPLETED`
+                 * * `CANCELLED`
+                 * @return String
+                 */
+                public String getStatus() {
+                    return status;
+                }
+            
+                /**
+                 * Set status.
+                 * @param status Current status of the order. Valid values include:
+                 */
+                public void setStatus(String status) {
+                    this.status = status;
+                }
+            
+                /**
+                 * Get customer.
+                 * Customer object with nested contact points and primitive lists.
+                 * @return CustomerWithContacts
+                 */
+                public CustomerWithContacts getCustomer() {
+                    return customer;
+                }
+            
+                /**
+                 * Set customer.
+                 * @param customer Customer object with nested contact points and primitive lists.
+                 */
+                public void setCustomer(CustomerWithContacts customer) {
+                    this.customer = customer;
+                }
+            
+                /**
+                 * Get orderLines.
+                 * One or more order lines included in the order.
+                 * @return List<OrderLineType>
+                 */
+                public List<OrderLineType> getOrderLines() {
+                    return orderLines;
+                }
+            
+                /**
+                 * Set orderLines.
+                 * @param orderLines One or more order lines included in the order.
+                 */
+                public void setOrderLines(List<OrderLineType> orderLines) {
+                    this.orderLines = orderLines;
+                }
+            
+                /**
+                 * Get notes.
+                 * Optional free-text notes attached to the order.
+                 * @return String
+                 */
+                public String getNotes() {
+                    return notes;
+                }
+            
+                /**
+                 * Set notes.
+                 * @param notes Optional free-text notes attached to the order.
+                 */
+                public void setNotes(String notes) {
+                    this.notes = notes;
+                }
+            
+                @Override
+                public boolean equals(Object o) {
+                    if (this == o) return true;
+                    if (o == null || getClass() != o.getClass()) return false;
+                    ComplexOrderPayloadType that = (ComplexOrderPayloadType) o;
+                    return
+                        Objects.equals(metadata, that.metadata) &&
+            
+                        Objects.equals(orderId, that.orderId) &&
+            
+                        Objects.equals(createdAt, that.createdAt) &&
+            
+                        Objects.equals(status, that.status) &&
+            
+                        Objects.equals(customer, that.customer) &&
+            
+                        Objects.equals(orderLines, that.orderLines) &&
+            
+                        Objects.equals(notes, that.notes)
+            ;
+                }
+            
+                @Override
+                public int hashCode() {
+                    return Objects.hash(
+            
+                        metadata,
+                        orderId,
+                        createdAt,
+                        status,
+                        customer,
+                        orderLines,
+                        notes
+                    );
+                }
+            
+                @Override
+                public String toString() {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("class ComplexOrderPayloadType {\n");
+                    sb.append("    metadata: ").append(metadata).append("\n");
+                    sb.append("    orderId: ").append(orderId).append("\n");
+                    sb.append("    createdAt: ").append(createdAt).append("\n");
+                    sb.append("    status: ").append(status).append("\n");
+                    sb.append("    customer: ").append(customer).append("\n");
+                    sb.append("    orderLines: ").append(orderLines).append("\n");
+                    sb.append("    notes: ").append(notes).append("\n");
+                    sb.append("}");
+                    return sb.toString();
+                }
+            }
+            """.trimIndent()
         assertEquals(expected, classBody)
     }
 

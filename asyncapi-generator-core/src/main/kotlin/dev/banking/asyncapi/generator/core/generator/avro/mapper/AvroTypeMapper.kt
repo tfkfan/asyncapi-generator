@@ -41,6 +41,8 @@ class AvroTypeMapper(
         val baseType = resolveBaseType(schema)
         val finalType = if (schema.type.getPrimaryType() == "integer" && schema.format == "int64") {
             "\"long\""
+        } else if (schema.type.getPrimaryType() == "object") {
+            "{\"type\":\"map\", \"values\":\"${resolveMapValuesType(schema)}\"}"
         } else {
             baseType
         }
@@ -48,6 +50,17 @@ class AvroTypeMapper(
             "[\"null\", $finalType]"
         } else {
             finalType
+        }
+    }
+
+    private fun resolveMapValuesType(schema: Schema): String {
+        try {
+            val defaultSchema = "\"string\"";
+            if (schema.additionalProperties == null)
+                return defaultSchema
+            return (schema.additionalProperties as SchemaInterface.SchemaInline).schema.type.getPrimaryType() ?: defaultSchema
+        }catch (e:Exception){
+            throw RuntimeException("Error while resolving map values $schema")
         }
     }
 
@@ -61,19 +74,23 @@ class AvroTypeMapper(
                     else -> "\"string\""
                 }
             }
+
             "integer" -> {
                 if (schema.format == "date") "{\"type\": \"int\", \"logicalType\": \"date\"}"
                 else "\"int\""
             }
+
             "number" -> "\"double\""
             "boolean" -> "\"boolean\""
             "long" -> {
                 if (schema.format == "date-time") "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}"
                 else "\"long\""
             }
+
             "array" -> {
                 "{\"type\": \"array\", \"items\": \"string\"}"
             }
+
             else -> "\"string\""
         }
     }
