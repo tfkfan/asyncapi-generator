@@ -16,11 +16,14 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import org.gradle.work.DisableCachingByDefault
 import java.util.Locale
 import kotlin.text.get
 
+@DisableCachingByDefault(because = "Codegen output is cheap to reproduce and not worth caching")
 abstract class GenerateAsyncApiTask : DefaultTask() {
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputFile: RegularFileProperty
 
     @get:OutputFile
