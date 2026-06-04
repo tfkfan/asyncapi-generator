@@ -9,6 +9,7 @@ import kotlin.test.assertTrue
 class DocumentReaderContractTest {
 
     private val reader = YamlDocumentReader()
+    private val jsonReader = JsonDocumentReader()
 
     @Test
     fun `reader preserves references without resolving them`() {
@@ -24,5 +25,13 @@ class DocumentReaderContractTest {
         val document = reader.read(ReaderFixtures.yamlSource("non-asyncapi-object.yaml"))
         assertTrue(document.root.containsKey("notAsyncApi"))
         assertTrue(document.root.containsKey("stillReaderInput"))
+    }
+
+    @Test
+    fun `yaml and json readers produce equivalent document trees`() {
+        val yamlDocument = reader.read(ReaderFixtures.yamlSource("equivalent-document.yaml"))
+        val jsonDocument = jsonReader.read(ReaderFixtures.jsonSource("equivalent-document.json"))
+
+        assertEquals(yamlDocument.root, jsonDocument.root)
     }
 }

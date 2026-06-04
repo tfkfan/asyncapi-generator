@@ -1,0 +1,20 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "Demo API",
+    "summary": "folded text",
+    "description": "literal\ntext"
+  },
+  "components": {
+    "schemas": {
+      "Example": {
+        "enabled": true,
+        "quotedEnabled": "true",
+        "count": 12,
+        "quotedCount": "12",
+        "price": 12.5,
+        "nullable": null
+      }
+    }
+  }
+}

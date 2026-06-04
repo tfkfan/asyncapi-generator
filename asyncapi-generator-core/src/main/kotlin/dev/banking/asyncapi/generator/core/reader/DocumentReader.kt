@@ -10,6 +10,7 @@ package dev.banking.asyncapi.generator.core.reader
  * Expected behavior is covered by:
  * - `DocumentReaderContractTest`
  * - `YamlDocumentReaderTest`
+ * - `JsonDocumentReaderTest`
  */
 interface DocumentReader {
     fun read(source: DocumentSource): InputDocument

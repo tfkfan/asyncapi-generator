@@ -14,6 +14,7 @@ import java.io.File
  */
 object DocumentReaderRegistry {
     private val yamlReader = YamlDocumentReader()
+    private val jsonReader = JsonDocumentReader()
 
     fun read(file: File): InputDocument {
         val format = DocumentFormat.fromFile(file)
@@ -31,6 +32,6 @@ object DocumentReaderRegistry {
     fun read(source: DocumentSource): InputDocument =
         when (source.format) {
             DocumentFormat.YAML -> yamlReader.read(source)
-            DocumentFormat.JSON -> throw DocumentReadException.UnsupportedFormat(source.file, "json")
+            DocumentFormat.JSON -> jsonReader.read(source)
         }
 }

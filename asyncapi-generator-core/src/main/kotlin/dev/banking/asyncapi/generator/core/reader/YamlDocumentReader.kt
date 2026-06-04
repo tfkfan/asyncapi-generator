@@ -141,9 +141,8 @@ class YamlDocumentReader : DocumentReader {
         path: String,
         mark: Mark,
     ): SourceLocation =
-        SourceLocation(
-            sourceId = source.id,
-            file = source.file,
+        SourceLocation.from(
+            source = source,
             path = path,
             line = mark.line + 1,
             column = mark.column + 1,

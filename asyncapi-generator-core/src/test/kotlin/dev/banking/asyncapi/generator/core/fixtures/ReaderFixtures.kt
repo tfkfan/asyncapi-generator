@@ -18,4 +18,17 @@ internal object ReaderFixtures {
 
     fun yamlFile(name: String): File =
         TestResources.file("reader/yaml/$name")
+
+    fun jsonSource(name: String): DocumentSource {
+        val file = jsonFile(name)
+        return DocumentSource(
+            id = file.nameWithoutExtension,
+            file = file,
+            content = file.readText(),
+            format = DocumentFormat.JSON,
+        )
+    }
+
+    fun jsonFile(name: String): File =
+        TestResources.file("reader/json/$name")
 }

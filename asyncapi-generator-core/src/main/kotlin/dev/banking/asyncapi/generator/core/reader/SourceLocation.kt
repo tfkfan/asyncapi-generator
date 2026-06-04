@@ -14,4 +14,20 @@ data class SourceLocation(
     val path: String,
     val line: Int,
     val column: Int,
-)
+) {
+    companion object {
+        internal fun from(
+            source: DocumentSource,
+            path: String,
+            line: Int,
+            column: Int,
+        ): SourceLocation =
+            SourceLocation(
+                sourceId = source.id,
+                file = source.file,
+                path = path,
+                line = line,
+                column = column,
+            )
+    }
+}

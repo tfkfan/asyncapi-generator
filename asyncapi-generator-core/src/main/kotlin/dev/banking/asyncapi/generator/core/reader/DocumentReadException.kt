@@ -8,6 +8,7 @@ import java.io.File
  * Expected behavior is covered by:
  * - `DocumentReadExceptionTest`
  * - `YamlDocumentReaderTest`
+ * - `JsonDocumentReaderTest`
  */
 sealed class DocumentReadException(
     message: String,
