@@ -3,6 +3,12 @@ package dev.banking.asyncapi.generator.core.fixtures
 import java.io.File
 import java.nio.file.Paths
 
+/**
+ * Classpath-backed access to files under `src/test/resources`.
+ *
+ * Fixture classes should use this instead of hard-coding resource lookup logic
+ * so tests can refer to resources by stable module-relative paths.
+ */
 internal object TestResources {
 
     fun file(path: String): File {

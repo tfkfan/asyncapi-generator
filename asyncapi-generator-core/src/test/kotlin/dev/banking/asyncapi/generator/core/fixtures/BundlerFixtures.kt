@@ -5,6 +5,12 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import java.io.File
 
+/**
+ * Fixture facade for bundler and generator tests.
+ *
+ * It produces validated and bundled AsyncAPI documents from shared test
+ * resources, preserving the parser -> validator -> bundler stage flow.
+ */
 internal class BundlerFixtures(
     context: AsyncApiContext = AsyncApiContext(),
 ) {

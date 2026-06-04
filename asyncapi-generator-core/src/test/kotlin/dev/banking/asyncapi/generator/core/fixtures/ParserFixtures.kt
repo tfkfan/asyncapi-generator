@@ -7,6 +7,12 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import java.io.File
 
+/**
+ * Fixture facade for parser-stage tests.
+ *
+ * It loads parser roots and parsed AsyncAPI documents from shared test
+ * resources using the supplied [AsyncApiContext].
+ */
 internal class ParserFixtures(
     val context: AsyncApiContext = AsyncApiContext(),
 ) {

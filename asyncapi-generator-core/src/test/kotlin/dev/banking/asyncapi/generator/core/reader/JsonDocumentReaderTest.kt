@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
+import dev.banking.asyncapi.generator.core.fixtures.assertSourceLocation
 import dev.banking.asyncapi.generator.core.fixtures.childObject
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -67,26 +68,11 @@ class JsonDocumentReaderTest {
     @Test
     fun `records source locations for root object fields and array items`() {
         val document = reader.read(ReaderFixtures.jsonSource("source-map.json"))
-        assertLocation(document, "root", 1)
-        assertLocation(document, "root.asyncapi", 2)
-        assertLocation(document, "root.info", 3)
-        assertLocation(document, "root.info.title", 4)
-        assertLocation(document, "root.info.tags", 5)
-        assertLocation(document, "root.info.tags[0]", 6)
-    }
-
-    private fun assertLocation(
-        document: InputDocument,
-        path: String,
-        line: Int,
-    ) {
-        val location = requireNotNull(document.sourceMap[path]) {
-            "Expected source location for $path"
-        }
-        assertEquals(document.source.id, location.sourceId)
-        assertEquals(document.source.file, location.file)
-        assertEquals(path, location.path)
-        assertEquals(line, location.line)
-        assertTrue(location.column >= 1)
+        document.assertSourceLocation("root", 1)
+        document.assertSourceLocation("root.asyncapi", 2)
+        document.assertSourceLocation("root.info", 3)
+        document.assertSourceLocation("root.info.title", 4)
+        document.assertSourceLocation("root.info.tags", 5)
+        document.assertSourceLocation("root.info.tags[0]", 6)
     }
 }

@@ -4,6 +4,13 @@ import dev.banking.asyncapi.generator.core.reader.DocumentFormat
 import dev.banking.asyncapi.generator.core.reader.DocumentSource
 import java.io.File
 
+/**
+ * Fixture access for document-reader tests.
+ *
+ * Reader tests use these helpers to load YAML and JSON documents as either
+ * [DocumentSource] instances or real files while keeping resource layout details
+ * in one place.
+ */
 internal object ReaderFixtures {
 
     fun yamlSource(name: String): DocumentSource {

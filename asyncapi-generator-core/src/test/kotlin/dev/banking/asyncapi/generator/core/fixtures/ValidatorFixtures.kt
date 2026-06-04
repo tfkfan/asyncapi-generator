@@ -6,6 +6,12 @@ import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 import java.io.File
 
+/**
+ * Fixture facade for validator-stage tests.
+ *
+ * It builds parsed documents through [ParserFixtures] and exposes validation
+ * helpers that keep validator tests focused on expected validation results.
+ */
 internal class ValidatorFixtures(
     context: AsyncApiContext = AsyncApiContext(),
 ) {
