@@ -12,7 +12,7 @@ class CorrelationIdValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `invalid correlation IDs trigger warnings`() {
-        val document = parse("src/test/resources/validator/correlations/asyncapi_validator_correlation_invalid.yaml")
+        val document = parse("validator/correlations/asyncapi_validator_correlation_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         assertFalse(results.hasErrors(), "Expected no errors, but found: ${results.errors}")
 
@@ -22,7 +22,7 @@ class CorrelationIdValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `valid correlation ID passes validation`() {
-        val document = parse("src/test/resources/validator/correlations/asyncapi_validator_correlation_valid.yaml")
+        val document = parse("validator/correlations/asyncapi_validator_correlation_valid.yaml")
         val results = asyncApiValidator.validate(document)
         assertFalse(results.hasErrors(), "Expected no errors for valid correlation ID.")
         assertFalse(results.hasWarnings(), "Expected no warnings for valid correlation ID.")

@@ -10,7 +10,7 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun validateAsyncApiDocument() {
-        val asyncApiDocument = parse("src/test/resources/asyncapi_kafka_single_file_example.yaml")
+        val asyncApiDocument = parse("asyncapi_kafka_single_file_example.yaml")
         val validationResults = asyncApiValidator.validate(asyncApiDocument)
         validationResults.logWarnings()
         validationResults.throwErrors()

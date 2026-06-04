@@ -15,7 +15,7 @@ class InfoValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `valid info object passes validation`() {
-        val asyncApiDocument = parse("src/test/resources/validator/info/asyncapi_validator_info_valid_simple.yaml")
+        val asyncApiDocument = parse("validator/info/asyncapi_validator_info_valid_simple.yaml")
         val validationResults = asyncApiValidator.validate(asyncApiDocument)
 
         assertFalse(validationResults.hasErrors(), "Found validation errors: ${validationResults.errors}")
@@ -24,7 +24,7 @@ class InfoValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `validation reports multiple errors for invalid info object`() {
-        val asyncApiDocument = parse("src/test/resources/validator/info/asyncapi_validator_info_multiple_errors.yaml")
+        val asyncApiDocument = parse("validator/info/asyncapi_validator_info_multiple_errors.yaml")
         val validationResults = asyncApiValidator.validate(asyncApiDocument)
 
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
@@ -35,7 +35,7 @@ class InfoValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `invalid contact and license info trigger errors and warnings`() {
-        val document = parse("src/test/resources/validator/info/asyncapi_validator_info_components_invalid.yaml")
+        val document = parse("validator/info/asyncapi_validator_info_components_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()

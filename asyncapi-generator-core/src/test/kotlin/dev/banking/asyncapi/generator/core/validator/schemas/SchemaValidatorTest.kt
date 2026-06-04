@@ -15,7 +15,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `valid simple schema passes validation`() {
-        val document = parse("src/test/resources/validator/schemas/asyncapi_validator_schema_valid_simple.yaml")
+        val document = parse("validator/schemas/asyncapi_validator_schema_valid_simple.yaml")
         val results = asyncApiValidator.validate(document)
 
         assertFalse(results.hasErrors(), "Expected no validation errors, found: ${results.errors}")
@@ -24,7 +24,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `schema with invalid type field throws validation error`() {
-        val document = parse("src/test/resources/validator/schemas/asyncapi_validator_schema_invalid_type.yaml")
+        val document = parse("validator/schemas/asyncapi_validator_schema_invalid_type.yaml")
         val validationResults = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             validationResults.throwErrors()
@@ -36,7 +36,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     @Test
     fun `schema with invalid numeric and string constraints throws validation errors`() {
         val document =
-            parse("src/test/resources/validator/schemas/asyncapi_validator_schema_invalid_constraints.yaml")
+            parse("validator/schemas/asyncapi_validator_schema_invalid_constraints.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()
@@ -47,7 +47,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     @Test
     fun `schema with invalid discriminator definition throws validation errors`() {
         val document =
-            parse("src/test/resources/validator/schemas/asyncapi_validator_schema_invalid_discriminator.yaml")
+            parse("validator/schemas/asyncapi_validator_schema_invalid_discriminator.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()
@@ -57,7 +57,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `schema with incompatible default value throws validation errors`() {
-        val document = parse("src/test/resources/validator/schemas/asyncapi_validator_schema_invalid_default.yaml")
+        val document = parse("validator/schemas/asyncapi_validator_schema_invalid_default.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()
@@ -67,7 +67,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `schema with incompatible const value throws validation errors`() {
-        val document = parse("src/test/resources/validator/schemas/asyncapi_validator_schema_invalid_const.yaml")
+        val document = parse("validator/schemas/asyncapi_validator_schema_invalid_const.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()
@@ -77,7 +77,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `schema with ambiguous composition or empty fields triggers warnings`() {
-        val document = parse("src/test/resources/validator/schemas/asyncapi_validator_schema_warnings.yaml")
+        val document = parse("validator/schemas/asyncapi_validator_schema_warnings.yaml")
         val results = asyncApiValidator.validate(document)
         assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()
@@ -91,7 +91,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `schema with invalid array or object structure throws validation errors`() {
-        val document = parse("src/test/resources/validator/schemas/asyncapi_validator_schema_invalid_structure.yaml")
+        val document = parse("validator/schemas/asyncapi_validator_schema_invalid_structure.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()
@@ -102,7 +102,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     @Test
     fun `schema with required property default null throws validation error`() {
         val document =
-            parse("src/test/resources/validator/schemas/asyncapi_validator_schema_default_null_required.yaml")
+            parse("validator/schemas/asyncapi_validator_schema_default_null_required.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()

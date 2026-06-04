@@ -12,7 +12,7 @@ class InfoParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid info object`() {
-        val root = readYaml("src/test/resources/parser/info/asyncapi_parser_info_valid.yaml")
+        val root = readYaml("parser/info/asyncapi_parser_info_valid.yaml")
         val result = parser.parseMap(root.mandatory("info"))
         val expected = simpleInfo()
         assertThat(result)
@@ -23,7 +23,7 @@ class InfoParserTest : AbstractParserTest() {
 
     @Test
     fun `parse Info missing mandatory fields throws RequiredObject`() {
-        val root = readYaml("src/test/resources/parser/info/asyncapi_parser_info_invalid.yaml")
+        val root = readYaml("parser/info/asyncapi_parser_info_invalid.yaml")
         val infoNode = root.mandatory("info")
         assertFailsWith<AsyncApiParseException.Mandatory> {
             parser.parseMap(infoNode)

@@ -14,7 +14,7 @@ class ParameterValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `invalid parameters trigger errors and warnings`() {
-        val document = parse("src/test/resources/validator/parameters/asyncapi_validator_parameter_invalid.yaml")
+        val document = parse("validator/parameters/asyncapi_validator_parameter_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val errorException = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()

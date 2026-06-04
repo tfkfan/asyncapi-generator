@@ -1,22 +1,21 @@
 package dev.banking.asyncapi.generator.core.validator
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.ValidatorFixtures
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
-import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
-import java.io.File
 
 abstract class AbstractValidatorTest {
 
     protected val asyncApiContext = AsyncApiContext()
-    protected val parser = AsyncApiParser(asyncApiContext)
+    private val validatorFixtures = ValidatorFixtures(asyncApiContext)
 
     /**
-     * Helper to read and parse any YAML file relative to project root.
-     * Returns the parsed AsyncApiDocument.
+     * Reads and parses any YAML fixture path.
+     *
+     * Paths can be relative to test resources, or use the legacy
+     * `src/test/resources/...` prefix.
      */
     protected fun parse(path: String): AsyncApiDocument {
-        val rootNode = AsyncApiRegistry.readYaml(File(path), asyncApiContext)
-        return parser.parse(rootNode)
+        return validatorFixtures.document(path)
     }
 }

@@ -14,7 +14,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse lightingMeasured channel`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_valid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_valid.yaml")
         val result = parser.parseMap(root.mandatory("channels"))
         assertTrue("lightingMeasured" in result)
         val lightingMeasured = (result["lightingMeasured"] as ChannelInterface.ChannelInline).channel
@@ -27,7 +27,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse lightTurnOn channel`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_valid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_valid.yaml")
         val result = parser.parseMap(root.mandatory("channels"))
         assertTrue("lightTurnOn" in result)
         val lightTurnOn = (result["lightTurnOn"] as ChannelInterface.ChannelInline).channel
@@ -40,7 +40,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse lightTurnOff channel`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_valid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_valid.yaml")
         val result = parser.parseMap(root.mandatory("channels"))
         assertTrue("lightTurnOff" in result)
         val lightTurnOff = (result["lightTurnOff"] as ChannelInterface.ChannelInline).channel
@@ -53,7 +53,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse lightsDim channel`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_valid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_valid.yaml")
         val result = parser.parseMap(root.mandatory("channels"))
         assertTrue("lightsDim" in result)
         val lightsDim = (result["lightsDim"] as ChannelInterface.ChannelInline).channel
@@ -66,7 +66,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse lightStatus channel`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_valid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_valid.yaml")
         val result = parser.parseMap(root.mandatory("channels"))
         assertTrue("lightStatus" in result)
         val lightStatus = (result["lightStatus"] as ChannelInterface.ChannelInline).channel
@@ -79,7 +79,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse maintenanceRequest channel`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_valid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_valid.yaml")
         val result = parser.parseMap(root.mandatory("channels"))
         assertTrue("maintenanceRequest" in result)
         val maintenanceRequest = (result["maintenanceRequest"] as ChannelInterface.ChannelInline).channel
@@ -92,7 +92,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse cityLights channel`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_valid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_valid.yaml")
         val result = parser.parseMap(root.mandatory("channels"))
         assertTrue("cityLights" in result)
         val cityLights = (result["cityLights"] as ChannelInterface.ChannelInline).channel
@@ -105,7 +105,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse powerStatus channel`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_valid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_valid.yaml")
         val result = parser.parseMap(root.mandatory("channels"))
         assertTrue("powerStatus" in result)
         val powerStatus = (result["powerStatus"] as ChannelInterface.ChannelInline).channel
@@ -118,7 +118,7 @@ class ChannelParserTest : AbstractParserTest() {
 
     @Test
     fun `parse channel with invalid messages structure throws UnexpectedValue`() {
-        val root = readYaml("src/test/resources/parser/channels/asyncapi_parser_channel_invalid.yaml")
+        val root = readYaml("parser/channels/asyncapi_parser_channel_invalid.yaml")
         assertFailsWith<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(root.mandatory("channels"))
         }

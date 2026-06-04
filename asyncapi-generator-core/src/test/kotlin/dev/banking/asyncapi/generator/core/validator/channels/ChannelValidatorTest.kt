@@ -15,7 +15,7 @@ class ChannelValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `channel address parameter missing definition throws validation error`() {
-        val document = parse("src/test/resources/validator/channels/asyncapi_validator_channel_parameter_mismatch.yaml")
+        val document = parse("validator/channels/asyncapi_validator_channel_parameter_mismatch.yaml")
         val validationResults = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             validationResults.throwErrors()
@@ -25,7 +25,7 @@ class ChannelValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `channel definition with unused parameter triggers warning`() {
-        val document = parse("src/test/resources/validator/channels/asyncapi_validator_channel_unused_parameter.yaml")
+        val document = parse("validator/channels/asyncapi_validator_channel_unused_parameter.yaml")
         val validationResults = asyncApiValidator.validate(document)
 
         assertFalse(validationResults.hasErrors(), "Should not have errors for unused parameter (only warning).")
@@ -37,7 +37,7 @@ class ChannelValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `channel with ambiguous message references triggers warning`() {
-        val document = parse("src/test/resources/validator/channels/asyncapi_validator_channel_message_ambiguity.yaml")
+        val document = parse("validator/channels/asyncapi_validator_channel_message_ambiguity.yaml")
         val validationResults = asyncApiValidator.validate(document)
 
         assertFalse(validationResults.hasErrors(), "Ambiguity should not be a hard error.")

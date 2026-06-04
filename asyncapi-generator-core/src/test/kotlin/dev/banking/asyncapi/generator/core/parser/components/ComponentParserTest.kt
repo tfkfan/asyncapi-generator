@@ -12,7 +12,7 @@ class ComponentParserTest : AbstractParserTest() {
 
     @Test
     fun `parse components object delegates to all sub-parsers`() {
-        val root = readYaml("src/test/resources/parser/components/asyncapi_parser_components_valid.yaml")
+        val root = readYaml("parser/components/asyncapi_parser_components_valid.yaml")
         val result = parser.parseElement(root.mandatory("components"))
 
         assertTrue(result is ComponentInterface.ComponentInline)
