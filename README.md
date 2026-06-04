@@ -15,7 +15,9 @@ The current documentation provided is still a draft, found in `docs/` folder at 
 
 ## Usage
 
-Currently, the asyncapi-generator BETA version is available as a maven plugin through maven central.
+The asyncapi-generator BETA version is available as a Maven plugin (Maven Central) and as a Gradle plugin (Gradle Plugin Portal / Maven Central).
+
+### Maven
 
 Example usage in your `pom.xml`:
 
@@ -46,6 +48,68 @@ Example usage in your `pom.xml`:
         </execution>
     </executions>
 </plugin>
+```
+
+### Gradle
+
+The Gradle plugin is published to the [Gradle Plugin Portal](https://plugins.gradle.org/) (and Maven Central). The `gradlePluginPortal()` repository is included by default in `settings.gradle.kts`.
+
+`build.gradle.kts`:
+
+```kotlin
+plugins {
+    id("dev.banking.asyncapi.generator") version "0.0.1" // current BETA version
+}
+
+asyncapiGenerate {
+    inputFile.set(file("src/main/resources/asyncapi.yaml"))
+    generatorName.set("kotlin") // options: kotlin, java - default kotlin
+    modelPackage.set("my.package.path.model")
+    clientPackage.set("my.package.path.client")   // default: modelPackage
+    schemaPackage.set("my.package.path.schema")   // default: modelPackage
+    configOptions.set(
+        mapOf(
+            "generateModels" to "true",            // default: true
+            "generateSpringKafkaClient" to "true", // default: false
+            "generateAvroSchema" to "true"         // default: false
+        )
+    )
+}
+
+tasks.named("compileKotlin") {
+    dependsOn("generateAsyncApi")
+}
+```
+
+Or Groovy DSL (`build.gradle`):
+
+```groovy
+plugins {
+    id 'dev.banking.asyncapi.generator' version '0.0.1'
+}
+
+asyncapiGenerate {
+    inputFile = file('src/main/resources/asyncapi.yaml')
+    generatorName = 'kotlin'
+    modelPackage = 'my.package.path.model'
+    clientPackage = 'my.package.path.client'
+    schemaPackage = 'my.package.path.schema'
+    configOptions = [
+        generateModels             : 'true',
+        generateSpringKafkaClient  : 'true',
+        generateAvroSchema         : 'true'
+    ]
+}
+
+tasks.named('compileJava') {
+    dependsOn 'generateAsyncApi'
+}
+```
+
+The plugin wires generated sources into the `main` source set automatically when the `java`/`kotlin` plugin is also applied. Run with:
+
+```sh
+./gradlew generateAsyncApi
 ```
 
 ### Spring Kafka Clients

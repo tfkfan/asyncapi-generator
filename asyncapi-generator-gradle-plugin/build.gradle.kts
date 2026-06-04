@@ -9,9 +9,8 @@ plugins {
     id("java-gradle-plugin")
     id("maven-publish")
     id("signing")
-    id("com.gradle.plugin-publish") version "1.1.0"
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-    id("org.jetbrains.kotlin.jvm") version "2.2.0"
+    id("com.gradle.plugin-publish") version "2.1.1"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
 group = "dev.banking.asyncapi.generator"
@@ -23,18 +22,22 @@ repositories {
     gradlePluginPortal()
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 dependencies {
     implementation("dev.banking.asyncapi.generator:asyncapi-generator-core:$asyncApiGeneratorVersion") {
         isChanging = true
     }
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.2.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.20")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
     testImplementation(gradleTestKit())
 
 }
 
-// Update configuration
 gradlePlugin {
     website.set("https://github.com/evryfs/asyncapi-generator")
     vcsUrl.set("https://github.com/evryfs/asyncapi-generator.git")
@@ -48,30 +51,28 @@ gradlePlugin {
 }
 
 publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            pom {
-                name.set("AsyncAPI Generator Gradle Plugin")
-                description.set("A flexible AsyncAPI code generator for Kotlin and Java Spring Kafka clients.")
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            name.set("AsyncAPI Generator Gradle Plugin")
+            description.set("A flexible AsyncAPI code generator for Kotlin and Java Spring Kafka clients.")
+            url.set("https://github.com/evryfs/asyncapi-generator")
+            licenses {
+                license {
+                    name.set("The Apache License, Version 2.0")
+                    url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                }
+            }
+            developers {
+                developer {
+                    id.set("@bascunansalvador")
+                    name.set("Salvador Bascunan")
+                    email.set("bascunan.salvador@gmail.com")
+                }
+            }
+            scm {
+                connection.set("scm:git:git://github.com/evryfs/asyncapi-generator.git")
+                developerConnection.set("scm:git:ssh://github.com/evryfs/asyncapi-generator.git")
                 url.set("https://github.com/evryfs/asyncapi-generator")
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("@bascunansalvador")
-                        name.set("Salvador Bascunan")
-                        email.set("bascunan.salvador@gmail.com")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:git://github.com/evryfs/asyncapi-generator.git")
-                    developerConnection.set("scm:git:ssh://github.com/evryfs/asyncapi-generator.git")
-                    url.set("https://github.com/evryfs/asyncapi-generator")
-                }
             }
         }
     }
@@ -84,8 +85,18 @@ signing {
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign(publishing.publications)
     }
-    // Only required in publish
     isRequired = System.getenv("CI") != null
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            username.set(System.getenv("OSSRH_USERNAME"))
+            password.set(System.getenv("OSSRH_TOKEN"))
+        }
+    }
 }
 
 
