@@ -4,7 +4,6 @@ package dev.banking.asyncapi.generator.core.registry
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.node.ParsedYamlData
-import org.yaml.snakeyaml.DumperOptions.ScalarStyle.*
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.nodes.MappingNode
@@ -14,6 +13,16 @@ import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import org.yaml.snakeyaml.nodes.Tag
 
+/**
+ * Parses YAML input into the map structure consumed by the AsyncAPI parser.
+ *
+ * Scalar values are interpreted as semantic YAML values. Presentation details
+ * such as quote style and block-scalar style are not included in parsed strings.
+ *
+ * Expected behavior is covered by:
+ * - `YamlParserRegistryTest`
+ * - parser package tests
+ */
 object YamlParserRegistry {
 
     private val yaml = Yaml(LoaderOptions().apply { isProcessComments = true })
@@ -50,18 +59,29 @@ object YamlParserRegistry {
         return result
     }
 
-    private fun parseScalar(node: ScalarNode): Any? {
-        if (node.tag == Tag.NULL) {
-            return null
+    private fun parseScalar(node: ScalarNode): Any? =
+        when (node.tag) {
+            Tag.NULL -> null
+            Tag.BOOL -> parseBoolean(node.value)
+            Tag.INT -> parseInteger(node.value) ?: node.value
+            Tag.FLOAT -> parseFloat(node.value) ?: node.value
+            else -> node.value
         }
-        val prefix = when (node.scalarStyle) {
-            LITERAL -> "|"
-            FOLDED -> ">"
-            SINGLE_QUOTED -> "'"
-            DOUBLE_QUOTED -> "\""
-            else -> null
-        }
-        return if (prefix != null) "$prefix${node.value}" else node.value
-    }
-}
 
+    private fun parseBoolean(value: String): Any =
+        when (value.lowercase()) {
+            "true" -> true
+            "false" -> false
+            else -> value
+        }
+
+    private fun parseInteger(value: String): Number? {
+        val normalized = value.replace("_", "")
+        return normalized.toLongOrNull()?.let {
+            if (it in Int.MIN_VALUE..Int.MAX_VALUE) it.toInt() else it
+        }
+    }
+
+    private fun parseFloat(value: String): Double? =
+        value.replace("_", "").toDoubleOrNull()
+}

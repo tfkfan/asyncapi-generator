@@ -41,7 +41,7 @@ fun lightMeasured() = Message(
 
     traits = listOf(
         MessageTraitInterface.ReferenceMessageTrait(
-            Reference("'#/components/messageTraits/commonHeaders", referenceCategoryKey = MESSAGE_TRAIT)
+            Reference("#/components/messageTraits/commonHeaders", referenceCategoryKey = MESSAGE_TRAIT)
         )
     ),
 
@@ -67,7 +67,7 @@ fun lightMeasured() = Message(
     ),
 
     payload = SchemaInterface.SchemaReference(
-        Reference("'#/components/schemas/lightMeasuredPayload", referenceCategoryKey = SCHEMA)
+        Reference("#/components/schemas/lightMeasuredPayload", referenceCategoryKey = SCHEMA)
     ),
 
     examples = listOf(
@@ -85,7 +85,7 @@ fun lightMeasured() = Message(
             ),
             payload = mapOf(
                 "lumens" to 1200,
-                "sentAt" to "'2024-09-12T12:00:00Z"
+                "sentAt" to "2024-09-12T12:00:00Z"
             )
         ),
         MessageExample(
@@ -102,7 +102,7 @@ fun lightMeasured() = Message(
             ),
             payload = mapOf(
                 "lumens" to 1200,
-                "sentAt" to "'2024-09-12T12:00:00Z"
+                "sentAt" to "2024-09-12T12:00:00Z"
             )
         )
     )
@@ -128,8 +128,8 @@ fun turnOnOff() = Message(
                 "correlationId" to 77
             ),
             payload = mapOf(
-                "command" to "'on",
-                "sentAt" to "'2024-09-12T12:00:00Z"
+                "command" to "on",
+                "sentAt" to "2024-09-12T12:00:00Z"
             ),
             name = "turnOnExample",
             summary = "Example for turn-on command"
@@ -137,27 +137,27 @@ fun turnOnOff() = Message(
     ),
     traits = listOf(
         MessageTraitInterface.ReferenceMessageTrait(
-            Reference("'#/components/messageTraits/commonHeaders", referenceCategoryKey = MESSAGE_TRAIT)
+            Reference("#/components/messageTraits/commonHeaders", referenceCategoryKey = MESSAGE_TRAIT)
         )
     )
 )
 
 fun referencedMessage() = Reference(
-    ref = "'#/components/messages/lightMeasured",
+    ref = "#/components/messages/lightMeasured",
     referenceCategoryKey = MESSAGE
 )
 
 fun refPayloadMessage() = Message(
     name = "RefPayload",
     payload = SchemaInterface.SchemaReference(
-        Reference("'#/components/schemas/MySchema", referenceCategoryKey = SCHEMA)
+        Reference("#/components/schemas/MySchema", referenceCategoryKey = SCHEMA)
     )
 )
 
 fun refCorrelationIdMessage() = Message(
     name = "RefCorrelationId",
     correlationId = CorrelationIdInterface.CorrelationIdReference(
-        Reference("'#/components/correlationIds/myId", referenceCategoryKey = CORRELATION_ID)
+        Reference("#/components/correlationIds/myId", referenceCategoryKey = CORRELATION_ID)
     )
 )
 

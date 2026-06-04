@@ -277,7 +277,7 @@ class SchemaParserTest : AbstractParserTest() {
         val root = readYaml("schemas/asyncapi_schema_parser_assertion.yaml")
         val node = root.mandatory("components").mandatory("schemas").mandatory("UserRef")
         val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaReference).reference
-        val expectedSchema = Reference(ref = "\"#/components/schemas/SimpleObject", referenceCategoryKey = SCHEMA)
+        val expectedSchema = Reference(ref = "#/components/schemas/SimpleObject", referenceCategoryKey = SCHEMA)
         assertThat(expectedSchema)
             .usingRecursiveComparison()
             .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
@@ -305,7 +305,7 @@ class SchemaParserTest : AbstractParserTest() {
         val creditCardDependency = productSchema.dependencies["credit_card"]
         assertNotNull(creditCardDependency, "Credit card dependency should exist")
         assertTrue(creditCardDependency is List<*>, "Credit card dependency should be a list of strings")
-        assertEquals(listOf("\"billing_address"), creditCardDependency)
+        assertEquals(listOf("billing_address"), creditCardDependency)
 
         val nameDependency = productSchema.dependencies["name"]
         assertNotNull(nameDependency, "Name dependency (schema) should exist")
@@ -316,7 +316,7 @@ class SchemaParserTest : AbstractParserTest() {
 
         val nameDependencySchema = (nameDependency as SchemaInterface.SchemaInline).schema
         assertEquals("object", nameDependencySchema.type, "Schema dependency type should be object")
-        assertEquals(listOf("\"category"), nameDependencySchema.required, "Schema dependency required property missing")
+        assertEquals(listOf("category"), nameDependencySchema.required, "Schema dependency required property missing")
     }
 
     @Test
@@ -331,7 +331,7 @@ class SchemaParserTest : AbstractParserTest() {
         )
 
         val level2Schema = modelPaths[expectedLevel2Path] as Schema
-        assertEquals("\"I am level 2 deep", level2Schema.description)
+        assertEquals("I am level 2 deep", level2Schema.description)
     }
 
     @Test

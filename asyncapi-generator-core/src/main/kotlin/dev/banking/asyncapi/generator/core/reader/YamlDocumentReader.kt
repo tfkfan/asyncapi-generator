@@ -119,11 +119,11 @@ class YamlDocumentReader : DocumentReader {
             else -> node.value
         }
 
-    private fun parseBoolean(value: String): Boolean =
+    private fun parseBoolean(value: String): Any =
         when (value.lowercase()) {
-            "true", "yes", "on" -> true
-            "false", "no", "off" -> false
-            else -> value.toBooleanStrict()
+            "true" -> true
+            "false" -> false
+            else -> value
         }
 
     private fun parseInteger(value: String): Number? {

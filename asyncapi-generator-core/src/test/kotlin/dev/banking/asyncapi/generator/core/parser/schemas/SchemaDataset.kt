@@ -14,8 +14,8 @@ fun lightMeasuredPayload() = Schema(
     type = "object",
     required = listOf("lumens"),
     examples = listOf(
-        mapOf("lumens" to 1500, "sentAt" to "'2024-09-12T12:00:00Z"),
-        mapOf("lumens" to 800, "sentAt" to "'2024-09-12T18:30:00Z")
+        mapOf("lumens" to 1500, "sentAt" to "2024-09-12T12:00:00Z"),
+        mapOf("lumens" to 800, "sentAt" to "2024-09-12T18:30:00Z")
     ),
     properties = mapOf(
         "lumens" to SchemaInterface.SchemaInline(
@@ -26,7 +26,7 @@ fun lightMeasuredPayload() = Schema(
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("'#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
+            Reference("#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
         )
     )
 )
@@ -39,11 +39,11 @@ fun turnOnOffPayload() = Schema(
             Schema(
                 description = "Whether to turn on or off the light.",
                 type = "string",
-                enum = listOf("'on", "'off")
+                enum = listOf("on", "off")
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("'#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
+            Reference("#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
         )
     )
 )
@@ -61,7 +61,7 @@ fun dimLightPayload() = Schema(
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("'#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
+            Reference("#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
         )
     )
 )
@@ -74,8 +74,8 @@ fun sentAt() = Schema(
 
 fun commandPayload() = Schema(
     oneOf = listOf(
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/turnOnOffPayload", referenceCategoryKey = SCHEMA)),
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/dimLightPayload", referenceCategoryKey = SCHEMA))
+        SchemaInterface.SchemaReference(Reference("#/components/schemas/turnOnOffPayload", referenceCategoryKey = SCHEMA)),
+        SchemaInterface.SchemaReference(Reference("#/components/schemas/dimLightPayload", referenceCategoryKey = SCHEMA))
     )
 )
 
@@ -84,12 +84,12 @@ fun simpleString() = Schema(
     description = "A short string with constraints",
     type = "string",
     format = "uuid",
-    default = "\"abc123",
+    default = "abc123",
     defaultSet = true,
-    examples = listOf("\"abc123", "\"def456"),
-    pattern = "\"^[a-zA-Z0-9_-]+$",
-    enum = listOf("\"abc123", "\"def456"),
-    const = "\"abc123",
+    examples = listOf("abc123", "def456"),
+    pattern = "^[a-zA-Z0-9_-]+$",
+    enum = listOf("abc123", "def456"),
+    const = "abc123",
     maxLength = 36,
     minLength = 3
 )
@@ -121,7 +121,7 @@ fun complexObject() = Schema(
     title = "Complex Object Example",
     description = "Object demonstrating properties and dependencies",
     type = "object",
-    examples = listOf(mapOf("name" to "\"John", "age" to 30, "email" to "\"john@example.com")),
+    examples = listOf(mapOf("name" to "John", "age" to 30, "email" to "john@example.com")),
     required = listOf("name", "age"),
     properties = mapOf(
         "name" to SchemaInterface.SchemaInline(Schema(type = "string", minLength = 1)),
@@ -131,7 +131,7 @@ fun complexObject() = Schema(
         "nickname" to SchemaInterface.SchemaInline(Schema(type = "string", nullable = true))
     ),
     dependencies = mapOf("password" to listOf("email")),
-    propertyNames = SchemaInterface.SchemaInline(Schema(pattern = "\"^[a-z]+$")),
+    propertyNames = SchemaInterface.SchemaInline(Schema(pattern = "^[a-z]+$")),
     additionalProperties = SchemaInterface.BooleanSchema(value = false),
     maxProperties = 5,
     minProperties = 2
@@ -140,17 +140,17 @@ fun complexObject() = Schema(
 fun composedSchema() = Schema(
     title = "Schema Composition Example",
     description = "Example demonstrating allOf, anyOf, oneOf, and not",
-    examples = listOf("\"some value"),
+    examples = listOf("some value"),
     allOf = listOf(
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)),
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleNumber", referenceCategoryKey = SCHEMA)),
+        SchemaInterface.SchemaReference(Reference("#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)),
+        SchemaInterface.SchemaReference(Reference("#/components/schemas/simpleNumber", referenceCategoryKey = SCHEMA)),
     ),
     anyOf = listOf(
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)),
+        SchemaInterface.SchemaReference(Reference("#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)),
         SchemaInterface.SchemaInline(Schema(type = "boolean"))
     ),
     oneOf = listOf(
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleNumber", referenceCategoryKey = SCHEMA)),
+        SchemaInterface.SchemaReference(Reference("#/components/schemas/simpleNumber", referenceCategoryKey = SCHEMA)),
         SchemaInterface.SchemaInline(Schema(type = "boolean"))
     ),
     not = SchemaInterface.SchemaInline(Schema(type = null))
@@ -160,7 +160,7 @@ fun composedSchema() = Schema(
 fun conditionalExample() = Schema(
     title = "Conditional Schema",
     type = "object",
-    examples = listOf(mapOf("type" to "\"car", "wheels" to 4)),
+    examples = listOf(mapOf("type" to "car", "wheels" to 4)),
     properties = mapOf(
         "type" to SchemaInterface.SchemaInline(Schema(type = "string")),
         "wheels" to SchemaInterface.SchemaInline(Schema(type = "integer")),
@@ -169,7 +169,7 @@ fun conditionalExample() = Schema(
     ifSchema = SchemaInterface.SchemaInline(
         Schema(
             properties = mapOf(
-                "type" to SchemaInterface.SchemaInline(Schema(const = "\"car"))
+                "type" to SchemaInterface.SchemaInline(Schema(const = "car"))
             )
         )
     ),
@@ -182,23 +182,23 @@ fun asyncApiSpecific() = Schema(
     description = "Demonstrates AsyncAPI-only fields",
     type = "object",
     required = listOf("type"),
-    examples = listOf(mapOf("type" to "\"event", "data" to mapOf("id" to "\"123"))),
+    examples = listOf(mapOf("type" to "event", "data" to mapOf("id" to "123"))),
     properties = mapOf(
         "type" to SchemaInterface.SchemaInline(Schema(type = "string")),
         "data" to SchemaInterface.SchemaInline(Schema(type = "object"))
     ),
-    discriminator = "\"type",
+    discriminator = "type",
     deprecated = true,
     externalDocs = ExternalDocInterface.ExternalDocInline(
         ExternalDoc(
-            url = "\"https://example.com/docs/schema",
-            description = "\"External reference documentation"
+            url = "https://example.com/docs/schema",
+            description = "External reference documentation"
         )
     ),
     bindings = mapOf(
         "kafka" to BindingInterface.BindingInline(
             Binding(
-                content = mapOf("topic" to "\"my-topic")
+                content = mapOf("topic" to "my-topic")
             )
         )
 
@@ -206,14 +206,14 @@ fun asyncApiSpecific() = Schema(
 
 )
 
-fun referencedSchema() = Reference("'#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)
+fun referencedSchema() = Reference("#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)
 
 fun allowAnything() = SchemaInterface.BooleanSchema(value = true)
 
 fun allowNothing() = SchemaInterface.BooleanSchema(value = false)
 
 fun simpleObject() = Schema(
-    comment = "\"This schema defines the minimal user object used across APIs.",
+    comment = "This schema defines the minimal user object used across APIs.",
     type = "object",
     required = listOf("id"),
     properties = mapOf(
@@ -275,7 +275,7 @@ fun nestedObject() = Schema(
 
 fun arrayOfObjects() = Schema(
     type = "array",
-    description = "\"A list of user score objects",
+    description = "A list of user score objects",
     items = SchemaInterface.SchemaInline(
         Schema(
             type = "object",
@@ -284,13 +284,13 @@ fun arrayOfObjects() = Schema(
                 "id" to SchemaInterface.SchemaInline(
                     Schema(
                         type = "string",
-                        description = "\"Unique user identifier"
+                        description = "Unique user identifier"
                     )
                 ),
                 "score" to SchemaInterface.SchemaInline(
                     Schema(
                         type = "number",
-                        description = "\"Score achieved by the user",
+                        description = "Score achieved by the user",
                         minimum = 0,
                         maximum = 100
                     )
@@ -303,7 +303,7 @@ fun arrayOfObjects() = Schema(
                                 Schema(
                                     type = "string",
                                     format = "date-time",
-                                    description = "\"When the score was recorded"
+                                    description = "When the score was recorded"
                                 )
                             ),
                             "tags" to SchemaInterface.SchemaInline(
@@ -312,7 +312,7 @@ fun arrayOfObjects() = Schema(
                                     items = SchemaInterface.SchemaInline(
                                         Schema(
                                             type = "string",
-                                            description = "\"Optional tags for score context"
+                                            description = "Optional tags for score context"
                                         )
                                     )
                                 )
@@ -327,12 +327,12 @@ fun arrayOfObjects() = Schema(
 
 fun enumAndConst() = Schema(
     type = "string",
-    description = "\"Primary color selection",
+    description = "Primary color selection",
     enum = listOf("red", "green", "blue"),
     const = "red",
     default = "red",
     defaultSet = true,
-    pattern = "\"^(red|green|blue)$",
+    pattern = "^(red|green|blue)$",
     examples = listOf("red", "green"),
     deprecated = false,
     readOnly = false,
@@ -434,6 +434,6 @@ fun flexibleObject() = Schema(
         Schema(type = "string")
     ),
     propertyNames = SchemaInterface.SchemaInline(
-        Schema(pattern = "\"^[a-zA-Z_][a-zA-Z0-9_]*$")
+        Schema(pattern = "^[a-zA-Z_][a-zA-Z0-9_]*$")
     )
 )

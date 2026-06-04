@@ -29,9 +29,9 @@ class OperationReplyParserTest : AbstractParserTest() {
         // Assertions for the reply (extracted from receiveLightMeasurement's reply section)
         assertNotNull(reply.address, "Reply address should be present")
         assertTrue(reply.address is OperationReplyAddressInterface.OperationReplyAddressInline)
-        assertEquals($$"'$message.header#/replyTo", reply.address.operationReplyAddress.location)
+        assertEquals($$"$message.header#/replyTo", reply.address.operationReplyAddress.location)
 
         assertNotNull(reply.channel, "Reply channel should be present")
-        assertEquals("'#/channels/lightingMeasured", reply.channel.ref)
+        assertEquals("#/channels/lightingMeasured", reply.channel.ref)
     }
 }

@@ -9,41 +9,41 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 
 fun scramConnections() = Server(
-    host = "'test.mykafkacluster.org:{port}/{environment}",
+    host = "test.mykafkacluster.org:{port}/{environment}",
     protocol = "kafka-secure",
     description = "Test broker secured with scramSha256",
     tags = listOf(
         TagInterface.TagInline(
             Tag(
-                name = "\"env:test-scram",
-                description = ">This environment is meant for running internal tests through scramSha256\n"
+                name = "env:test-scram",
+                description = "This environment is meant for running internal tests through scramSha256\n"
             )
         ),
         TagInterface.TagInline(
             Tag(
-                name = "'kind:remote",
-                description = "|This server is a remote server. \nNot exposed by the application\n"
+                name = "kind:remote",
+                description = "This server is a remote server. \nNot exposed by the application\n"
             )
         ),
         TagInterface.TagInline(
             Tag(
-                name = "'visibility:private",
-                description = "|- This is one point\n- This in another point\n"
+                name = "visibility:private",
+                description = "- This is one point\n- This in another point\n"
             )
         )
     ),
     variables = mapOf(
         "port" to ServerVariableInterface.ServerVariableInline(
             ServerVariable(
-                enum = listOf("\"18092", "\"28092"),
-                default = "\"18092",
+                enum = listOf("18092", "28092"),
+                default = "18092",
                 description = "The port used for Kafka connections"
             )
         ),
         "environment" to ServerVariableInterface.ServerVariableInline(
             ServerVariable(
-                enum = listOf("\"test", "\"staging", "\"prod"),
-                default = "\"test",
+                enum = listOf("test", "staging", "prod"),
+                default = "test",
                 description = "Deployment environment"
             )
         )
@@ -51,29 +51,29 @@ fun scramConnections() = Server(
 )
 
 fun mtlsConnections() = Server(
-    host = "'test.mykafkacluster.org:28092",
+    host = "test.mykafkacluster.org:28092",
     protocol = "kafka-secure",
     description = "Test broker secured with X509",
     tags = listOf(
         TagInterface.TagInline(
             Tag(
-                name = "'env:test-mtls",
+                name = "env:test-mtls",
                 description = "This environment is meant for running internal tests through mtls"
             )
         ),
         TagInterface.TagInline(
             Tag(
-                name = "'kind:remote",
+                name = "kind:remote",
                 description = "This server is a remote server. Not exposed by the application"
             )
         ),
         TagInterface.TagInline(
             Tag(
-                name = "'visibility:private",
+                name = "visibility:private",
                 description = "This resource is private and only available to certain users"
             )
         )
     )
 )
 
-fun stagingReference() = Reference("'#/components/servers/stagingServer", referenceCategoryKey = SERVER)
+fun stagingReference() = Reference("#/components/servers/stagingServer", referenceCategoryKey = SERVER)
