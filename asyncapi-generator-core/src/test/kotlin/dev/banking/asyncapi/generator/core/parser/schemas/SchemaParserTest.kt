@@ -18,8 +18,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_data_classes() {
-        val root = readRoot("parser/schemas/asyncapi_parser_schema_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("schemas"))
+        val schemasNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_valid.yaml",
+            "components",
+            "schemas",
+        )
+        val result = parser.parseMap(schemasNode)
 
         assertTrue("lightMeasuredPayload" in result)
         assertTrue("turnOnOffPayload" in result)
@@ -145,9 +149,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_SimpleObject_asyncapi_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("SimpleObject")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "SimpleObject",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = simpleObject()
         assertThat(nestedObjectSchema)
             .usingRecursiveComparison()
@@ -157,9 +165,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_NestedObject_asyncapi_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("NestedObject")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "NestedObject",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = nestedObject()
         assertThat(nestedObjectSchema)
             .usingRecursiveComparison()
@@ -169,9 +181,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_ArrayOfObjects_asyncapi_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("ArrayOfObjects")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "ArrayOfObjects",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = arrayOfObjects()
         assertThat(nestedObjectSchema)
             .usingRecursiveComparison()
@@ -181,9 +197,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_EnumAndConst_asyncapi_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("EnumAndConst")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "EnumAndConst",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = enumAndConst()
         assertThat(nestedObjectSchema)
             .usingRecursiveComparison()
@@ -193,8 +213,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_AllosAll_and_DenyAll_asyncapi_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val allowAllNode = root.mandatory("components").mandatory("schemas").mandatory("AllowAll")
+        val allowAllNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "AllowAll",
+        )
         val allowAll = parser.parseElement(allowAllNode) as SchemaInterface.BooleanSchema
         val expectedAllowAll = SchemaInterface.BooleanSchema(value = true)
         assertThat(allowAll)
@@ -202,7 +226,12 @@ class SchemaParserTest : ParserTestSupport() {
             .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
             .isEqualTo(expectedAllowAll)
 
-        val denyAllNode = root.mandatory("components").mandatory("schemas").mandatory("DenyAll")
+        val denyAllNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "DenyAll",
+        )
         val denyAll = parser.parseElement(denyAllNode) as SchemaInterface.BooleanSchema
         val expectedDenyAll = SchemaInterface.BooleanSchema(value = false)
         assertThat(denyAll)
@@ -213,9 +242,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_Combined_asyncapi_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("Combined")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "Combined",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = combined()
         assertThat(nestedObjectSchema)
             .usingRecursiveComparison()
@@ -225,9 +258,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_Conditional_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("Conditional")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "Conditional",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = conditional()
         assertThat(expectedSchema)
             .usingRecursiveComparison()
@@ -237,9 +274,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_ObjectWithDeps_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("ObjectWithDeps")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "ObjectWithDeps",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = objectWithDeps()
         assertThat(expectedSchema)
             .usingRecursiveComparison()
@@ -249,9 +290,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_ArrayWithContains_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("ArrayWithContains")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "ArrayWithContains",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = arrayWithContains()
         assertThat(expectedSchema)
             .usingRecursiveComparison()
@@ -261,9 +306,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_FlexibleObject_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("FlexibleObject")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaInline).schema
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "FlexibleObject",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
         val expectedSchema = flexibleObject()
         assertThat(expectedSchema)
             .usingRecursiveComparison()
@@ -273,9 +322,13 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_UserRef_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("UserRef")
-        val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaReference).reference
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "UserRef",
+        )
+        val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaReference).reference
         val expectedSchema = Reference(ref = "#/components/schemas/SimpleObject", referenceCategoryKey = SCHEMA)
         assertThat(expectedSchema)
             .usingRecursiveComparison()
@@ -285,17 +338,25 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun parseSchemas_parser_InvalidCoercions_schema_parser_assertion_yaml() {
-        val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
-        val node = root.mandatory("components").mandatory("schemas").mandatory("InvalidCoercions")
+        val schemaNode = readNode(
+            "schemas/asyncapi_schema_parser_assertion.yaml",
+            "components",
+            "schemas",
+            "InvalidCoercions",
+        )
         assertParseFailure<AsyncApiParseException.UnexpectedValue> {
-            parser.parseElement(node)
+            parser.parseElement(schemaNode)
         }
     }
 
     @Test
     fun `parse schema with property and schema dependencies`() {
-        val root = readRoot("parser/schemas/asyncapi_parser_schema_dependencies.yaml")
-        val productNode = root.mandatory("components").mandatory("schemas").mandatory("Product")
+        val productNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_dependencies.yaml",
+            "components",
+            "schemas",
+            "Product",
+        )
         val productSchema = (parser.parseElement(productNode) as SchemaInterface.SchemaInline).schema
 
         assertNotNull(productSchema.dependencies, "Product schema should have dependencies")
@@ -320,8 +381,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun `parse recursive external references populates context correctly`() {
-        val root = readRoot("parser/schemas/references/main.yaml")
-        parser.parseMap(root.mandatory("components").mandatory("schemas"))
+        val schemasNode = readNode(
+            "parser/schemas/references/main.yaml",
+            "components",
+            "schemas",
+        )
+        parser.parseMap(schemasNode)
         val modelPaths = asyncApiContext.modelRepository.getModelsByPath()
         val expectedLevel2Path = "level2.root.components.schemas.Level2Object"
         assertTrue(
@@ -335,8 +400,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun `parse recursive composition (allOf inside oneOf)`() {
-        val root = readRoot("parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml")
-        val schemaMap = parser.parseMap(root.mandatory("components").mandatory("schemas"))
+        val schemasNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml",
+            "components",
+            "schemas",
+        )
+        val schemaMap = parser.parseMap(schemasNode)
 
         val recursiveSchema = (schemaMap["RecursiveComposition"] as SchemaInterface.SchemaInline).schema
         assertNotNull(recursiveSchema.oneOf, "oneOf should not be null")
@@ -360,8 +429,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun `parse mixed references and inline schemas in anyOf`() {
-        val root = readRoot("parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml")
-        val schemaMap = parser.parseMap(root.mandatory("components").mandatory("schemas"))
+        val schemasNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml",
+            "components",
+            "schemas",
+        )
+        val schemaMap = parser.parseMap(schemasNode)
 
         val mixedSchema = (schemaMap["MixedComposition"] as SchemaInterface.SchemaInline).schema
         assertNotNull(mixedSchema.anyOf, "anyOf should not be null")
@@ -377,8 +450,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun `parse empty allOf`() {
-        val root = readRoot("parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml")
-        val schemaMap = parser.parseMap(root.mandatory("components").mandatory("schemas"))
+        val schemasNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml",
+            "components",
+            "schemas",
+        )
+        val schemaMap = parser.parseMap(schemasNode)
 
         val emptyAllOfSchema = (schemaMap["EmptyAllOf"] as SchemaInterface.SchemaInline).schema
         assertNotNull(
@@ -390,8 +467,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun `parse untyped oneOf`() {
-        val root = readRoot("parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml")
-        val schemaMap = parser.parseMap(root.mandatory("components").mandatory("schemas"))
+        val schemasNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml",
+            "components",
+            "schemas",
+        )
+        val schemaMap = parser.parseMap(schemasNode)
 
         val untypedSchema = (schemaMap["UntypedOneOf"] as SchemaInterface.SchemaInline).schema
         assertEquals(null, untypedSchema.type, "Type should be null for untyped oneOf parent")
@@ -400,8 +481,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun `parse Schema with invalid enum type throws InvalidValue`() {
-        val root = readRoot("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
-        val schemaNode = root.mandatory("components").mandatory("schemas").mandatory("InvalidEnumSchema")
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_negative_test.yaml",
+            "components",
+            "schemas",
+            "InvalidEnumSchema",
+        )
         assertParseFailure<AsyncApiParseException.UnexpectedValue>(
             "Unexpected value: expected List",
             "asyncapi_parser_schema_negative_test.yaml",
@@ -413,8 +498,12 @@ class SchemaParserTest : ParserTestSupport() {
 
     @Test
     fun `parse Schema with invalid dependencies type (list instead of map) throws InvalidValue`() {
-        val root = readRoot("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
-        val schemaNode = root.mandatory("components").mandatory("schemas").mandatory("MissingDependenciesObject")
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_negative_test.yaml",
+            "components",
+            "schemas",
+            "MissingDependenciesObject",
+        )
         assertParseFailure<AsyncApiParseException.UnexpectedValue>(
             "Unexpected value: expected Map",
             "asyncapi_parser_schema_negative_test.yaml",

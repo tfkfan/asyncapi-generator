@@ -13,8 +13,12 @@ class MessageParserTest : ParserTestSupport() {
 
     @Test
     fun parseMessages_validate_data_class() {
-        val root = readRoot("parser/messages/asyncapi_parser_message_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("messages"))
+        val messagesNode = readNode(
+            "parser/messages/asyncapi_parser_message_valid.yaml",
+            "components",
+            "messages",
+        )
+        val result = parser.parseMap(messagesNode)
 
         assertTrue("lightMeasured" in result)
         assertTrue("turnOnOff" in result)
@@ -44,8 +48,12 @@ class MessageParserTest : ParserTestSupport() {
 
     @Test
     fun `parse valid message objects`() {
-        val root = readRoot("parser/messages/asyncapi_parser_message_edge_cases.yaml")
-        val messages = parser.parseMap(root.mandatory("components").mandatory("messages"))
+        val messagesNode = readNode(
+            "parser/messages/asyncapi_parser_message_edge_cases.yaml",
+            "components",
+            "messages",
+        )
+        val messages = parser.parseMap(messagesNode)
 
         val refPayload = (messages["RefPayload"] as MessageInterface.MessageInline).message
         assertThat(refPayload)
@@ -63,8 +71,12 @@ class MessageParserTest : ParserTestSupport() {
 
     @Test
     fun `parse message with inline trait`() {
-        val root = readRoot("parser/messages/asyncapi_parser_message_edge_cases.yaml")
-        val messages = parser.parseMap(root.mandatory("components").mandatory("messages"))
+        val messagesNode = readNode(
+            "parser/messages/asyncapi_parser_message_edge_cases.yaml",
+            "components",
+            "messages",
+        )
+        val messages = parser.parseMap(messagesNode)
 
         val emptyPayload = (messages["EmptyPayloadMessage"] as MessageInterface.MessageInline).message
         assertThat(emptyPayload)
@@ -81,8 +93,11 @@ class MessageParserTest : ParserTestSupport() {
 
     @Test
     fun `parse message with invalid field type throws InvalidValue`() {
-        val root = readRoot("parser/messages/asyncapi_parser_message_invalid_type.yaml")
-        val messagesNode = root.mandatory("components").mandatory("messages")
+        val messagesNode = readNode(
+            "parser/messages/asyncapi_parser_message_invalid_type.yaml",
+            "components",
+            "messages",
+        )
         assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(messagesNode)
         }
