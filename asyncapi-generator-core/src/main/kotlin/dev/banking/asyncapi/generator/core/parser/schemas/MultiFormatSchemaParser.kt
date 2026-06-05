@@ -25,6 +25,9 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
  * **Future Expansion:**
  * This parser is designed to be expanded in the future to provide full parsing and
  * code generation support for the currently unimplemented schema formats.
+ *
+ * Expected behavior is covered by:
+ * - `SchemaParserTest`
  */
 class MultiFormatSchemaParser(
     val asyncApiContext: AsyncApiContext,
@@ -74,4 +77,3 @@ class MultiFormatSchemaParser(
             format == AsyncApiConstants.PROTOBUF_V_3
     }
 }
-
