@@ -104,7 +104,11 @@ class SecuritySchemeParserTest : ParserTestSupport() {
             .mandatory("components")
             .mandatory("securitySchemes")
             .mandatory("MissingType")
-        assertParseFailure<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'type'",
+            "asyncapi_parser_security_invalid.yaml",
+            "asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type",
+        ) {
             parser.parseElement(schemeNode)
         }
     }
@@ -116,7 +120,11 @@ class SecuritySchemeParserTest : ParserTestSupport() {
             .mandatory("components")
             .mandatory("securitySchemes")
             .mandatory("InvalidFlowsStructure")
-        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Map",
+            "asyncapi_parser_security_invalid.yaml",
+            "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidFlowsStructure.flows",
+        ) {
             parser.parseElement(schemeNode)
         }
     }

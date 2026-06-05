@@ -402,7 +402,11 @@ class SchemaParserTest : ParserTestSupport() {
     fun `parse Schema with invalid enum type throws InvalidValue`() {
         val root = readRoot("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
         val schemaNode = root.mandatory("components").mandatory("schemas").mandatory("InvalidEnumSchema")
-        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected List",
+            "asyncapi_parser_schema_negative_test.yaml",
+            "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidEnumSchema.enum",
+        ) {
             parser.parseElement(schemaNode)
         }
     }
@@ -411,7 +415,11 @@ class SchemaParserTest : ParserTestSupport() {
     fun `parse Schema with invalid dependencies type (list instead of map) throws InvalidValue`() {
         val root = readRoot("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
         val schemaNode = root.mandatory("components").mandatory("schemas").mandatory("MissingDependenciesObject")
-        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Map",
+            "asyncapi_parser_schema_negative_test.yaml",
+            "asyncapi_parser_schema_negative_test.root.components.schemas.MissingDependenciesObject.dependencies",
+        ) {
             parser.parseElement(schemaNode)
         }
     }

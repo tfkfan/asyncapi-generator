@@ -62,7 +62,11 @@ class BindingParserTest : ParserTestSupport() {
     @Test
     fun `parse binding with invalid structure throws UnexpectedValue`() {
         val root = readRoot("parser/bindings/asyncapi_parser_binding_invalid.yaml")
-        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Map",
+            "asyncapi_parser_binding_invalid.yaml",
+            "asyncapi_parser_binding_invalid.root.components.channelBindings.InvalidBindingStructure",
+        ) {
             parser.parseMap(root.mandatory("components").mandatory("channelBindings"))
         }
     }

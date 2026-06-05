@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.ParserFixtures
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import org.assertj.core.api.Assertions.assertThat
 import kotlin.test.assertFailsWith
 
 /**
@@ -27,8 +28,13 @@ abstract class ParserTestSupport {
     }
 
     protected inline fun <reified T : AsyncApiParseException> assertParseFailure(
+        vararg expectedMessageParts: String,
         noinline block: () -> Unit,
     ): T {
-        return assertFailsWith<T>(block = block)
+        val error = assertFailsWith<T>(block = block)
+        expectedMessageParts.forEach { expected ->
+            assertThat(error.message).contains(expected)
+        }
+        return error
     }
 }
