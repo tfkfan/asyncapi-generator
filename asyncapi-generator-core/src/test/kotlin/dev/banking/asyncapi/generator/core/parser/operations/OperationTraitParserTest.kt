@@ -1,12 +1,28 @@
 package dev.banking.asyncapi.generator.core.parser.operations
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
+import kotlin.test.assertTrue
 
 class OperationTraitParserTest : ParserTestSupport() {
 
     private val parser = OperationTraitParser(asyncApiContext)
+
+    @Test
+    fun `parse operation traits`() {
+        val traitsNode = readNode(
+            "parser/operations/asyncapi_parser_operations_valid.yaml",
+            "components",
+            "operationTraits",
+        )
+
+        val traits = parser.parseMap(traitsNode)
+
+        assertTrue(traits["kafka"] is OperationTraitInterface.OperationTraitInline)
+        assertTrue(traits["logging"] is OperationTraitInterface.OperationTraitInline)
+    }
 
     @Test
     fun `parse operation trait with invalid structure throws UnexpectedValue`() {

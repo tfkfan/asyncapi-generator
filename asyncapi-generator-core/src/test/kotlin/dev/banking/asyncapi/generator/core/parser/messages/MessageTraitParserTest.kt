@@ -1,12 +1,35 @@
 package dev.banking.asyncapi.generator.core.parser.messages
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MessageTraitParserTest : ParserTestSupport() {
 
     private val parser = MessageTraitParser(asyncApiContext)
+
+    @Test
+    fun `parse message trait list`() {
+        val traitsNode = readNode(
+            "parser/messages/asyncapi_parser_message_edge_cases.yaml",
+            "components",
+            "messages",
+            "InlineTraitMessage",
+            "traits",
+        )
+
+        val traits = parser.parseList(traitsNode)
+
+        assertEquals(1, traits.size)
+        assertTrue(traits.first() is MessageTraitInterface.InlineMessageTrait)
+        val trait = (traits.first() as MessageTraitInterface.InlineMessageTrait).trait
+        assertTrue(trait.headers is SchemaInterface.SchemaInline)
+        assertEquals("string", (trait.headers as SchemaInterface.SchemaInline).schema.type)
+    }
 
     @Test
     fun `parse message trait with invalid structure throws UnexpectedValue`() {

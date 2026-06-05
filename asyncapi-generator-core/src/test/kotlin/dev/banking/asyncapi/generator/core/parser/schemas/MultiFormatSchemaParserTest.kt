@@ -1,12 +1,31 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MultiFormatSchemaParserTest : ParserTestSupport() {
 
     private val parser = SchemaParser(asyncApiContext)
+
+    @Test
+    fun `parse supported asyncapi schema format`() {
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_format_valid.yaml",
+            "components",
+            "schemas",
+            "AsyncApiYamlSchemaFormat",
+        )
+
+        val schema = parser.parseElement(schemaNode)
+
+        assertTrue(schema is SchemaInterface.SchemaInline)
+        assertEquals("Supported schema format", schema.schema.title)
+        assertEquals("object", schema.schema.type)
+    }
 
     @Test
     fun `parse unsupported schema format throws UnsupportedSchemaFormat`() {

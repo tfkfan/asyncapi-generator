@@ -35,6 +35,9 @@ class OperationReplyParserTest : ParserTestSupport() {
 
         assertNotNull(reply.channel, "Reply channel should be present")
         assertEquals("#/channels/lightingMeasured", reply.channel.ref)
+
+        assertNotNull(reply.messages, "Reply messages should be present")
+        assertEquals(listOf("#/components/messages/lightMeasured"), reply.messages.map { it.ref })
     }
 
     @Test

@@ -1,12 +1,44 @@
 package dev.banking.asyncapi.generator.core.parser.references
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 class ReferenceParserTest : ParserTestSupport() {
 
     private val parser = ReferenceParser(asyncApiContext)
+
+    @Test
+    fun `parse reference element`() {
+        val referenceNode = readNode(
+            "parser/operations/asyncapi_parser_operations_valid.yaml",
+            "operations",
+            "receiveLightMeasurement",
+            "channel",
+        )
+
+        val reference = parser.parseElement(referenceNode)
+
+        assertEquals("#/channels/lightingMeasured", reference.ref)
+        assertEquals(REFERENCE, reference.referenceCategoryKey)
+    }
+
+    @Test
+    fun `parse reference list`() {
+        val referencesNode = readNode(
+            "parser/operations/asyncapi_parser_operations_valid.yaml",
+            "operations",
+            "receiveLightMeasurement",
+            "messages",
+        )
+
+        val references = parser.parseList(referencesNode)
+
+        assertEquals(listOf("#/components/messages/lightMeasured"), references.map { it.ref })
+        assertEquals(listOf(REFERENCE), references.map { it.referenceCategoryKey })
+    }
 
     @Test
     fun `parse reference missing ref throws Mandatory`() {

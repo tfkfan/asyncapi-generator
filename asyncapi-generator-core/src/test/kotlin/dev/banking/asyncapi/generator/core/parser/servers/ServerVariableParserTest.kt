@@ -1,12 +1,33 @@
 package dev.banking.asyncapi.generator.core.parser.servers
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ServerVariableParserTest : ParserTestSupport() {
 
     private val parser = ServerVariableParser(asyncApiContext)
+
+    @Test
+    fun `parse server variables`() {
+        val variablesNode = readNode(
+            "parser/servers/asyncapi_parser_servers_valid.yaml",
+            "servers",
+            "scram-connections",
+            "variables",
+        )
+
+        val variables = parser.parseMap(variablesNode)
+
+        assertTrue(variables["port"] is ServerVariableInterface.ServerVariableInline)
+        val port = (variables["port"] as ServerVariableInterface.ServerVariableInline).serverVariable
+        assertEquals(listOf("18092", "28092"), port.enum)
+        assertEquals("18092", port.default)
+        assertEquals("The port used for Kafka connections", port.description)
+    }
 
     @Test
     fun `parse server variable with invalid structure throws UnexpectedValue`() {
