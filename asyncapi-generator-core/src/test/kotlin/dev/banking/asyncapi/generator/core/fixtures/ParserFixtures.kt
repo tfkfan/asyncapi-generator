@@ -22,7 +22,7 @@ internal class ParserFixtures(
         root(TestResources.file(path))
 
     fun root(file: File): ParserNode =
-        AsyncApiRegistry.readYaml(file, context)
+        AsyncApiRegistry.read(file, context)
 
     fun document(path: String): AsyncApiDocument =
         document(TestResources.file(path))
