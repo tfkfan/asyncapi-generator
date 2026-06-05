@@ -14,11 +14,12 @@ class OperationReplyParserTest : ParserTestSupport() {
 
     @Test
     fun `parse operation reply with address`() {
-        val root = readRoot("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val replyNode = root
-            .mandatory("operations")
-            .mandatory("receiveLightMeasurement")
-            .mandatory("reply")
+        val replyNode = readNode(
+            "parser/operations/asyncapi_parser_operations_valid.yaml",
+            "operations",
+            "receiveLightMeasurement",
+            "reply",
+        )
 
         val replyInterface = parser.parseElement(replyNode)
         assertNotNull(replyInterface, "Reply should be present")

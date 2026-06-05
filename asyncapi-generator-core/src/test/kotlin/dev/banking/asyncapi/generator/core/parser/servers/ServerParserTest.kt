@@ -13,8 +13,8 @@ class ServerParserTest : ParserTestSupport() {
 
     @Test
     fun parseServers_validate_data_classes() {
-        val root = readRoot("parser/servers/asyncapi_parser_servers_valid.yaml")
-        val result = parser.parseMap(root.mandatory("servers"))
+        val serversNode = readNode("parser/servers/asyncapi_parser_servers_valid.yaml", "servers")
+        val result = parser.parseMap(serversNode)
 
         assertTrue("scram-connections" in result)
         assertTrue("mtls-connections" in result)
@@ -44,9 +44,9 @@ class ServerParserTest : ParserTestSupport() {
 
     @Test
     fun `parse server with invalid variables structure throws UnexpectedValue`() {
-        val root = readRoot("parser/servers/asyncapi_parser_server_invalid.yaml")
+        val serversNode = readNode("parser/servers/asyncapi_parser_server_invalid.yaml", "servers")
         assertParseFailure<AsyncApiParseException.UnexpectedValue> {
-            parser.parseMap(root.mandatory("servers"))
+            parser.parseMap(serversNode)
         }
     }
 }
