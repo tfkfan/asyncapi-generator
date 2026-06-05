@@ -14,7 +14,7 @@ class MessageParserTest : AbstractParserTest() {
 
     @Test
     fun parseMessages_validate_data_class() {
-        val root = readYaml("parser/messages/asyncapi_parser_message_valid.yaml")
+        val root = readRoot("parser/messages/asyncapi_parser_message_valid.yaml")
         val result = parser.parseMap(root.mandatory("components").mandatory("messages"))
 
         assertTrue("lightMeasured" in result)
@@ -45,7 +45,7 @@ class MessageParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid message objects`() {
-        val root = readYaml("parser/messages/asyncapi_parser_message_edge_cases.yaml")
+        val root = readRoot("parser/messages/asyncapi_parser_message_edge_cases.yaml")
         val messages = parser.parseMap(root.mandatory("components").mandatory("messages"))
 
         val refPayload = (messages["RefPayload"] as MessageInterface.MessageInline).message
@@ -64,7 +64,7 @@ class MessageParserTest : AbstractParserTest() {
 
     @Test
     fun `parse message with inline trait`() {
-        val root = readYaml("parser/messages/asyncapi_parser_message_edge_cases.yaml")
+        val root = readRoot("parser/messages/asyncapi_parser_message_edge_cases.yaml")
         val messages = parser.parseMap(root.mandatory("components").mandatory("messages"))
 
         val emptyPayload = (messages["EmptyPayloadMessage"] as MessageInterface.MessageInline).message
@@ -82,7 +82,7 @@ class MessageParserTest : AbstractParserTest() {
 
     @Test
     fun `parse message with invalid field type throws InvalidValue`() {
-        val root = readYaml("parser/messages/asyncapi_parser_message_invalid_type.yaml")
+        val root = readRoot("parser/messages/asyncapi_parser_message_invalid_type.yaml")
         val messagesNode = root.mandatory("components").mandatory("messages")
         assertFailsWith<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(messagesNode)

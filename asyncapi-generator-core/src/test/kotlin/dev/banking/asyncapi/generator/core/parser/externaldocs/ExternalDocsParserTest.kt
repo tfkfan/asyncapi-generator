@@ -14,7 +14,7 @@ class ExternalDocsParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid external docs`() {
-        val root = readYaml("parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml")
+        val root = readRoot("parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml")
         val result = parser.parseMap(root.mandatory("components").mandatory("externalDocs"))
 
         assertTrue("MyExternalDocs" in result)
@@ -34,7 +34,7 @@ class ExternalDocsParserTest : AbstractParserTest() {
 
     @Test
     fun `parse external docs missing url throws RequiredObject`() {
-        val root = readYaml("parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml")
+        val root = readRoot("parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml")
         val externalDocsNode = root.mandatory("components").mandatory("externalDocs").mandatory("MissingUrl")
         assertFailsWith<AsyncApiParseException.Mandatory> {
             parser.parseElement(externalDocsNode)

@@ -14,7 +14,7 @@ class OperationReplyParserTest : AbstractParserTest() {
 
     @Test
     fun `parse operation reply with address`() {
-        val root = readYaml("parser/operations/asyncapi_parser_operations_valid.yaml")
+        val root = readRoot("parser/operations/asyncapi_parser_operations_valid.yaml")
         val replyNode = root
             .mandatory("operations")
             .mandatory("receiveLightMeasurement")

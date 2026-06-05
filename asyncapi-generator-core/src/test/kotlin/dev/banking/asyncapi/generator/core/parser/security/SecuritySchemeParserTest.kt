@@ -14,7 +14,7 @@ class SecuritySchemeParserTest : AbstractParserTest() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_saslScram_certs_basicAuth() {
-        val root = readYaml("parser/security/asyncapi_parser_security_valid.yaml")
+        val root = readRoot("parser/security/asyncapi_parser_security_valid.yaml")
         val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
 
         assertTrue("saslScram" in result)
@@ -45,7 +45,7 @@ class SecuritySchemeParserTest : AbstractParserTest() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_bearerAuth_apiKeyHeader_apiKeyQuery() {
-        val root = readYaml("parser/security/asyncapi_parser_security_valid.yaml")
+        val root = readRoot("parser/security/asyncapi_parser_security_valid.yaml")
         val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
 
         assertTrue("bearerAuth" in result)
@@ -76,7 +76,7 @@ class SecuritySchemeParserTest : AbstractParserTest() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_openIdConnectExample_oauthExample() {
-        val root = readYaml("parser/security/asyncapi_parser_security_valid.yaml")
+        val root = readRoot("parser/security/asyncapi_parser_security_valid.yaml")
         val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
 
         assertTrue("openIdConnectExample" in result)
@@ -100,7 +100,7 @@ class SecuritySchemeParserTest : AbstractParserTest() {
 
     @Test
     fun `parse security scheme missing type throws RequiredObject`() {
-        val root = readYaml("parser/security/asyncapi_parser_security_invalid.yaml")
+        val root = readRoot("parser/security/asyncapi_parser_security_invalid.yaml")
         val schemeNode = root
             .mandatory("components")
             .mandatory("securitySchemes")
@@ -112,7 +112,7 @@ class SecuritySchemeParserTest : AbstractParserTest() {
 
     @Test
     fun `parse security scheme with invalid flows structure throws UnexpectedValue`() {
-        val root = readYaml("parser/security/asyncapi_parser_security_invalid.yaml")
+        val root = readRoot("parser/security/asyncapi_parser_security_invalid.yaml")
         val schemeNode = root
             .mandatory("components")
             .mandatory("securitySchemes")

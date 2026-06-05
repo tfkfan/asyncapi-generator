@@ -17,7 +17,7 @@ class AsyncApiParserTest : AbstractParserTest() {
 
     @Test
     fun parseSingleFileAsyncApi() {
-        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
+        val root = readRoot("asyncapi_kafka_single_file_example.yaml")
         val result = parser.parse(root)
 
         assertEquals("3.0.0", result.asyncapi, "AsyncAPI version mismatch")
@@ -65,7 +65,7 @@ class AsyncApiParserTest : AbstractParserTest() {
 
     @Test
     fun `parsed schema is registered in model repository`() {
-        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
+        val root = readRoot("asyncapi_kafka_single_file_example.yaml")
         val asyncApi =  parser.parse(root)
         val schemasMap = (asyncApi.components as ComponentInterface.ComponentInline).component.schemas!!
 
@@ -104,7 +104,7 @@ class AsyncApiParserTest : AbstractParserTest() {
 
     @Test
     fun `parsed schema properties have correct line numbers in source repository`() {
-        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
+        val root = readRoot("asyncapi_kafka_single_file_example.yaml")
         parser.parse(root)
         val schemaPath =
             "${asyncApiContext.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.simpleString"

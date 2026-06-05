@@ -14,7 +14,7 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid channel bindings`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_bindings_valid.yaml")
+        val root = readRoot("parser/bindings/asyncapi_parser_bindings_valid.yaml")
         val bindings = parser.parseMap(root.mandatory("components").mandatory("channelBindings"))
         assertTrue("userSignedUpChannel" in bindings)
         val binding = (bindings["userSignedUpChannel"] as BindingInterface.BindingInline).binding
@@ -26,7 +26,7 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid message bindings`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_bindings_valid.yaml")
+        val root = readRoot("parser/bindings/asyncapi_parser_bindings_valid.yaml")
         val bindings = parser.parseMap(root.mandatory("components").mandatory("messageBindings"))
         assertTrue("userSignedUpMessage" in bindings)
         val binding = (bindings["userSignedUpMessage"] as BindingInterface.BindingInline).binding
@@ -38,7 +38,7 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid server bindings`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_bindings_valid.yaml")
+        val root = readRoot("parser/bindings/asyncapi_parser_bindings_valid.yaml")
         val bindings = parser.parseMap(root.mandatory("components").mandatory("serverBindings"))
         assertTrue("myServerBinding" in bindings)
         val binding = (bindings["myServerBinding"] as BindingInterface.BindingInline).binding
@@ -50,7 +50,7 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid operation bindings`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_bindings_valid.yaml")
+        val root = readRoot("parser/bindings/asyncapi_parser_bindings_valid.yaml")
         val bindings = parser.parseMap(root.mandatory("components").mandatory("operationBindings"))
         assertTrue("myOperationBinding" in bindings)
         val binding = (bindings["myOperationBinding"] as BindingInterface.BindingInline).binding
@@ -62,7 +62,7 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse binding with invalid structure throws UnexpectedValue`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_binding_invalid.yaml")
+        val root = readRoot("parser/bindings/asyncapi_parser_binding_invalid.yaml")
         assertFailsWith<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(root.mandatory("components").mandatory("channelBindings"))
         }

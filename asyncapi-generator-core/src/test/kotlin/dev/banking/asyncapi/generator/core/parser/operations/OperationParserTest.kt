@@ -14,7 +14,7 @@ class OperationParserTest : AbstractParserTest() {
 
     @Test
     fun parseOperations_validate_data_class() {
-        val root = readYaml("parser/operations/asyncapi_parser_operations_valid.yaml")
+        val root = readRoot("parser/operations/asyncapi_parser_operations_valid.yaml")
         val result = parser.parseMap(root.mandatory("operations"))
 
         assertTrue("receiveLightMeasurement" in result)
@@ -38,7 +38,7 @@ class OperationParserTest : AbstractParserTest() {
 
     @Test
     fun `parse operation missing action throws RequiredObject`() {
-        val root = readYaml("parser/operations/asyncapi_parser_operations_invalid.yaml")
+        val root = readRoot("parser/operations/asyncapi_parser_operations_invalid.yaml")
         assertFailsWith<AsyncApiParseException.Mandatory> {
             parser.parseMap(root.mandatory("operations"))
         }
@@ -46,7 +46,7 @@ class OperationParserTest : AbstractParserTest() {
 
     @Test
     fun `validation fails for operation with inline message definition`() {
-        val root = readYaml("parser/operations/asyncapi_validator_operations_inline_message_error.yaml")
+        val root = readRoot("parser/operations/asyncapi_validator_operations_inline_message_error.yaml")
         assertFailsWith<AsyncApiParseException.Mandatory> {
             parser.parseMap(root.mandatory("operations"))
         }
