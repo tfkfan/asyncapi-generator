@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.operations
 
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
@@ -34,5 +35,56 @@ class OperationReplyParserTest : ParserTestSupport() {
 
         assertNotNull(reply.channel, "Reply channel should be present")
         assertEquals("#/channels/lightingMeasured", reply.channel.ref)
+    }
+
+    @Test
+    fun `parse operation reply with missing channel ref throws Mandatory`() {
+        val replyNode = readNode(
+            "parser/operations/asyncapi_parser_operation_reply_invalid.yaml",
+            "components",
+            "operationReplyCases",
+            "MissingChannelReference",
+        )
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory '\$ref'",
+            "asyncapi_parser_operation_reply_invalid.yaml",
+            "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingChannelReference.channel.\$ref",
+        ) {
+            parser.parseElement(replyNode)
+        }
+    }
+
+    @Test
+    fun `parse operation reply with missing message ref throws Mandatory with indexed path`() {
+        val replyNode = readNode(
+            "parser/operations/asyncapi_parser_operation_reply_invalid.yaml",
+            "components",
+            "operationReplyCases",
+            "MissingMessageReference",
+        )
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory '\$ref'",
+            "asyncapi_parser_operation_reply_invalid.yaml",
+            "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingMessageReference.messages[0].\$ref",
+        ) {
+            parser.parseElement(replyNode)
+        }
+    }
+
+    @Test
+    fun `parse operation reply with missing address location throws Mandatory`() {
+        val replyNode = readNode(
+            "parser/operations/asyncapi_parser_operation_reply_invalid.yaml",
+            "components",
+            "operationReplyCases",
+            "MissingAddressLocation",
+        )
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'location'",
+            "asyncapi_parser_operation_reply_invalid.yaml",
+            "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingAddressLocation.address.location",
+        ) {
+            parser.parseElement(replyNode)
+        }
     }
 }

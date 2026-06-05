@@ -15,6 +15,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * Parses AsyncAPI operation trait objects from parser nodes.
  *
  * Expected behavior is covered by:
+ * - `OperationTraitParserTest`
  * - `OperationParserTest`
  */
 class OperationTraitParser(

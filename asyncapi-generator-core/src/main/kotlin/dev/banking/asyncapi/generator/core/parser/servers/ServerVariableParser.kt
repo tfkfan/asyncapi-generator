@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * Parses AsyncAPI server variable objects from parser nodes.
  *
  * Expected behavior is covered by:
+ * - `ServerVariableParserTest`
  * - `ServerParserTest`
  */
 class ServerVariableParser(

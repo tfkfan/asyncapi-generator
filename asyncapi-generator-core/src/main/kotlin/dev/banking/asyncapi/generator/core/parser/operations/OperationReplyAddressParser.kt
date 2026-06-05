@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * Parses AsyncAPI operation reply address objects from parser nodes.
  *
  * Expected behavior is covered by:
+ * - `OperationReplyAddressParserTest`
  * - `OperationReplyParserTest`
  */
 class OperationReplyAddressParser(
