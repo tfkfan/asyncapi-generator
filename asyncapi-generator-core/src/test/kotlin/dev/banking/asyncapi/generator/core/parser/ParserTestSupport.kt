@@ -23,6 +23,15 @@ abstract class ParserTestSupport {
         return parserFixtures.root(path)
     }
 
+    protected fun readNode(
+        path: String,
+        vararg nodePath: String,
+    ): ParserNode {
+        return nodePath.fold(readRoot(path)) { node, key ->
+            node.mandatory(key)
+        }
+    }
+
     protected fun parseDocument(path: String): AsyncApiDocument {
         return parserFixtures.document(path)
     }

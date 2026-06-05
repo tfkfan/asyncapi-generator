@@ -13,8 +13,13 @@ class SecuritySchemeParserTest : ParserTestSupport() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_saslScram_certs_basicAuth() {
-        val root = readRoot("parser/security/asyncapi_parser_security_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
+        val result = parser.parseMap(
+            readNode(
+                "parser/security/asyncapi_parser_security_valid.yaml",
+                "components",
+                "securitySchemes",
+            )
+        )
 
         assertTrue("saslScram" in result)
         assertTrue("certs" in result)
@@ -44,8 +49,13 @@ class SecuritySchemeParserTest : ParserTestSupport() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_bearerAuth_apiKeyHeader_apiKeyQuery() {
-        val root = readRoot("parser/security/asyncapi_parser_security_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
+        val result = parser.parseMap(
+            readNode(
+                "parser/security/asyncapi_parser_security_valid.yaml",
+                "components",
+                "securitySchemes",
+            )
+        )
 
         assertTrue("bearerAuth" in result)
         assertTrue("apiKeyHeader" in result)
@@ -75,8 +85,13 @@ class SecuritySchemeParserTest : ParserTestSupport() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_openIdConnectExample_oauthExample() {
-        val root = readRoot("parser/security/asyncapi_parser_security_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
+        val result = parser.parseMap(
+            readNode(
+                "parser/security/asyncapi_parser_security_valid.yaml",
+                "components",
+                "securitySchemes",
+            )
+        )
 
         assertTrue("openIdConnectExample" in result)
         assertTrue("oauthExample" in result)
@@ -99,11 +114,12 @@ class SecuritySchemeParserTest : ParserTestSupport() {
 
     @Test
     fun `parse security scheme missing type throws RequiredObject`() {
-        val root = readRoot("parser/security/asyncapi_parser_security_invalid.yaml")
-        val schemeNode = root
-            .mandatory("components")
-            .mandatory("securitySchemes")
-            .mandatory("MissingType")
+        val schemeNode = readNode(
+            "parser/security/asyncapi_parser_security_invalid.yaml",
+            "components",
+            "securitySchemes",
+            "MissingType",
+        )
         assertParseFailure<AsyncApiParseException.Mandatory>(
             "Missing mandatory 'type'",
             "asyncapi_parser_security_invalid.yaml",
@@ -115,11 +131,12 @@ class SecuritySchemeParserTest : ParserTestSupport() {
 
     @Test
     fun `parse security scheme with invalid flows structure throws UnexpectedValue`() {
-        val root = readRoot("parser/security/asyncapi_parser_security_invalid.yaml")
-        val schemeNode = root
-            .mandatory("components")
-            .mandatory("securitySchemes")
-            .mandatory("InvalidFlowsStructure")
+        val schemeNode = readNode(
+            "parser/security/asyncapi_parser_security_invalid.yaml",
+            "components",
+            "securitySchemes",
+            "InvalidFlowsStructure",
+        )
         assertParseFailure<AsyncApiParseException.UnexpectedValue>(
             "Unexpected value: expected Map",
             "asyncapi_parser_security_invalid.yaml",
