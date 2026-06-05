@@ -44,7 +44,7 @@ fun apiKeyQuery() = SecurityScheme(
 fun openIdConnectExample() = SecurityScheme(
     type = "openIdConnect",
     description = "OpenID Connect discovery URL example",
-    openIdConnectUrl = "\"https://example.com/.well-known/openid-configuration",
+    openIdConnectUrl = "https://example.com/.well-known/openid-configuration",
 )
 
 fun oauthExample() = SecurityScheme(
@@ -52,32 +52,32 @@ fun oauthExample() = SecurityScheme(
     description = "Example OAuth2 flow",
     flows = OAuthFlows(
         implicit = OAuthFlow(
-            authorizationUrl = "\"https://example.com/api/oauth/authorize",
+            authorizationUrl = "https://example.com/api/oauth/authorize",
             availableScopes = mapOf(
                 "write:pets" to "modify pets in your account",
                 "read:pets" to "read your pets"
             )
         ),
         password = OAuthFlow(
-            tokenUrl = "\"https://example.com/api/oauth/token",
+            tokenUrl = "https://example.com/api/oauth/token",
             availableScopes = mapOf(
                 "admin" to "full access"
             )
         ),
         clientCredentials = OAuthFlow(
-            tokenUrl = "\"https://example.com/api/oauth/token",
+            tokenUrl = "https://example.com/api/oauth/token",
             availableScopes = mapOf(
                 "write:docs" to "modify documents"
             )
         ),
         authorizationCode = OAuthFlow(
-            authorizationUrl = "\"https://example.com/api/oauth/authorize",
-            tokenUrl = "\"https://example.com/api/oauth/token",
+            authorizationUrl = "https://example.com/api/oauth/authorize",
+            tokenUrl = "https://example.com/api/oauth/token",
             availableScopes = mapOf(
                 "read:docs" to "read documents",
                 "write:docs" to "modify documents"
             )
         )
     ),
-    scopes = listOf("\"read:pets", "\"write:pets")
+    scopes = listOf("read:pets", "write:pets")
 )

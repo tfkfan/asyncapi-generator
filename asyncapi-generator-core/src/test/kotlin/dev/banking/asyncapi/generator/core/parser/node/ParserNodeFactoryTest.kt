@@ -1,0 +1,36 @@
+package dev.banking.asyncapi.generator.core.parser.node
+
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
+import dev.banking.asyncapi.generator.core.reader.YamlDocumentReader
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+
+class ParserNodeFactoryTest {
+
+    private val reader = YamlDocumentReader()
+
+    @Test
+    fun `creates parser root node from input document`() {
+        val context = AsyncApiContext()
+        val document = reader.read(ReaderFixtures.yamlSource("source-map.yaml"))
+        val root = ParserNodeFactory.root(document, context)
+        assertEquals("source_map.root", root.name)
+        assertEquals("source_map.root", root.path)
+        assertEquals(document.root, root.node)
+        assertEquals(context, root.context)
+    }
+
+    @Test
+    fun `registers source locations using parser path convention`() {
+        val context = AsyncApiContext()
+        val document = reader.read(ReaderFixtures.yamlSource("source-map.yaml"))
+        ParserNodeFactory.root(document, context)
+        assertEquals(1, context.sourceRepository.getLine("source_map.root"))
+        assertEquals(2, context.sourceRepository.getLine("source_map.root.info"))
+        assertEquals(3, context.sourceRepository.getLine("source_map.root.info.title"))
+        assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags[0]"))
+        assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags.0"))
+        assertEquals(ReaderFixtures.yamlFile("source-map.yaml"), context.findFileById("source_map"))
+    }
+}

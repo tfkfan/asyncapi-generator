@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.model.info.License
 fun simpleInfo() = Info(
     title = "Simple Info Test",
     version = "1.2.3",
-    description = "\"A simple description",
+    description = "A simple description",
     termsOfService = "https://example.com/terms",
     contact = Contact(
         name = "Support",
@@ -33,7 +33,7 @@ fun simpleInfo() = Info(
     ),
     externalDocs = ExternalDocInterface.ExternalDocInline(
         ExternalDoc(
-            url = "'https://example.com/docs",
+            url = "https://example.com/docs",
             description = "Documentation"
         )
     ),

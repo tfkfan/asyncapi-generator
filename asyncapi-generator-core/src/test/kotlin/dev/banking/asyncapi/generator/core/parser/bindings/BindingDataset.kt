@@ -5,17 +5,17 @@ import dev.banking.asyncapi.generator.core.model.bindings.Binding
 fun userSignedUpChannelBinding() = Binding(
     content = mapOf(
         "kafka" to mapOf(
-            "topic" to "'my-specific-topic-name",
+            "topic" to "my-specific-topic-name",
             "partitions" to 20,
             "replicas" to 3,
             "topicConfiguration" to mapOf(
-                "cleanup.policy" to listOf("\"delete", "\"compact"),
+                "cleanup.policy" to listOf("delete", "compact"),
                 "retention.ms" to 604800000,
                 "retention.bytes" to 1000000000,
                 "delete.retention.ms" to 86400000,
                 "max.message.bytes" to 1048588
             ),
-            "bindingVersion" to "'0.5.0"
+            "bindingVersion" to "0.5.0"
         )
     )
 )

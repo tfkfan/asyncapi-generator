@@ -32,7 +32,7 @@ class AsyncApiExternalContext(
         if (!loadedFiles.add(key)) {
             return
         }
-        val rootNode = AsyncApiRegistry.readYaml(externalFile, context)
+        val rootNode = AsyncApiRegistry.read(externalFile, context)
 
         if (rootNode.optional("asyncapi") != null) {
             val parser = AsyncApiParser(context)

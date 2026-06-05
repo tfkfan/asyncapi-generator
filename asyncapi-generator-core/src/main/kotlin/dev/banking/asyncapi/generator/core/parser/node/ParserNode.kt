@@ -7,6 +7,13 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
 import kotlin.collections.get
 
+/**
+ * Represents one parser input node together with its source path and context.
+ *
+ * Expected behavior is covered by:
+ * - `ParserNodeTest`
+ * - parser package tests
+ */
 data class ParserNode(
     val name: String,
     val node: Any?,
@@ -72,18 +79,18 @@ data class ParserNode(
         val expected = T::class.simpleName ?: "null"
         return when (T::class) {
             String::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context)
+                ?: throw UnexpectedValue(received, expected, path, context, normalized)
             Boolean::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context)
+                ?: throw UnexpectedValue(received, expected, path, context, normalized)
             Number::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context)
+                ?: throw UnexpectedValue(received, expected, path, context, normalized)
             List::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context)
+                ?: throw UnexpectedValue(received, expected, path, context, normalized)
             Map::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context)
+                ?: throw UnexpectedValue(received, expected, path, context, normalized)
             Any::class -> normalized as T
-                ?: throw UnexpectedValue(received, expected, path, context)
-            else -> throw UnexpectedValue(received, expected, path, context)
+                ?: throw UnexpectedValue(received, expected, path, context, normalized)
+            else -> throw UnexpectedValue(received, expected, path, context, normalized)
         }
     }
 
@@ -101,13 +108,7 @@ data class ParserNode(
                     keyString to normalize(value)
                 }
             is List<*> -> dataToNormalize.map { normalize(it) }
-            is String -> when {
-                dataToNormalize.equals("true", ignoreCase = true) -> true
-                dataToNormalize.equals("false", ignoreCase = true) -> false
-                dataToNormalize.toIntOrNull() != null -> dataToNormalize.toInt()
-                dataToNormalize.toDoubleOrNull() != null -> dataToNormalize.toDouble()
-                else -> dataToNormalize
-            }
+            is String -> dataToNormalize
             else -> dataToNormalize
         }
     }

@@ -23,8 +23,8 @@ class GenerateMoneyAmountTest : AbstractJavaGeneratorClass() {
                    @NotNull
                    private String currency;
 
-                   @DecimalMin(value = "-1.0E12", inclusive = false)
-                   @DecimalMax(value = "1.0E12", inclusive = false)
+                   @DecimalMin(value = "-1000000000000", inclusive = false)
+                   @DecimalMax(value = "1000000000000", inclusive = false)
                    @NotNull
                    private BigDecimal value;
 
