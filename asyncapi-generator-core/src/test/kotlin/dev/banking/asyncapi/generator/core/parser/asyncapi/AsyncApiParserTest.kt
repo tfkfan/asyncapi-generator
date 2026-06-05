@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
+import kotlin.test.assertNotNull
 
 class AsyncApiParserTest : ParserTestSupport() {
 
@@ -115,5 +115,28 @@ class AsyncApiParserTest : ParserTestSupport() {
         assertEquals(429, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::title))
         assertEquals(430, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::description))
         assertEquals(431, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::type))
+    }
+
+    @Test
+    fun `parsed schema properties preserve source location links`() {
+        val rootNode = readNode("asyncapi_kafka_single_file_example.yaml")
+        parser.parse(rootNode)
+        val schemaPath =
+            "${asyncApiContext.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.simpleString"
+        val simpleStringSchema = asyncApiContext.modelRepository.getModelsByPath()[schemaPath] as Schema
+
+        val schemaLocation = assertNotNull(asyncApiContext.getSourceLocation(simpleStringSchema))
+        assertEquals("asyncapi_kafka_single_file_example.yaml", schemaLocation.file.name)
+        assertEquals("asyncapi_kafka_single_file_example.root.components.schemas.simpleString", schemaLocation.path)
+        assertEquals(428, schemaLocation.line)
+        assertTrue(schemaLocation.column > 0)
+
+        val titleLocation = assertNotNull(
+            asyncApiContext.getSourceLocation(simpleStringSchema, simpleStringSchema::title)
+        )
+        assertEquals("asyncapi_kafka_single_file_example.yaml", titleLocation.file.name)
+        assertEquals("asyncapi_kafka_single_file_example.root.components.schemas.simpleString.title", titleLocation.path)
+        assertEquals(429, titleLocation.line)
+        assertTrue(titleLocation.column > 0)
     }
 }
