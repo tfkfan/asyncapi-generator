@@ -2,13 +2,13 @@ package dev.banking.asyncapi.generator.core.parser.correlations
 
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class CorrelationIdParserTest : AbstractParserTest() {
+class CorrelationIdParserTest : ParserTestSupport() {
 
     private val parser = CorrelationIdParser(asyncApiContext)
 

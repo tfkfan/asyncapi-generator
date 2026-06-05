@@ -1,17 +1,16 @@
 package dev.banking.asyncapi.generator.core.parser.asyncapi
 
-import dev.banking.asyncapi.generator.core.fixtures.ParserFixtures
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 
-class AsyncApiParserTest : AbstractParserTest() {
+class AsyncApiParserTest : ParserTestSupport() {
 
     private val parser = AsyncApiParser(asyncApiContext)
 
@@ -57,8 +56,8 @@ class AsyncApiParserTest : AbstractParserTest() {
 
     @Test
     fun `parses equivalent yaml and json documents into the same model`() {
-        val yaml = ParserFixtures().document("parser/asyncapi/format-independent.yaml")
-        val json = ParserFixtures().document("parser/asyncapi/format-independent.json")
+        val yaml = parseDocument("parser/asyncapi/format-independent.yaml")
+        val json = parseDocument("parser/asyncapi/format-independent.json")
 
         assertEquals(yaml, json)
     }

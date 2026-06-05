@@ -2,13 +2,13 @@ package dev.banking.asyncapi.generator.core.parser.externaldocs
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class ExternalDocsParserTest : AbstractParserTest() {
+class ExternalDocsParserTest : ParserTestSupport() {
 
     private val parser = ExternalDocsParser(asyncApiContext)
 

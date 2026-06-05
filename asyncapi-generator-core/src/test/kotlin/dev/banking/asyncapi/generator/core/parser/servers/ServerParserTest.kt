@@ -2,13 +2,13 @@ package dev.banking.asyncapi.generator.core.parser.servers
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
 
-class ServerParserTest : AbstractParserTest() {
+class ServerParserTest : ParserTestSupport() {
 
     private val parser = ServerParser(asyncApiContext)
 

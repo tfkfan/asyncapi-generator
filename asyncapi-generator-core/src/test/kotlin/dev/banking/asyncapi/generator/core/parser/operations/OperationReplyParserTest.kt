@@ -2,13 +2,13 @@ package dev.banking.asyncapi.generator.core.parser.operations
 
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class OperationReplyParserTest : AbstractParserTest() {
+class OperationReplyParserTest : ParserTestSupport() {
 
     private val parser = OperationReplyParser(asyncApiContext)
 

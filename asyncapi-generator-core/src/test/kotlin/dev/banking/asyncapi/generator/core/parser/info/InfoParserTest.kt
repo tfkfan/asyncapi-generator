@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.parser.info
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
 
-class InfoParserTest : AbstractParserTest() {
+class InfoParserTest : ParserTestSupport() {
 
     private val parser = InfoParser(asyncApiContext)
 

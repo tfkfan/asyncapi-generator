@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.parser.components
 
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ComponentParserTest : AbstractParserTest() {
+class ComponentParserTest : ParserTestSupport() {
 
     private val parser = ComponentParser(asyncApiContext)
 
