@@ -14,7 +14,7 @@ class TagParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid tags`() {
-        val root = readYaml("src/test/resources/parser/tags/asyncapi_parser_tag_valid.yaml")
+        val root = readYaml("parser/tags/asyncapi_parser_tag_valid.yaml")
         val result = parser.parseMap(root.mandatory("components").mandatory("tags"))
 
         assertTrue("inlineTag" in result)
@@ -34,7 +34,7 @@ class TagParserTest : AbstractParserTest() {
 
     @Test
     fun `parse tag missing name throws RequiredField`() { // or RequiredObject depending on parser logic
-        val root = readYaml("src/test/resources/parser/tags/asyncapi_parser_tag_invalid.yaml")
+        val root = readYaml("parser/tags/asyncapi_parser_tag_invalid.yaml")
         assertFailsWith<AsyncApiParseException.Mandatory> {
             parser.parseMap(root.mandatory("components").mandatory("tags"))
         }

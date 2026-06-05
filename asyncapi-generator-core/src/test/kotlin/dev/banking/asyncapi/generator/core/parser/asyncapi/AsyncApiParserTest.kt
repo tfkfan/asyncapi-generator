@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.asyncapi
 
+import dev.banking.asyncapi.generator.core.fixtures.ParserFixtures
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -16,7 +17,7 @@ class AsyncApiParserTest : AbstractParserTest() {
 
     @Test
     fun parseSingleFileAsyncApi() {
-        val root = readYaml("src/test/resources/asyncapi_kafka_single_file_example.yaml")
+        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
         val result = parser.parse(root)
 
         assertEquals("3.0.0", result.asyncapi, "AsyncAPI version mismatch")
@@ -54,10 +55,17 @@ class AsyncApiParserTest : AbstractParserTest() {
         assertEquals(1, messageTraitCount, "Expected 1 message trait (commonHeaders)")
     }
 
+    @Test
+    fun `parses equivalent yaml and json documents into the same model`() {
+        val yaml = ParserFixtures().document("parser/asyncapi/format-independent.yaml")
+        val json = ParserFixtures().document("parser/asyncapi/format-independent.json")
+
+        assertEquals(yaml, json)
+    }
 
     @Test
     fun `parsed schema is registered in model repository`() {
-        val root = readYaml("src/test/resources/asyncapi_kafka_single_file_example.yaml")
+        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
         val asyncApi =  parser.parse(root)
         val schemasMap = (asyncApi.components as ComponentInterface.ComponentInline).component.schemas!!
 
@@ -96,7 +104,7 @@ class AsyncApiParserTest : AbstractParserTest() {
 
     @Test
     fun `parsed schema properties have correct line numbers in source repository`() {
-        val root = readYaml("src/test/resources/asyncapi_kafka_single_file_example.yaml")
+        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
         parser.parse(root)
         val schemaPath =
             "${asyncApiContext.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.simpleString"

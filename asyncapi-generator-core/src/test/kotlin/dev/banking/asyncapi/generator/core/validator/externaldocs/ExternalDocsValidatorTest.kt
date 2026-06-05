@@ -14,7 +14,7 @@ class ExternalDocsValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `invalid external docs trigger errors and warnings`() {
-        val document = parse("src/test/resources/validator/externaldocs/asyncapi_validator_externaldocs_invalid.yaml")
+        val document = parse("validator/externaldocs/asyncapi_validator_externaldocs_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()

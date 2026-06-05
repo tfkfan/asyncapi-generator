@@ -19,33 +19,33 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 fun receiveLightMeasurement() = Operation(
     action = "receive",
     summary = "Inform about environmental lighting conditions of a particular streetlight.",
-    channel = Reference(ref = "'#/channels/lightingMeasured", referenceCategoryKey = REFERENCE),
+    channel = Reference(ref = "#/channels/lightingMeasured", referenceCategoryKey = REFERENCE),
     messages = listOf(
-        Reference(ref = "'#/components/messages/lightMeasured", referenceCategoryKey = REFERENCE)
+        Reference(ref = "#/components/messages/lightMeasured", referenceCategoryKey = REFERENCE)
     ),
     traits = listOf(
         OperationTraitInterface.OperationTraitReference(
             reference = Reference(
-                ref = "'#/components/operationTraits/kafka",
+                ref = "#/components/operationTraits/kafka",
                 referenceCategoryKey = OPERATION_TRAIT
             )
         )
     ),
     externalDocs = ExternalDocInterface.ExternalDocInline(
         externalDoc = ExternalDoc(
-            url = "'https://example.com/api/oauth/dialog"
+            url = "https://example.com/api/oauth/dialog"
         )
     ),
     reply = OperationReplyInterface.OperationReplyInline(
         operationReply = OperationReply(
             address = OperationReplyAddressInterface.OperationReplyAddressInline(
                 operationReplyAddress = OperationReplyAddress(
-                    location = $$"'$message.header#/replyTo"
+                    location = $$"$message.header#/replyTo"
                 )
             ),
-            channel = Reference(ref = "'#/channels/lightingMeasured", referenceCategoryKey = REFERENCE),
+            channel = Reference(ref = "#/channels/lightingMeasured", referenceCategoryKey = REFERENCE),
             messages = listOf(
-                Reference(ref = "'#/components/messages/lightMeasured", referenceCategoryKey = REFERENCE)
+                Reference(ref = "#/components/messages/lightMeasured", referenceCategoryKey = REFERENCE)
             )
         )
     )
@@ -53,9 +53,9 @@ fun receiveLightMeasurement() = Operation(
 
 fun turnOn() = Operation(
     action = "send",
-    channel = Reference(ref = "'#/channels/lightTurnOn", referenceCategoryKey = REFERENCE),
+    channel = Reference(ref = "#/channels/lightTurnOn", referenceCategoryKey = REFERENCE),
     messages = listOf(
-        Reference(ref = "'#/components/messages/turnOn", referenceCategoryKey = REFERENCE)
+        Reference(ref = "#/components/messages/turnOn", referenceCategoryKey = REFERENCE)
     ),
     bindings = mapOf(
         "amqp" to BindingInterface.BindingInline(
@@ -65,7 +65,7 @@ fun turnOn() = Operation(
     traits = listOf(
         OperationTraitInterface.OperationTraitReference(
             reference = Reference(
-                ref = "'#/components/operationTraits/kafka",
+                ref = "#/components/operationTraits/kafka",
                 referenceCategoryKey = OPERATION_TRAIT
             )
         )
@@ -78,7 +78,7 @@ fun turnOn() = Operation(
                 name = "register",
                 externalDocs = ExternalDocInterface.ExternalDocInline(
                     externalDoc = ExternalDoc(
-                        url = "\"https://example.com/docs/register",
+                        url = "https://example.com/docs/register",
                         description = "Details about registration flows"
                     )
                 )
@@ -87,19 +87,19 @@ fun turnOn() = Operation(
     ),
     externalDocs = ExternalDocInterface.ExternalDocInline(
         externalDoc = ExternalDoc(
-            url = "'https://example.com/api/oauth/dialog"
+            url = "https://example.com/api/oauth/dialog"
         )
     ),
     reply = OperationReplyInterface.OperationReplyInline(
         operationReply = OperationReply(
             address = OperationReplyAddressInterface.OperationReplyAddressInline(
                 operationReplyAddress = OperationReplyAddress(
-                    location = $$"\"$message.header#/replyTo"
+                    location = $$"$message.header#/replyTo"
                 )
             ),
-            channel = Reference(ref = "\"#/channels/lightTurnOn", referenceCategoryKey = REFERENCE),
+            channel = Reference(ref = "#/channels/lightTurnOn", referenceCategoryKey = REFERENCE),
             messages = listOf(
-                Reference(ref = "\"#/components/messages/turnOn", referenceCategoryKey = REFERENCE)
+                Reference(ref = "#/components/messages/turnOn", referenceCategoryKey = REFERENCE)
             )
         )
     )

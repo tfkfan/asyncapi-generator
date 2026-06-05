@@ -49,7 +49,7 @@ fun expectedMultiFileBundled(): AsyncApiDocument =
 
 private fun expectedScramServer(): Server =
     Server(
-        host = "\"kafka.scram.local:9092",
+        host = "kafka.scram.local:9092",
         protocol = "kafka",
         description = "SCRAM-based Kafka cluster",
         tags = listOf(
@@ -60,7 +60,7 @@ private fun expectedScramServer(): Server =
 
 private fun expectedMtlsServer(): Server =
     Server(
-        host = "\"kafka.mtls.local:9093",
+        host = "kafka.mtls.local:9093",
         protocol = "kafka-secure",
         description = "mTLS-protected Kafka cluster",
         tags = listOf(
@@ -71,7 +71,7 @@ private fun expectedMtlsServer(): Server =
 
 private fun expectedSharedTagRef(): TagInterface =
     TagInterface.TagReference(
-        Reference("'asyncapi_multifile_example_tags.yaml#/components/tags/shared").apply {
+        Reference("asyncapi_multifile_example_tags.yaml#/components/tags/shared").apply {
             model = Tag(
                 name = "shared",
                 description = "Shared server tag used across environments"
@@ -81,14 +81,14 @@ private fun expectedSharedTagRef(): TagInterface =
     )
 
 private fun expectedTestChannelRef(): Reference =
-    Reference("'asyncapi_multifile_example_channel.yaml#/testChannel").apply {
+    Reference("asyncapi_multifile_example_channel.yaml#/testChannel").apply {
         model = expectedTestChannel()
         referenceCategoryKey = CHANNEL
     }
 
 private fun expectedScramTagRef(): TagInterface =
     TagInterface.TagReference(
-        Reference("'asyncapi_multifile_example_tags.yaml#/components/tags/scram").apply {
+        Reference("asyncapi_multifile_example_tags.yaml#/components/tags/scram").apply {
             model = Tag(
                 name = "scram",
                 description = "SCRAM-based Kafka cluster"
@@ -99,7 +99,7 @@ private fun expectedScramTagRef(): TagInterface =
 
 private fun expectedMtlsTagRef(): TagInterface =
     TagInterface.TagReference(
-        Reference("'asyncapi_multifile_example_tags.yaml#/components/tags/mtls").apply {
+        Reference("asyncapi_multifile_example_tags.yaml#/components/tags/mtls").apply {
             model = Tag(
                 name = "mtls",
                 description = "mTLS-protected Kafka cluster"
@@ -175,9 +175,9 @@ private fun expectedAuditMetadataSchema(): Schema =
 
 private fun expectedTestMessage(): Message =
     Message(
-        name = "\"testMessage",
+        name = "testMessage",
         payload = SchemaInterface.SchemaReference(
-            Reference("'asyncapi_multifile_example_schemas.yaml#/components/schemas/validKotlinUserSchema").apply {
+            Reference("asyncapi_multifile_example_schemas.yaml#/components/schemas/validKotlinUserSchema").apply {
                 model = expectedValidKotlinUserSchema()
                 referenceCategoryKey = SCHEMA
             }
@@ -186,9 +186,9 @@ private fun expectedTestMessage(): Message =
 
 private fun expectedAuditMessage(): Message =
     Message(
-        name = "\"auditMessage",
+        name = "auditMessage",
         payload = SchemaInterface.SchemaReference(
-            Reference("'asyncapi_multifile_example_schemas.yaml#/components/schemas/auditMetadata").apply {
+            Reference("asyncapi_multifile_example_schemas.yaml#/components/schemas/auditMetadata").apply {
                 model = expectedAuditMetadataSchema()
                 referenceCategoryKey = SCHEMA
             }
@@ -197,7 +197,7 @@ private fun expectedAuditMessage(): Message =
 
 private fun expectedTestChannel(): Channel =
     Channel(
-        address = "\"example.topic",
+        address = "example.topic",
         messages = mapOf(
             "testMessage" to MessageInterface.MessageInline(
                 Message(
@@ -211,10 +211,10 @@ private fun expectedTestChannel(): Channel =
 
 private fun expectedAuditChannel(): Channel =
     Channel(
-        address = "\"example.audit",
+        address = "example.audit",
         messages = mapOf(
             "auditMessage" to MessageInterface.MessageReference(
-                Reference("\"#/components/messages/auditMessage").apply {
+                Reference("#/components/messages/auditMessage").apply {
                     model = expectedAuditMessage()
                     referenceCategoryKey = MESSAGE
                 }
@@ -223,15 +223,15 @@ private fun expectedAuditChannel(): Channel =
     )
 
 private fun expectedExternalAuditChannelRef(): Reference =
-    Reference("'asyncapi_multifile_example_channels.yaml#/channels/externalAuditChannel").apply {
+    Reference("asyncapi_multifile_example_channels.yaml#/channels/externalAuditChannel").apply {
         model = Channel(
-            address = "\"external.audit",
+            address = "external.audit",
             messages = mapOf(
                 "externalAuditMessage" to MessageInterface.MessageInline(
                     Message(
-                        name = "\"ExternalAuditMessage",
+                        name = "ExternalAuditMessage",
                         payload = SchemaInterface.SchemaReference(
-                            Reference("'asyncapi_multifile_example_schemas.yaml#/components/schemas/auditMetadata").apply {
+                            Reference("asyncapi_multifile_example_schemas.yaml#/components/schemas/auditMetadata").apply {
                                 model = expectedAuditMetadataSchema()
                                 referenceCategoryKey = SCHEMA
                             }
@@ -239,7 +239,7 @@ private fun expectedExternalAuditChannelRef(): Reference =
                     )
                 )
             ),
-            description = "\"External audit events channel defined in shared file"
+            description = "External audit events channel defined in shared file"
         )
         referenceCategoryKey = CHANNEL
     }

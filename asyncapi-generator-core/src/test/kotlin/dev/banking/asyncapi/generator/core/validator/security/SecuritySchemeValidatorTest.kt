@@ -14,7 +14,7 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `invalid security schemes trigger validation errors`() {
-        val document = parse("src/test/resources/validator/security/asyncapi_validator_security_invalid.yaml")
+        val document = parse("validator/security/asyncapi_validator_security_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> { results.throwErrors() }
         assertEquals(6, exception.errors.size, "Expected 6 validation errors.")
@@ -22,7 +22,7 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `security schemes with missing optional fields trigger warnings`() {
-        val document = parse("src/test/resources/validator/security/asyncapi_validator_security_warnings.yaml")
+        val document = parse("validator/security/asyncapi_validator_security_warnings.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()

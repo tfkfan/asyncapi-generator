@@ -1,37 +1,29 @@
 package dev.banking.asyncapi.generator.core.bundler
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.File
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 
 class AsyncApiBundlerTest {
 
     private val asyncApiContext = AsyncApiContext()
-    private val parser = AsyncApiParser(asyncApiContext)
-    private val validator = AsyncApiValidator(asyncApiContext)
     private val bundler = AsyncApiBundler()
+    private val bundlerFixtures = BundlerFixtures(asyncApiContext)
 
     @Test
     fun asyncApiSingleFile() {
-        val file = File("src/test/resources/asyncapi_kafka_single_file_example.yaml")
-        val root = AsyncApiRegistry.readYaml(file, asyncApiContext)
-        val parsed = parser.parse(root)
-        val validated = validator.validate(parsed)
-        validated.apply {
-            logWarnings()
-            throwErrors()
-        }
+        val file = TestResources.file("asyncapi_kafka_single_file_example.yaml")
+        val parsed = bundlerFixtures.validatedDocument(file)
         val result = bundler.bundle(parsed)
         val expected = expectedSingleFileBundled(file)
         assertThat(result)
@@ -42,31 +34,13 @@ class AsyncApiBundlerTest {
 
     @Test
     fun asyncApiMultiFile() {
-        val file = File("src/test/resources/bundler/multi/asyncapi_multifile_example_main.yaml")
-        val root = AsyncApiRegistry.readYaml(file, asyncApiContext)
-        val result = parser.parse(root)
-        val validated = validator.validate(result)
-        validated.apply {
-            logWarnings()
-            throwErrors()
-        }
-        val bundled = bundler.bundle(result)
+        val bundled = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml")
         AsyncApiRegistry.writeYaml(File("src/test/resources/bundler/bundled/asyncapi-bundled.yaml"), bundled)
     }
 
     @Test
     fun asyncApiMultiFileAssertions() {
-        val root = AsyncApiRegistry.readYaml(
-            File("src/test/resources/bundler/multi/asyncapi_multifile_example_main.yaml"),
-            asyncApiContext
-        )
-        val parsed = parser.parse(root)
-        val validated = validator.validate(parsed)
-        validated.apply {
-            logWarnings()
-            throwErrors()
-        }
-        val result = bundler.bundle(parsed)
+        val result = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml")
         val expected = expectedMultiFileBundled()
         assertThat(result)
             .usingRecursiveComparison()
@@ -76,26 +50,13 @@ class AsyncApiBundlerTest {
 
     @Test
     fun `bundling circular references should not cause stack overflow`() {
-        val file = File("src/test/resources/bundler/circular/asyncapi_bundler_circular.yaml")
-        val root = AsyncApiRegistry.readYaml(file, asyncApiContext)
-        val parsed = parser.parse(root)
-        val validated = validator.validate(parsed)
-        assertFalse(validated.hasErrors(), "Expected no validation errors: ${validated.errors}")
-        assertFalse(validated.hasWarnings(), "Expected no validation warnings: ${validated.warnings}")
-
-        val bundled = bundler.bundle(parsed)
+        val bundled = bundlerFixtures.bundledDocument("bundler/circular/asyncapi_bundler_circular.yaml")
         assertNotNull(bundled, "Bundled document should not be null")
     }
 
     @Test
     fun `bundling marks references as inline`() {
-        val file = File("src/test/resources/bundler/multi/asyncapi_multifile_example_main.yaml")
-        val root = AsyncApiRegistry.readYaml(file, asyncApiContext)
-        val parsed = parser.parse(root)
-        val validated = validator.validate(parsed)
-        assertFalse(validated.hasErrors(), "Expected no validation errors: ${validated.errors}")
-        assertFalse(validated.hasWarnings(), "Expected no validation warnings: ${validated.warnings}")
-        val bundled = bundler.bundle(parsed)
+        val bundled = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml")
 
         val channelRef = bundled.channels!!["testChannel"] as ChannelInterface.ChannelReference
         val bundledChannel = channelRef.reference.model as Channel
@@ -107,9 +68,6 @@ class AsyncApiBundlerTest {
     }
 
     private fun expectedSingleFileBundled(file: File): AsyncApiDocument {
-        val root = AsyncApiRegistry.readYaml(file, asyncApiContext)
-        val parsed = parser.parse(root)
-        validator.validate(parsed)
-        return parsed
+        return bundlerFixtures.validatedDocument(file)
     }
 }

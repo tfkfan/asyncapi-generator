@@ -14,7 +14,7 @@ class TagValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `invalid tags trigger errors and warnings`() {
-        val document = parse("src/test/resources/validator/tags/asyncapi_validator_tag_invalid.yaml")
+        val document = parse("validator/tags/asyncapi_validator_tag_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()

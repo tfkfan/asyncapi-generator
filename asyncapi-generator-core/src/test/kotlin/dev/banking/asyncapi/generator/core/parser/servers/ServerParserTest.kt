@@ -14,7 +14,7 @@ class ServerParserTest : AbstractParserTest() {
 
     @Test
     fun parseServers_validate_data_classes() {
-        val root = readYaml("src/test/resources/parser/servers/asyncapi_parser_servers_valid.yaml")
+        val root = readYaml("parser/servers/asyncapi_parser_servers_valid.yaml")
         val result = parser.parseMap(root.mandatory("servers"))
 
         assertTrue("scram-connections" in result)
@@ -45,7 +45,7 @@ class ServerParserTest : AbstractParserTest() {
 
     @Test
     fun `parse server with invalid variables structure throws UnexpectedValue`() {
-        val root = readYaml("src/test/resources/parser/servers/asyncapi_parser_server_invalid.yaml")
+        val root = readYaml("parser/servers/asyncapi_parser_server_invalid.yaml")
         assertFailsWith<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(root.mandatory("servers"))
         }

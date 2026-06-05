@@ -14,7 +14,7 @@ class ServerValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `invalid server definitions trigger errors and warnings`() {
-        val document = parse("src/test/resources/validator/servers/asyncapi_validator_server_invalid.yaml")
+        val document = parse("validator/servers/asyncapi_validator_server_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()
@@ -28,7 +28,7 @@ class ServerValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `server variable mismatches trigger errors and warnings`() {
-        val document = parse("src/test/resources/validator/servers/asyncapi_validator_server_variable_mismatch.yaml")
+        val document = parse("validator/servers/asyncapi_validator_server_variable_mismatch.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()

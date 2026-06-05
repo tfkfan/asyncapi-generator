@@ -22,8 +22,8 @@ class GenerateMoneyAmountTest : AbstractKotlinGeneratorClass() {
             @field:Pattern(regexp = "[A-Z]{3}")
             val currency: String,
 
-            @field:DecimalMin(value = "-1.0E12", inclusive = false)
-            @field:DecimalMax(value = "1.0E12", inclusive = false)
+            @field:DecimalMin(value = "-1000000000000", inclusive = false)
+            @field:DecimalMax(value = "1000000000000", inclusive = false)
             val value: BigDecimal
         ) {
         }

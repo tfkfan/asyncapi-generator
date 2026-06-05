@@ -14,7 +14,7 @@ class MessageValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `message headers ref to component schema passes validation`() {
-        val document = parse("src/test/resources/validator/messages/asyncapi_validator_message_headers_ref_valid.yaml")
+        val document = parse("validator/messages/asyncapi_validator_message_headers_ref_valid.yaml")
         val results = asyncApiValidator.validate(document)
         assertFalse(results.hasErrors(), "Expected no errors for valid message headers ref.")
         assertFalse(results.hasWarnings(), "Expected no warnings for valid message headers ref.")
@@ -22,7 +22,7 @@ class MessageValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `message headers broken ref triggers validation error`() {
-        val document = parse("src/test/resources/validator/messages/asyncapi_validator_message_headers_ref_invalid.yaml")
+        val document = parse("validator/messages/asyncapi_validator_message_headers_ref_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             results.throwErrors()
