@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 
 class ChannelParserTest : ParserTestSupport() {
 
@@ -119,7 +118,7 @@ class ChannelParserTest : ParserTestSupport() {
     @Test
     fun `parse channel with invalid messages structure throws UnexpectedValue`() {
         val root = readRoot("parser/channels/asyncapi_parser_channel_invalid.yaml")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(root.mandatory("channels"))
         }
     }

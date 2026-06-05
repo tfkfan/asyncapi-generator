@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class BindingParserTest : ParserTestSupport() {
@@ -63,7 +62,7 @@ class BindingParserTest : ParserTestSupport() {
     @Test
     fun `parse binding with invalid structure throws UnexpectedValue`() {
         val root = readRoot("parser/bindings/asyncapi_parser_binding_invalid.yaml")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(root.mandatory("components").mandatory("channelBindings"))
         }
     }

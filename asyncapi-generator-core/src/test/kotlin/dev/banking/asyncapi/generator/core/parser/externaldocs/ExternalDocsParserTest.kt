@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class ExternalDocsParserTest : ParserTestSupport() {
@@ -36,7 +35,7 @@ class ExternalDocsParserTest : ParserTestSupport() {
     fun `parse external docs missing url throws RequiredObject`() {
         val root = readRoot("parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml")
         val externalDocsNode = root.mandatory("components").mandatory("externalDocs").mandatory("MissingUrl")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory> {
             parser.parseElement(externalDocsNode)
         }
     }

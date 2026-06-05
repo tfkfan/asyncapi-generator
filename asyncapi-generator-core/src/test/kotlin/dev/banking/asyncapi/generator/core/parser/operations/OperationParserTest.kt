@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
 class OperationParserTest : ParserTestSupport() {
 
@@ -39,7 +38,7 @@ class OperationParserTest : ParserTestSupport() {
     @Test
     fun `parse operation missing action throws RequiredObject`() {
         val root = readRoot("parser/operations/asyncapi_parser_operations_invalid.yaml")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory> {
             parser.parseMap(root.mandatory("operations"))
         }
     }
@@ -47,7 +46,7 @@ class OperationParserTest : ParserTestSupport() {
     @Test
     fun `validation fails for operation with inline message definition`() {
         val root = readRoot("parser/operations/asyncapi_validator_operations_inline_message_error.yaml")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory> {
             parser.parseMap(root.mandatory("operations"))
         }
     }

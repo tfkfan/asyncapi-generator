@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 
 class InfoParserTest : ParserTestSupport() {
 
@@ -25,7 +24,7 @@ class InfoParserTest : ParserTestSupport() {
     fun `parse Info missing mandatory fields throws RequiredObject`() {
         val root = readRoot("parser/info/asyncapi_parser_info_invalid.yaml")
         val infoNode = root.mandatory("info")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory> {
             parser.parseMap(infoNode)
         }
     }

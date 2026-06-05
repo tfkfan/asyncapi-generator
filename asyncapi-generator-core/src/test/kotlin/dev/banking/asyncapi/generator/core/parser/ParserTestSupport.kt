@@ -3,7 +3,9 @@ package dev.banking.asyncapi.generator.core.parser
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.ParserFixtures
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import kotlin.test.assertFailsWith
 
 /**
  * Shared support for parser-stage tests.
@@ -22,5 +24,11 @@ abstract class ParserTestSupport {
 
     protected fun parseDocument(path: String): AsyncApiDocument {
         return parserFixtures.document(path)
+    }
+
+    protected inline fun <reified T : AsyncApiParseException> assertParseFailure(
+        noinline block: () -> Unit,
+    ): T {
+        return assertFailsWith<T>(block = block)
     }
 }

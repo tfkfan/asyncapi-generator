@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class TagParserTest : ParserTestSupport() {
@@ -35,7 +34,7 @@ class TagParserTest : ParserTestSupport() {
     @Test
     fun `parse tag missing name throws RequiredField`() { // or RequiredObject depending on parser logic
         val root = readRoot("parser/tags/asyncapi_parser_tag_invalid.yaml")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory> {
             parser.parseMap(root.mandatory("components").mandatory("tags"))
         }
     }

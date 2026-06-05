@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 
 class SecuritySchemeParserTest : ParserTestSupport() {
 
@@ -105,7 +104,7 @@ class SecuritySchemeParserTest : ParserTestSupport() {
             .mandatory("components")
             .mandatory("securitySchemes")
             .mandatory("MissingType")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory> {
             parser.parseElement(schemeNode)
         }
     }
@@ -117,7 +116,7 @@ class SecuritySchemeParserTest : ParserTestSupport() {
             .mandatory("components")
             .mandatory("securitySchemes")
             .mandatory("InvalidFlowsStructure")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseElement(schemeNode)
         }
     }

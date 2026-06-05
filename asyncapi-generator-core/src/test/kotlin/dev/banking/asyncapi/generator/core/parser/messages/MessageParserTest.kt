@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class MessageParserTest : ParserTestSupport() {
@@ -84,7 +83,7 @@ class MessageParserTest : ParserTestSupport() {
     fun `parse message with invalid field type throws InvalidValue`() {
         val root = readRoot("parser/messages/asyncapi_parser_message_invalid_type.yaml")
         val messagesNode = root.mandatory("components").mandatory("messages")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(messagesNode)
         }
     }

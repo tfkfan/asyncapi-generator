@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class CorrelationIdParserTest : ParserTestSupport() {
@@ -31,7 +30,7 @@ class CorrelationIdParserTest : ParserTestSupport() {
     fun `parse correlation ID missing location throws RequiredObject`() {
         val root = readRoot("parser/correlations/asyncapi_parser_correlationid_invalid.yaml")
         val correlationIdNode = root.mandatory("components").mandatory("correlationIds").mandatory("MissingLocationId")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory> {
             parser.parseElement(correlationIdNode)
         }
     }

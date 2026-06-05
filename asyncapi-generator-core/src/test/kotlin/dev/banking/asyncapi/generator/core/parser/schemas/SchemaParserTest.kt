@@ -10,7 +10,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
 class SchemaParserTest : ParserTestSupport() {
@@ -288,7 +287,7 @@ class SchemaParserTest : ParserTestSupport() {
     fun parseSchemas_parser_InvalidCoercions_schema_parser_assertion_yaml() {
         val root = readRoot("schemas/asyncapi_schema_parser_assertion.yaml")
         val node = root.mandatory("components").mandatory("schemas").mandatory("InvalidCoercions")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseElement(node)
         }
     }
@@ -403,7 +402,7 @@ class SchemaParserTest : ParserTestSupport() {
     fun `parse Schema with invalid enum type throws InvalidValue`() {
         val root = readRoot("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
         val schemaNode = root.mandatory("components").mandatory("schemas").mandatory("InvalidEnumSchema")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseElement(schemaNode)
         }
     }
@@ -412,7 +411,7 @@ class SchemaParserTest : ParserTestSupport() {
     fun `parse Schema with invalid dependencies type (list instead of map) throws InvalidValue`() {
         val root = readRoot("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
         val schemaNode = root.mandatory("components").mandatory("schemas").mandatory("MissingDependenciesObject")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseElement(schemaNode)
         }
     }

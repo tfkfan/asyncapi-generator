@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 
 class ServerParserTest : ParserTestSupport() {
 
@@ -46,7 +45,7 @@ class ServerParserTest : ParserTestSupport() {
     @Test
     fun `parse server with invalid variables structure throws UnexpectedValue`() {
         val root = readRoot("parser/servers/asyncapi_parser_server_invalid.yaml")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
             parser.parseMap(root.mandatory("servers"))
         }
     }
