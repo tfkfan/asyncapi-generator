@@ -43,7 +43,11 @@ class ExternalDocsParserTest : ParserTestSupport() {
             "externalDocs",
             "MissingUrl",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'url'",
+            "asyncapi_parser_externaldocs_invalid.yaml",
+            "asyncapi_parser_externaldocs_invalid.root.components.externalDocs.MissingUrl.url",
+        ) {
             parser.parseElement(externalDocsNode)
         }
     }

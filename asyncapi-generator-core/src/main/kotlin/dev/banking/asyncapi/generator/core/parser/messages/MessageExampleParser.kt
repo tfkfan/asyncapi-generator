@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
  * Parses AsyncAPI message example objects from parser nodes.
  *
  * Expected behavior is covered by:
+ * - `MessageExampleParserTest`
  * - `MessageParserTest`
  */
 class MessageExampleParser(

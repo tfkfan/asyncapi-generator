@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * Parses generic AsyncAPI reference objects from parser nodes.
  *
  * Expected behavior is covered by:
+ * - `ReferenceParserTest`
  * - `ChannelParserTest`
  * - `OperationParserTest`
  * - `OperationReplyParserTest`

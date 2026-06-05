@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * Parses AsyncAPI parameter objects from parser nodes.
  *
  * Expected behavior is covered by:
+ * - `ParameterParserTest`
  * - `ChannelParserTest`
  */
 class ParameterParser(

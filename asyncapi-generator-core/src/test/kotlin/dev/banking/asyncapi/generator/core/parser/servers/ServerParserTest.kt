@@ -45,7 +45,11 @@ class ServerParserTest : ParserTestSupport() {
     @Test
     fun `parse server with invalid variables structure throws UnexpectedValue`() {
         val serversNode = readNode("parser/servers/asyncapi_parser_server_invalid.yaml", "servers")
-        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Map/List",
+            "asyncapi_parser_server_invalid.yaml",
+            "asyncapi_parser_server_invalid.root.servers.InvalidVariables.variables",
+        ) {
             parser.parseMap(serversNode)
         }
     }

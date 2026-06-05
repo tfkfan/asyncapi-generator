@@ -344,7 +344,13 @@ class SchemaParserTest : ParserTestSupport() {
             "schemas",
             "InvalidCoercions",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Number",
+            "found String \"10\"",
+            "quoted numbers are strings in YAML",
+            "asyncapi_schema_parser_assertion.yaml",
+            "asyncapi_schema_parser_assertion.root.components.schemas.InvalidCoercions.maxLength",
+        ) {
             parser.parseElement(schemaNode)
         }
     }

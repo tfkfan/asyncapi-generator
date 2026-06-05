@@ -16,6 +16,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * Parses AsyncAPI message trait objects from parser nodes.
  *
  * Expected behavior is covered by:
+ * - `MessageTraitParserTest`
  * - `MessageParserTest`
  */
 class MessageTraitParser(

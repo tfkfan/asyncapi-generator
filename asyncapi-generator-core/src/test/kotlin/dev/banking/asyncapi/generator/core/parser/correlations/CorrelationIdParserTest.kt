@@ -35,7 +35,11 @@ class CorrelationIdParserTest : ParserTestSupport() {
             "correlationIds",
             "MissingLocationId",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'location'",
+            "asyncapi_parser_correlationid_invalid.yaml",
+            "asyncapi_parser_correlationid_invalid.root.components.correlationIds.MissingLocationId.location",
+        ) {
             parser.parseElement(correlationIdNode)
         }
     }
