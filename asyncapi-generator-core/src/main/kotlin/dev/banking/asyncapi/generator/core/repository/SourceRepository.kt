@@ -1,9 +1,17 @@
 package dev.banking.asyncapi.generator.core.repository
 
+import dev.banking.asyncapi.generator.core.reader.SourceLocation
 import java.io.File
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Stores input sources and source locations using parser-stage paths.
+ *
+ * Expected behavior is covered by:
+ * - `ParserNodeFactoryTest`
+ * - `AsyncApiRegistryTest`
+ */
 class SourceRepository {
     data class Source(
         val file: File,
@@ -16,6 +24,9 @@ class SourceRepository {
 
     // Map of node path → line number
     internal val lineMap = mutableMapOf<String, Int>()
+
+    // Map of node path → source location
+    private val locations = mutableMapOf<String, SourceLocation>()
 
     private lateinit var current: Source
 
@@ -36,7 +47,17 @@ class SourceRepository {
         lineMap[path] = line
     }
 
+    fun registerLocation(
+        path: String,
+        location: SourceLocation,
+    ) {
+        locations[path] = location.copy(path = path)
+        registerLine(path, location.line)
+    }
+
     fun getLine(path: String): Int? = lineMap[path]
+
+    fun getLocation(path: String): SourceLocation? = locations[path]
 
     fun getCurrentFile(): File = current.file
 
@@ -45,6 +66,8 @@ class SourceRepository {
     fun getAllSources(): Collection<Source> = sources.values
 
     fun getAllLines(): Map<String, Int> = lineMap.toMap()
+
+    fun getAllLocations(): Map<String, SourceLocation> = locations.toMap()
 
     fun fileIdForName(name: String): String? {
         val clean = name.trim().trimStart('\'', '"', '|', '>')
@@ -57,22 +80,21 @@ class SourceRepository {
     }
 
     fun findNearestLine(path: String): Int? {
-        val normalized = path.replace(Regex("""\[\d+]"""), "") // e.g. tags[0] → tags
-        var key = normalized
-        while (true) {
-            lineMap[key]?.let { return it }
-            key = key.substringBeforeLast(".", missingDelimiterValue = "")
-            if (key.isEmpty()) return null
-        }
+        findNearestLocation(path)?.let { return it.line }
+        return nearestPaths(path).mapNotNull(lineMap::get).firstOrNull()
     }
+
+    fun findNearestLocation(path: String): SourceLocation? =
+        nearestPaths(path).mapNotNull(locations::get).firstOrNull()
 
     fun pathSnippet(
         path: String,
         contextLines: Int = 3,
     ): String {
-        val source = current
+        val location = findNearestLocation(path)
+        val source = location?.let(::sourceFor) ?: current
         val lines = source.lines
-        val line = findNearestLine(path) ?: return "(no line found for $path)"
+        val line = location?.line ?: findNearestLine(path) ?: return "(no line found for $path)"
         return buildSnippet(lines, source.file.name, line, contextLines, path)
     }
 
@@ -101,5 +123,25 @@ class SourceRepository {
                 appendLine("$mark ${(i + 1).toString().padStart(4)} | ${lines[i]}")
             }
         }.trimEnd()
+    }
+
+    private fun sourceFor(location: SourceLocation): Source =
+        sources[location.file.absolutePath]
+            ?: sources.values.firstOrNull { it.id == location.sourceId }
+            ?: current
+
+    private fun nearestPaths(path: String): Sequence<String> = sequence {
+        val candidates = linkedSetOf(
+            path,
+            path.replace(Regex("""\[(\d+)]"""), ".$1"),
+            path.replace(Regex("""\[\d+]"""), ""),
+        )
+        candidates.forEach { candidate ->
+            var key = candidate
+            while (key.isNotEmpty()) {
+                yield(key)
+                key = key.substringBeforeLast(".", missingDelimiterValue = "")
+            }
+        }
     }
 }

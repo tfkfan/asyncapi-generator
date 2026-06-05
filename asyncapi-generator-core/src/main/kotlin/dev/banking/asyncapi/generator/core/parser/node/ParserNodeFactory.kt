@@ -26,11 +26,11 @@ object ParserNodeFactory {
         val rootPath = "${buildFileId(document.source.file)}.$ROOT"
         document.sourceMap.all().values.forEach { location ->
             val parserPath = parserPath(rootPath, location.path)
-            context.registerLine(parserPath, location.line)
+            context.registerSourceLocation(parserPath, location)
 
             val normalizedPath = normalizeArrayPath(parserPath)
             if (normalizedPath != parserPath) {
-                context.registerLine(normalizedPath, location.line)
+                context.registerSourceLocation(normalizedPath, location)
             }
         }
 

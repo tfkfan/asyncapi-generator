@@ -1,16 +1,25 @@
 package dev.banking.asyncapi.generator.core.repository
 
 import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.reader.SourceLocation
 import kotlin.reflect.KProperty0
 
+/**
+ * Tracks parsed model instances back to parser paths and source locations.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiParserTest`
+ */
 class ModelRepository(
     private val sourceRepository: SourceRepository,
 ) {
 
     data class Model(
         val model: Any,
+        val sourceLocation: SourceLocation?,
+        val fieldLocations: Map<String, SourceLocation>,
         val fieldLines: Map<String, Int>,
         val fieldName: String?,
         val parentPath: String?,
@@ -21,28 +30,46 @@ class ModelRepository(
     private val modelsByPath = LinkedHashMap<String, Any>()
 
     fun register(model: Any, node: ParserNode) {
-        val fieldLines = collectFieldLines(node)
+        val fieldLocations = collectFieldLocations(node)
+        val fieldLines = if (fieldLocations.isNotEmpty()) {
+            fieldLocations.mapValues { (_, location) -> location.line }
+        } else {
+            collectFieldLines(node)
+        }
         val fieldName = node.path.substringAfterLast('.', node.path)
         val parentPath = node.path.substringBeforeLast('.', missingDelimiterValue = "")
         val path = node.path
+        val sourceLocation = sourceRepository.getLocation(path)
+            ?: sourceRepository.findNearestLocation(path)
 
         if (model is Reference) {
             model.sourceId = path.substringBefore(".root", path)
         }
 
-        modelsByInstance[model] = Model(model, fieldLines, fieldName, parentPath, path)
+        modelsByInstance[model] = Model(model, sourceLocation, fieldLocations, fieldLines, fieldName, parentPath, path)
         modelsByPath[path] = model
     }
 
     fun <R> getLine(model: Any, property: KProperty0<R>): Int? {
         val fieldName = property.name
-        return modelsByInstance[model]?.fieldLines?.get(fieldName)
+        val entry = modelsByInstance[model] ?: return null
+        return entry.fieldLocations[fieldName]?.line ?: entry.fieldLines[fieldName]
     }
 
     fun getLine(model: Any): Int? {
         val entry = modelsByInstance[model] ?: return null
-        // We use the full node path to look up the line in SourceRepository
-        return entry.nodePath?.let { sourceRepository.getLine(it) }
+        return getSourceLocation(model)?.line
+            ?: entry.nodePath?.let { sourceRepository.getLine(it) }
+    }
+
+    fun <R> getSourceLocation(model: Any, property: KProperty0<R>): SourceLocation? {
+        val fieldName = property.name
+        return modelsByInstance[model]?.fieldLocations?.get(fieldName)
+    }
+
+    fun getSourceLocation(model: Any): SourceLocation? {
+        val entry = modelsByInstance[model] ?: return null
+        return entry.sourceLocation ?: entry.nodePath?.let { sourceRepository.findNearestLocation(it) }
     }
 
     fun getModelsByInstance() = modelsByInstance.toMap()
@@ -51,6 +78,36 @@ class ModelRepository(
     fun findByReference(reference: Reference): Any? {
         val normalized = normalize(reference) ?: return null
         return modelsByPath[normalized]
+    }
+
+    private fun collectFieldLocations(node: ParserNode): Map<String, SourceLocation> {
+        val result = mutableMapOf<String, SourceLocation>()
+        val basePath = node.path
+        val normalizedPath = basePath.replace("[", ".").replace("]", "")
+        when (val raw = node.node) {
+            is Map<*, *> -> {
+                for (key in raw.keys.filterIsInstance<String>()) {
+                    val possiblePaths = sequenceOf("$basePath.$key", "$normalizedPath.$key")
+                    val location = possiblePaths.mapNotNull(sourceRepository::getLocation).firstOrNull()
+                    if (location != null) result[key] = location
+                }
+            }
+
+            is List<*> -> {
+                raw.forEachIndexed { index, _ ->
+                    val possiblePaths = sequenceOf("$basePath[$index]", "$normalizedPath.$index")
+                    val location = possiblePaths.mapNotNull(sourceRepository::getLocation).firstOrNull()
+                    if (location != null) result["[$index]"] = location
+                }
+            }
+
+            else -> {
+                (sourceRepository.getLocation(basePath)
+                    ?: sourceRepository.getLocation(normalizedPath))
+                    ?.let { location -> result["<value>"] = location }
+            }
+        }
+        return result
     }
 
     private fun collectFieldLines(node: ParserNode): Map<String, Int> {

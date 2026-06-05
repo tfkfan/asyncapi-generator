@@ -402,6 +402,34 @@ class SchemaParserTest : ParserTestSupport() {
 
         val level2Schema = modelPaths[expectedLevel2Path] as Schema
         assertEquals("I am level 2 deep", level2Schema.description)
+
+        val mainSchema = modelPaths["main.root.components.schemas.MainObject"] as Schema
+        val mainLocation = assertNotNull(asyncApiContext.getSourceLocation(mainSchema))
+        assertEquals("main.yaml", mainLocation.file.name)
+        assertEquals("main.root.components.schemas.MainObject", mainLocation.path)
+        assertEquals(7, mainLocation.line)
+
+        val level2Location = assertNotNull(asyncApiContext.getSourceLocation(level2Schema))
+        assertEquals("level2.yaml", level2Location.file.name)
+        assertEquals("level2.root.components.schemas.Level2Object", level2Location.path)
+        assertEquals(7, level2Location.line)
+
+        val level2DescriptionLocation = assertNotNull(
+            asyncApiContext.getSourceLocation(level2Schema, level2Schema::description)
+        )
+        assertEquals("level2.yaml", level2DescriptionLocation.file.name)
+        assertEquals("level2.root.components.schemas.Level2Object.description", level2DescriptionLocation.path)
+        assertEquals(9, level2DescriptionLocation.line)
+        assertEquals(9, asyncApiContext.getLine(level2Schema, level2Schema::description))
+
+        assertTrue(
+            asyncApiContext.pathSnippet(mainLocation.path).contains("main.yaml"),
+            "Main schema snippet should use the main file after external files have been loaded"
+        )
+        assertTrue(
+            asyncApiContext.pathSnippet(level2DescriptionLocation.path).contains("level2.yaml"),
+            "External schema snippet should use the external file"
+        )
     }
 
     @Test

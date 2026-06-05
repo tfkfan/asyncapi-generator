@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.reader.SourceLocation
 import dev.banking.asyncapi.generator.core.repository.ModelRepository
 import dev.banking.asyncapi.generator.core.repository.SourceRepository
 import java.io.File
@@ -38,10 +39,26 @@ class AsyncApiContext {
         sourceRepository.registerLine(path, line)
     }
 
+    fun registerSourceLocation(
+        path: String,
+        location: SourceLocation,
+    ) {
+        sourceRepository.registerLocation(path, location)
+    }
+
     fun <R> getLine(
         model: Any,
         property: KProperty0<R>,
     ): Int? = modelRepository.getLine(model, property) ?: modelRepository.getLine(model)
+
+    fun <R> getSourceLocation(
+        model: Any,
+        property: KProperty0<R>,
+    ): SourceLocation? =
+        modelRepository.getSourceLocation(model, property)
+            ?: modelRepository.getSourceLocation(model)
+
+    fun getSourceLocation(model: Any): SourceLocation? = modelRepository.getSourceLocation(model)
 
     fun pathSnippet(
         path: String,
