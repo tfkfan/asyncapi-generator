@@ -98,7 +98,13 @@ class MessageParserTest : ParserTestSupport() {
             "components",
             "messages",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected String",
+            "12345",
+            "quote the value",
+            "asyncapi_parser_message_invalid_type.yaml",
+            "asyncapi_parser_message_invalid_type.root.components.messages.InvalidNameMessage.name",
+        ) {
             parser.parseMap(messagesNode)
         }
     }

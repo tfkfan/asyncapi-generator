@@ -42,7 +42,11 @@ class TagParserTest : ParserTestSupport() {
             "components",
             "tags",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory> {
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'name'",
+            "asyncapi_parser_tag_invalid.yaml",
+            "asyncapi_parser_tag_invalid.root.components.tags.MissingName.name",
+        ) {
             parser.parseMap(tagsNode)
         }
     }

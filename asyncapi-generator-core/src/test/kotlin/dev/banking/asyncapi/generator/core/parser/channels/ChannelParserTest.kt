@@ -118,7 +118,11 @@ class ChannelParserTest : ParserTestSupport() {
     @Test
     fun `parse channel with invalid messages structure throws UnexpectedValue`() {
         val channelsNode = readNode("parser/channels/asyncapi_parser_channel_invalid.yaml", "channels")
-        assertParseFailure<AsyncApiParseException.UnexpectedValue> {
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Map/List",
+            "asyncapi_parser_channel_invalid.yaml",
+            "asyncapi_parser_channel_invalid.root.channels.InvalidMessages.messages",
+        ) {
             parser.parseMap(channelsNode)
         }
     }
