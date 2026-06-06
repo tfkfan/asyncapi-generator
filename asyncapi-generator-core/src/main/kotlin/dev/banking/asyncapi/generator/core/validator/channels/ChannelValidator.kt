@@ -54,16 +54,16 @@ class ChannelValidator(
         if (address.isBlank()) {
             results.warn(
                 "$contextString does not define an 'address'. It may be treated as dynamically assigned.",
-                asyncApiContext.getLine(node, node::address),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::address),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
             return
         }
         if (address.contains("?") || address.contains("#")) {
             results.error(
                 "$contextString address must not contain query parameters or fragments. Use bindings for that.",
-                asyncApiContext.getLine(node, node::address),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::address),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
             return
         }
@@ -77,16 +77,16 @@ class ChannelValidator(
         if (missingDefinitions.isNotEmpty()) {
             results.error(
                 "$contextString address uses parameters $missingDefinitions which are not defined in channel parameters map.",
-                asyncApiContext.getLine(node, node::address),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parametersObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::address),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parametersObject",
             )
         }
         val unusedDefinitions = definedParameters - addressParameters
         if (unusedDefinitions.isNotEmpty()) {
             results.warn(
                 "$contextString defines parameters $unusedDefinitions which are not used in the channel address '$address'.",
-                asyncApiContext.getLine(node, node::parameters),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::parameters),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
         }
     }
@@ -96,8 +96,8 @@ class ChannelValidator(
         if (messages.isNullOrEmpty()) {
             results.error(
                 "$contextString' must define at least one message in 'messages'.",
-                asyncApiContext.getLine(node, node::messages),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
             return
         }
@@ -119,8 +119,8 @@ class ChannelValidator(
         if (servers.isEmpty()) {
             results.warn(
                 "$contextString defines an empty 'servers' array. It will be available on all servers.",
-                asyncApiContext.getLine(node, node::servers),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::servers),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
         }
         servers.forEachIndexed { index, reference ->
@@ -174,7 +174,7 @@ class ChannelValidator(
         if (bindings.isEmpty()) {
             results.warn(
                 "$contextString defines an empty 'bindings' object. Can be omitted if no bindings are defined.",
-                asyncApiContext.getLine(node, node::bindings),
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::bindings),
             )
             return
         }
@@ -203,8 +203,8 @@ class ChannelValidator(
                 if (refMap.containsKey(ref)) {
                     results.warn(
                         "$contextString contains ambiguous messages which may be indistinguishable at runtime.",
-                        asyncApiContext.getLine(node, node::messages),
-                        "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject"
+                        sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
+                        doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
                     )
                 } else {
                     refMap[ref] = msgName

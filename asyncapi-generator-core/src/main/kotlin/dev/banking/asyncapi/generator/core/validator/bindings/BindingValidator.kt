@@ -20,7 +20,7 @@ class BindingValidator(
         if (binding.content.isEmpty()) {
             results.warn(
                 "$bindingName is empty — no protocol-specific binding properties are defined.",
-                asyncApiContext.getLine(binding, binding::content)
+                sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
             )
             return
         }
@@ -43,7 +43,7 @@ class BindingValidator(
         if (bindingData == null) {
             results.warn(
                 "Binding for protocol '$protocol' is null — consider removing or defining a value.",
-                asyncApiContext.getLine(binding, binding::content)
+                sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
             )
             return
         }
@@ -51,7 +51,7 @@ class BindingValidator(
         if (bindingData !is Map<*, *>) {
             results.error(
                 "Binding for protocol '$protocol' must be an object (Map), but found ${bindingData::class.simpleName}.",
-                asyncApiContext.getLine(binding, binding::content)
+                sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
             )
             return
         }
@@ -91,14 +91,14 @@ class BindingValidator(
             when (val mapValue = value?.let(::sanitizeAny)) {
                 null -> results.warn(
                     "Property '$key' in '$protocol' binding is null — consider removing.",
-                    asyncApiContext.getLine(binding, binding::content)
+                    sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
                 )
 
                 is Map<*, *> -> {}
                 is List<*> -> {
                     results.warn(
                         "Property '$key' in '$protocol' binding has type List, which might be unsupported by this generator.",
-                        asyncApiContext.getLine(binding, binding::content)
+                        sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
                     )
                 }
 
@@ -106,7 +106,7 @@ class BindingValidator(
                     if (mapValue.isBlank()) {
                         results.warn(
                             "Property '$key' in '$protocol' binding is empty — consider removing or defining a value.",
-                            asyncApiContext.getLine(binding, binding::content)
+                            sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
                         )
                     }
                 }
@@ -115,7 +115,7 @@ class BindingValidator(
                 else -> {
                     results.warn(
                         "Property '$key' in '$protocol' binding has unsupported type: ${value::class.simpleName}",
-                        asyncApiContext.getLine(binding, binding::content)
+                        sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
                     )
                 }
             }

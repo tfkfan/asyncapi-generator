@@ -57,14 +57,14 @@ class OperationValidator(
         if (action.isBlank()) {
             results.error(
                 "$contextString must define an 'action' field ('send' or 'receive').",
-                asyncApiContext.getLine(node, node::action),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::action),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         } else if (action != "send" && action != "receive") {
             results.error(
                 "$contextString has invalid action '$action'. Allowed values are 'send' or 'receive'.",
-                asyncApiContext.getLine(node, node::action),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::action),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         }
     }
@@ -74,18 +74,19 @@ class OperationValidator(
         if (channelRef == null) {
             results.error(
                 "$contextString must define a 'channel' reference.",
-                asyncApiContext.getLine(node, node::channel),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::channel),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
             return
         }
+        val channelRefSourceLocation = asyncApiContext.getSourceLocation(channelRef, channelRef::ref)
         referenceResolver.resolve(channelRef, "Channel", results)
         if (channelRef.model != null && channelRef.model !is Channel) {
             val invalidObject = channelRef.model?.javaClass?.simpleName
             results.error(
                 "$contextString channel reference must point to a Channel Object. Found: $invalidObject.",
-                asyncApiContext.getLine(channelRef, channelRef::ref),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
+                sourceLocation = channelRefSourceLocation,
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         }
     }
@@ -98,8 +99,8 @@ class OperationValidator(
             if (referenceString.isBlank()) {
                 results.error(
                     "$contextString 'messages' property value MUST be a list of Reference Objects.",
-                    asyncApiContext.getLine(node, node::messages),
-                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
                 )
             } else {
                 referenceResolver.resolve(messageReference, contextString, results)
@@ -137,8 +138,8 @@ class OperationValidator(
         if (node.bindings == null && node.security == null && node.tags == null) {
             results.warn(
                 "$contextString defines no 'bindings', 'security', or 'tags' — may have no effect.",
-                asyncApiContext.getLine(node, node::bindings),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::bindings),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         }
     }

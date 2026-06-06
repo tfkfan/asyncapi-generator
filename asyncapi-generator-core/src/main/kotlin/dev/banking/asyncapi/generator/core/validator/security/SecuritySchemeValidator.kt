@@ -40,14 +40,14 @@ class SecuritySchemeValidator(
         if (type.isBlank()) {
             results.error(
                 "$contextString 'type' field in SecurityScheme is required.",
-                asyncApiContext.getLine(node, node::type),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         } else if (type !in validTypes) {
             results.error(
                 "$contextString invalid type '$type'. Expected one of: ${validTypes.joinToString(", ")}",
-                asyncApiContext.getLine(node, node::type),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         }
     }
@@ -58,8 +58,8 @@ class SecuritySchemeValidator(
         if (type == "httpApiKey" && name.isNullOrBlank()) {
             results.error(
                 "$contextString of type 'httpApiKey' requires non-empty 'name'.",
-                asyncApiContext.getLine(node, node::name),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::name),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         }
     }
@@ -75,8 +75,8 @@ class SecuritySchemeValidator(
         if (inField !in validInValues) {
             results.error(
                 "$contextString invalid 'in' value '$inField' for type '$type'. Expected one of: ${validInValues.joinToString(", ")}",
-                asyncApiContext.getLine(node, node::inField),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::inField),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         }
     }
@@ -87,8 +87,8 @@ class SecuritySchemeValidator(
         if (type == "http" && scheme.isNullOrBlank()) {
             results.error(
                 "$contextString of type 'http' requires non-empty 'scheme'.",
-                asyncApiContext.getLine(node, node::scheme),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::scheme),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         }
     }
@@ -99,7 +99,7 @@ class SecuritySchemeValidator(
         if (type == "http" && node.scheme == "bearer" && bearerFormat.isNullOrBlank()) {
             results.warn(
                 "$contextString of type 'http' with scheme 'bearer' has an empty 'bearerFormat'.",
-                asyncApiContext.getLine(node, node::bearerFormat)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::bearerFormat),
             )
         }
     }
@@ -112,8 +112,8 @@ class SecuritySchemeValidator(
                 results.error(
                     "$contextString of type 'oauth2' requires at least one OAuth2 flow (implicit, password, " +
                         "clientCredentials, or authorizationCode).",
-                    asyncApiContext.getLine(node, node::flows),
-                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::flows),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
                 )
                 return
             }
@@ -125,8 +125,8 @@ class SecuritySchemeValidator(
             ) {
                 results.error(
                     "$contextString of type 'oauth2' requires at least one OAuth2 flow.",
-                    asyncApiContext.getLine(node, node::flows),
-                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::flows),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
                 )
             }
         }
@@ -140,16 +140,16 @@ class SecuritySchemeValidator(
             if (url.isNullOrBlank()) {
                 results.error(
                     "$contextString of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'.",
-                    asyncApiContext.getLine(node, node::openIdConnectUrl),
-                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::openIdConnectUrl),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
                 )
             } else {
                 if (!URL.matches(url)) {
                     results.error(
                         "$contextString of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'. " +
                             "Got '$url'.",
-                        asyncApiContext.getLine(node, node::openIdConnectUrl),
-                        "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
+                        sourceLocation = asyncApiContext.getSourceLocation(node, node::openIdConnectUrl),
+                        doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
                     )
                 }
             }

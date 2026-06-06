@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -19,6 +20,14 @@ class OperationValidatorTest : AbstractValidatorTest() {
             validationResults.throwErrors()
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for invalid action.")
+        assertFinding(
+            validationResults,
+            severity = ERROR,
+            messageContains = "has invalid action 'invalidAction'",
+            sourceFile = "asyncapi_validator_operations_invalid_action.yaml",
+            path = "asyncapi_validator_operations_invalid_action.root.operations.testOperation.action",
+            line = 18,
+        )
     }
 
     @Test
@@ -29,6 +38,14 @@ class OperationValidatorTest : AbstractValidatorTest() {
             validationResults.throwErrors()
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for broken channel reference.")
+        assertFinding(
+            validationResults,
+            severity = ERROR,
+            messageContains = "reference '#/channels/nonExistentChannel' could not be resolved",
+            sourceFile = "asyncapi_validator_operations_broken_channel_ref.yaml",
+            path = "asyncapi_validator_operations_broken_channel_ref.root.operations.testOperation.channel",
+            line = 9,
+        )
     }
 
     @Test
@@ -39,5 +56,13 @@ class OperationValidatorTest : AbstractValidatorTest() {
             validationResults.throwErrors()
         }
         assertEquals(1, exception.errors.size, "Expected 1 error: channel type mismatch.")
+        assertFinding(
+            validationResults,
+            severity = ERROR,
+            messageContains = "channel reference must point to a Channel Object",
+            sourceFile = "asyncapi_validator_operations_channel_ref_type_mismatch.yaml",
+            path = "asyncapi_validator_operations_channel_ref_type_mismatch.root.operations.testOperation.channel",
+            line = 18,
+        )
     }
 }

@@ -54,22 +54,22 @@ class ServerValidator(
         if (host.isBlank()) {
             results.error(
                 "$contextString must define a non-empty 'host'.",
-                asyncApiContext.getLine(node, node::host),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         } else {
             if (host.startsWith("http://") || host.startsWith("https://")) {
                 results.warn(
                     "$contextString host '$host' includes scheme/protocol. 'host' should typically be the hostname " +
                         "(e.g. api.example.com) as protocol is defined separately.",
-                    asyncApiContext.getLine(node, node::host)
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
                 )
             }
             if (!HOSTNAME.matches(host)) {
                 results.warn(
                     "$contextString host '$host' looks unusual. Expected format 'hostname[:port]' or URL with " +
                         "variables/path. Found invalid characters.",
-                    asyncApiContext.getLine(node, node::host)
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
                 )
             }
         }
@@ -83,8 +83,8 @@ class ServerValidator(
         if (missing.isNotEmpty()) {
             results.error(
                 "$contextString host uses variables $missing which are not defined in 'variables'.",
-                asyncApiContext.getLine(node, node::host),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
 
@@ -92,7 +92,7 @@ class ServerValidator(
         if (unused.isNotEmpty()) {
             results.warn(
                 "$contextString defines variables $unused which are not used in the host '$host'.",
-                asyncApiContext.getLine(node, node::variables)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::variables),
             )
         }
     }
@@ -102,8 +102,8 @@ class ServerValidator(
         if (protocol.isBlank()) {
             results.error(
                 "$contextString must define the 'protocol' it supports.",
-                asyncApiContext.getLine(node, node::protocol),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::protocol),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
     }
