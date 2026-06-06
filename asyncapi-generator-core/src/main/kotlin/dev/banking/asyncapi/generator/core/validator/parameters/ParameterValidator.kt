@@ -35,7 +35,7 @@ class ParameterValidator(
         if (enum.distinct().size != enum.size) {
             results.warn(
                 "$contextString 'enum' contains duplicate values.",
-                asyncApiContext.getLine(node, node::enum),
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
             )
         }
     }
@@ -46,7 +46,7 @@ class ParameterValidator(
         if (!enum.contains(default)) {
             results.error(
                 "$contextString 'default' value ('$default') is not included in the allowed enum values.",
-                asyncApiContext.getLine(node, node::default),
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::default),
             )
         }
     }
@@ -57,7 +57,7 @@ class ParameterValidator(
         if (enum != null && examples.any { it !in enum }) {
             results.warn(
                 "$contextString 'examples' are not part of the defined enum values.",
-                asyncApiContext.getLine(node, node::examples),
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::examples),
             )
         }
     }
@@ -68,8 +68,8 @@ class ParameterValidator(
             results.error(
                 $$"$$contextString invalid 'location' expression '$$location'. Must be a valid " +
                     $$"runtime expression (e.g., $message.header#/param).",
-                asyncApiContext.getLine(node, node::location),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parameterObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parameterObject",
             )
         }
     }

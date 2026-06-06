@@ -38,8 +38,8 @@ class InfoValidator(
         if (title.isBlank()) {
             results.error(
                 "$contextString 'title' field is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::title),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::title),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
     }
@@ -49,15 +49,15 @@ class InfoValidator(
         if (version.isBlank()) {
             results.error(
                 "$contextString 'version' field is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::version),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::version),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
             return
         }
         if (!SEMANTIC_VERSION.matches(version)) {
             results.warn(
                 "$contextString 'version' field contains unusual characters. Expected Semantic Versioning or alphanumeric format.",
-                asyncApiContext.getLine(node, node::version)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::version),
             )
         }
     }
@@ -67,8 +67,8 @@ class InfoValidator(
         if (!URL.matches(termsOfService)) {
             results.error(
                 "$contextString 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",
-                asyncApiContext.getLine(node, node::termsOfService),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::termsOfService),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
     }

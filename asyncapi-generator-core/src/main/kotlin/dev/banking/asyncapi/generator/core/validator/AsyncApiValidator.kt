@@ -13,9 +13,15 @@ import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
+/**
+ * Validates a parsed [AsyncApiDocument] and returns validation results.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiValidatorTest`
+ */
 class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,
-) {
+) : ValidationStage {
 
     private val infoValidator = InfoValidator(asyncApiContext)
     private val channelValidator = ChannelValidator(asyncApiContext)
@@ -23,7 +29,7 @@ class AsyncApiValidator(
     private val operationValidator = OperationValidator(asyncApiContext)
     private val componentValidator = ComponentValidator(asyncApiContext)
 
-    fun validate(asyncApiDocument: AsyncApiDocument): ValidationResults {
+    override fun validate(asyncApiDocument: AsyncApiDocument): ValidationResults {
         val results = ValidationResults(asyncApiContext)
 
         validateAsyncApiVersion(asyncApiDocument, results)
@@ -59,17 +65,17 @@ class AsyncApiValidator(
         if (asyncApiVersion.isBlank()) {
             results.error(
                 "The 'asyncapi' field is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::asyncapi)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::asyncapi),
             )
         } else if (!SEMANTIC_VERSION.matches(asyncApiVersion)) {
             results.error(
                 "Invalid AsyncAPI version format '$asyncApiVersion'. Expected 'major.minor.patch' (e.g., 3.0.0).",
-                asyncApiContext.getLine(node, node::asyncapi)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::asyncapi),
             )
         } else if (!asyncApiVersion.startsWith("3.")) {
             results.error(
                 "AsyncAPI version '$asyncApiVersion' is not be supported by this plugin.",
-                asyncApiContext.getLine(node, node::asyncapi)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::asyncapi),
             )
         }
     }
@@ -80,12 +86,12 @@ class AsyncApiValidator(
         if (!URI.matches(id)) {
             results.error(
                 "The 'id' field must conform to the URI format (RFC3986). Got '$id'.",
-                asyncApiContext.getLine(node, node::id)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::id),
             )
         } else if (!id.startsWith("urn:")) {
             results.warn(
                 "It is RECOMMENDED to use a URN for the 'id' field to ensure global uniqueness.",
-                asyncApiContext.getLine(node, node::id)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::id),
             )
         }
     }
@@ -95,7 +101,7 @@ class AsyncApiValidator(
         if (!MIME_TYPE.matches(contentType)) {
             results.error(
                 "Invalid 'defaultContentType' format '$contentType'. Expected a MIME type (e.g., 'application/json').",
-                asyncApiContext.getLine(node, node::defaultContentType)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::defaultContentType),
             )
         }
     }

@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.validator.externaldocs
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 class ExternalDocsValidatorTest : AbstractValidatorTest() {
 
@@ -20,5 +20,13 @@ class ExternalDocsValidatorTest : AbstractValidatorTest() {
             results.throwErrors()
         }
         assertEquals(1, exception.errors.size, "Expected 1 error (invalid URL).")
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "'url' must be a valid absolute URL",
+            sourceFile = "asyncapi_validator_externaldocs_invalid.yaml",
+            path = "asyncapi_validator_externaldocs_invalid.root.components.schemas.InvalidExternalDoc.externalDocs.url",
+            line = 10,
+        )
     }
 }

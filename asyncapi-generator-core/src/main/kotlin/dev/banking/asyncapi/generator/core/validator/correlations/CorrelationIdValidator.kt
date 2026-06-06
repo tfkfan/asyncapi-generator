@@ -32,7 +32,7 @@ class CorrelationIdValidator(
         if (location.isBlank()) {
             results.error(
                 "$contextString 'location' is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::location)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
             )
             return
         }
@@ -40,8 +40,8 @@ class CorrelationIdValidator(
         if (!RUNTIME_EXPRESSION_GENERAL.matches(location)) {
             results.warn(
                 "$contextString 'location' ('$location') does not follow valid runtime expression.",
-                asyncApiContext.getLine(node, node::location),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#correlationIdObject"
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#correlationIdObject",
             )
         }
     }

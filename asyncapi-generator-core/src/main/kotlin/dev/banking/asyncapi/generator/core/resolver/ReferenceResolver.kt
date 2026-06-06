@@ -15,7 +15,7 @@ class ReferenceResolver(
         }
         results.error(
             "$contextString reference '${reference.ref}' could not be resolved",
-            asyncApiContext.getLine(reference, reference::ref),
-            )
+            sourceLocation = asyncApiContext.getSourceLocation(reference, reference::ref),
+        )
     }
 }

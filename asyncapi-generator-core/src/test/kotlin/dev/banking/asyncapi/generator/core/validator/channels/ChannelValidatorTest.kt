@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.validator.channels
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -21,6 +23,14 @@ class ChannelValidatorTest : AbstractValidatorTest() {
             validationResults.throwErrors()
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for missing parameter definition.")
+        assertFinding(
+            validationResults,
+            severity = ERROR,
+            messageContains = "address uses parameters [userId]",
+            sourceFile = "asyncapi_validator_channel_parameter_mismatch.yaml",
+            path = "asyncapi_validator_channel_parameter_mismatch.root.channels.userUpdates.address",
+            line = 7,
+        )
     }
 
     @Test
@@ -33,6 +43,14 @@ class ChannelValidatorTest : AbstractValidatorTest() {
 
         val warnings = validationResults.warnings.map { it.message }
         assertEquals(1, warnings.size, "Expected 1 warning for unused parameter.")
+        assertFinding(
+            validationResults,
+            severity = WARNING,
+            messageContains = "defines parameters [userId]",
+            sourceFile = "asyncapi_validator_channel_unused_parameter.yaml",
+            path = "asyncapi_validator_channel_unused_parameter.root.channels.userUpdates.parameters",
+            line = 12,
+        )
     }
 
     @Test
@@ -45,5 +63,13 @@ class ChannelValidatorTest : AbstractValidatorTest() {
 
         val warnings = validationResults.warnings.map { it.message }
         assertEquals(1, warnings.size, "Expected 1 warnings.")
+        assertFinding(
+            validationResults,
+            severity = WARNING,
+            messageContains = "contains ambiguous messages",
+            sourceFile = "asyncapi_validator_channel_message_ambiguity.yaml",
+            path = "asyncapi_validator_channel_message_ambiguity.root.channels.userUpdates.messages",
+            line = 8,
+        )
     }
 }

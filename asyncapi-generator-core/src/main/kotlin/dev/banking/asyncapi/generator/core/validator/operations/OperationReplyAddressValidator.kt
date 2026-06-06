@@ -33,15 +33,15 @@ class OperationReplyAddressValidator(
         if (location.isBlank()) {
             results.error(
                 "$contextString 'location' is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::location),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationReplyAddressObject"
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationReplyAddressObject",
             )
             return
         }
         if (!RUNTIME_EXPRESSION_GENERAL.matches(location)) {
             results.warn(
                 "$contextString 'location' ('$location') does not appear to follow a valid runtime expression format.",
-                asyncApiContext.getLine(node, node::location)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
             )
         }
     }

@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -22,14 +24,30 @@ class MessageTraitValidatorTest : AbstractValidatorTest() {
         }
         assertEquals(1, exception.errors.size, "Expected 1 error (content type).")
         assertTrue(results.hasWarnings(), "Should have warnings.")
+
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "invalid 'contentType' value",
+            sourceFile = "asyncapi_validator_messagetrait_invalid.yaml",
+            path = "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.InvalidContentType.contentType",
+            line = 10,
+        )
+        assertFinding(
+            results,
+            severity = WARNING,
+            messageContains = "provides neither 'headers', 'bindings', 'correlationId', nor 'contentType'",
+            sourceFile = "asyncapi_validator_messagetrait_invalid.yaml",
+            path = "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.MeaninglessTrait",
+            line = 15,
+        )
     }
 
     @Test
     fun `message trait headers ref to component schema passes validation`() {
         val document = parse("validator/messages/asyncapi_validator_messagetrait_headers_ref_valid.yaml")
         val results = asyncApiValidator.validate(document)
-        assertFalse(results.hasErrors(), "Expected no errors for valid message trait headers ref.")
-        assertFalse(results.hasWarnings(), "Expected no warnings for valid message trait headers ref.")
+        assertNoFindings(results)
     }
 
     @Test

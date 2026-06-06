@@ -18,7 +18,7 @@ class ContactValidator(
         if (name.isNullOrBlank() && url.isNullOrBlank() && email.isNullOrBlank()) {
             results.warn(
                 "$contextString is defined but all its fields are empty.",
-                asyncApiContext.getLine(node, node::name)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::name),
             )
             return
         }
@@ -26,8 +26,8 @@ class ContactValidator(
             if (!URL.matches(it)) {
                 results.error(
                     "$contextString 'url' field must be a valid absolute URL.",
-                    asyncApiContext.getLine(node, node::url),
-                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::url),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
                 )
             }
         }
@@ -35,8 +35,8 @@ class ContactValidator(
             if (!EMAIL.matches(it)) {
                 results.error(
                     "$contextString 'email' field must be a valid email address.",
-                    asyncApiContext.getLine(node, node::email),
-                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::email),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
                 )
             }
         }

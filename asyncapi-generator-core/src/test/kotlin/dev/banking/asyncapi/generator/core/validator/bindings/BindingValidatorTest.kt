@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.bindings
 
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -18,6 +19,22 @@ class BindingValidatorTest : AbstractValidatorTest() {
 
         val warnings = results.warnings.map { it.message }
         assertEquals(3, warnings.size, "Expected 3 warnings for invalid bindings.")
+        assertFinding(
+            results,
+            severity = WARNING,
+            messageContains = "is empty",
+            sourceFile = "asyncapi_validator_binding_invalid.yaml",
+            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.EmptyBinding",
+            line = 8,
+        )
+        assertFinding(
+            results,
+            severity = WARNING,
+            messageContains = "Property 'protocol'",
+            sourceFile = "asyncapi_validator_binding_invalid.yaml",
+            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.BindingWithNullProperty",
+            line = 11,
+        )
     }
 
     @Test
@@ -25,7 +42,6 @@ class BindingValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/bindings/asyncapi_validator_binding_valid.yaml")
         val results = asyncApiValidator.validate(document)
 
-        assertFalse(results.hasErrors(), "Expected no errors for valid binding.")
-        assertFalse(results.hasWarnings(), "Expected no warnings for valid binding.")
+        assertNoFindings(results)
     }
 }

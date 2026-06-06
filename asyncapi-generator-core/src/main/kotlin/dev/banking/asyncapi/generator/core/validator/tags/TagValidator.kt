@@ -28,8 +28,8 @@ class TagValidator(
         if (name.isBlank()) {
             results.error(
                 "$contextString 'name' is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::name),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#tagObject"
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::name),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#tagObject",
             )
         }
         validateExternalDocs(node, contextString, results)
