@@ -13,9 +13,15 @@ import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
+/**
+ * Validates a parsed [AsyncApiDocument] and returns validation results.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiValidatorTest`
+ */
 class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,
-) {
+) : ValidationStage {
 
     private val infoValidator = InfoValidator(asyncApiContext)
     private val channelValidator = ChannelValidator(asyncApiContext)
@@ -23,7 +29,7 @@ class AsyncApiValidator(
     private val operationValidator = OperationValidator(asyncApiContext)
     private val componentValidator = ComponentValidator(asyncApiContext)
 
-    fun validate(asyncApiDocument: AsyncApiDocument): ValidationResults {
+    override fun validate(asyncApiDocument: AsyncApiDocument): ValidationResults {
         val results = ValidationResults(asyncApiContext)
 
         validateAsyncApiVersion(asyncApiDocument, results)
