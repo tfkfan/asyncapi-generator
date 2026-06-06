@@ -25,15 +25,15 @@ class ExternalDocsValidator(
         if (url.isBlank()) {
             results.error(
                 "$contextString 'url' is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::url),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::url),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
             )
         } else {
             if (!URL.matches(url)) {
                 results.error(
                     "ExternalDoc '${contextString}' 'url' must be a valid absolute URL.",
-                    asyncApiContext.getLine(node, node::url),
-                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::url),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
                 )
             }
         }

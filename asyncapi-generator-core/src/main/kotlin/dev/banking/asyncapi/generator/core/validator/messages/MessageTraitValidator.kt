@@ -56,7 +56,7 @@ class MessageTraitValidator(
             results.warn(
                 "$contextString provides neither 'headers', 'bindings', 'correlationId', nor 'contentType'" +
                     " — it might not have any effect.",
-                asyncApiContext.getLine(node, node::headers),
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::headers),
             )
         }
     }
@@ -87,8 +87,8 @@ class MessageTraitValidator(
         if (!MIME_TYPE.matches(contentType)) {
             results.error(
                 "$contextString invalid 'contentType' value '$contentType'. Expected a valid MIME type, e.g., 'application/json'.",
-                asyncApiContext.getLine(node, node::contentType),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#messageTraitObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::contentType),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#messageTraitObject",
             )
         }
     }

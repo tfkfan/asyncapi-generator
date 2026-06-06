@@ -44,7 +44,11 @@ abstract class AbstractValidatorTest {
         line: Int? = null,
     ): ValidationFinding {
         val finding = results.findings.singleOrNull { finding ->
-            finding.severity == severity && finding.message.contains(messageContains)
+            finding.severity == severity &&
+                finding.message.contains(messageContains) &&
+                (sourceFile == null || finding.sourceLocation?.file?.name == sourceFile) &&
+                (path == null || finding.path == path) &&
+                (line == null || finding.line == line)
         } ?: fail(
             "Expected one $severity finding containing '$messageContains', " +
                 "but found: ${results.findings}"

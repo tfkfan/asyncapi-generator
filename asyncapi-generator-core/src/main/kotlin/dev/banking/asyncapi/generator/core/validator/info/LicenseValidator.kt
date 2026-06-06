@@ -15,8 +15,8 @@ class LicenseValidator(
         if (name.isBlank()) {
             results.error(
                 "$contextString 'name' field is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::name),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::name),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
             )
         }
         val url = node.url?.let(::sanitizeString)
@@ -25,8 +25,8 @@ class LicenseValidator(
             if (!URL.matches(url)) {
                 results.error(
                     "$contextString 'url' field must be a valid absolute URL.",
-                    asyncApiContext.getLine(node, node::url),
-                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, node::url),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
                 )
             }
         }

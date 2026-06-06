@@ -53,7 +53,7 @@ class OperationReplyValidator(
         if (messages.isEmpty()) {
             results.warn(
                 "$operationReplyName 'messages' is an empty list — omit it if unused.",
-                asyncApiContext.getLine(node, node::messages)
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
             )
             return
         }

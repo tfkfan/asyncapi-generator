@@ -68,7 +68,7 @@ class MessageValidator(
                 is SchemaInterface.MultiFormatSchemaInline -> {
                     results.warn(
                         "$contextString MultiFormatSchema in headers are not validated (header '$headerName').",
-                        asyncApiContext.getLine(node, node::headers),
+                        sourceLocation = asyncApiContext.getSourceLocation(node, node::headers),
                     )
                 }
 
