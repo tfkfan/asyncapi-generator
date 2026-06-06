@@ -2,12 +2,11 @@ package dev.banking.asyncapi.generator.core.validator.util
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
-import dev.banking.asyncapi.generator.core.model.validator.ValidationError
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
-import dev.banking.asyncapi.generator.core.model.validator.ValidationWarning
 import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter.format
 import org.slf4j.LoggerFactory
 
 /**
@@ -22,12 +21,10 @@ class ValidationResults(
 ) {
     private val logger = LoggerFactory.getLogger(ValidationResults::class.java)
 
-    private val _errors = mutableListOf<ValidationError>()
-    private val _warnings = mutableListOf<ValidationWarning>()
     private val _findings = mutableListOf<ValidationFinding>()
 
-    val errors: List<ValidationError> get() = _errors
-    val warnings: List<ValidationWarning> get() = _warnings
+    val errors: List<ValidationFinding> get() = _findings.filter { it.severity == ERROR }
+    val warnings: List<ValidationFinding> get() = _findings.filter { it.severity == WARNING }
     val findings: List<ValidationFinding> get() = _findings
 
     fun error(
@@ -46,7 +43,6 @@ class ValidationResults(
             doc = doc,
         )
         _findings += finding
-        _errors += ValidationError(message, finding.line, doc)
     }
 
     fun warn(
@@ -65,35 +61,28 @@ class ValidationResults(
             doc = doc,
         )
         _findings += finding
-        _warnings += ValidationWarning(message, finding.line, doc)
     }
 
-    fun hasErrors() = _errors.isNotEmpty()
+    fun hasErrors() = errors.isNotEmpty()
 
-    fun hasWarnings() = _warnings.isNotEmpty()
+    fun hasWarnings() = warnings.isNotEmpty()
 
     fun throwErrors() {
-        if (_errors.isNotEmpty()) {
-            throw AsyncApiValidateException.ValidateError(_errors, asyncApiContext)
+        val errors = errors
+        if (errors.isNotEmpty()) {
+            throw AsyncApiValidateException.ValidateError(errors, asyncApiContext)
         }
     }
 
     fun logWarnings() {
-        if (_warnings.isNotEmpty()) {
+        val warnings = warnings
+        if (warnings.isNotEmpty()) {
             logger.warn(
-                buildString {
-                    appendLine("Validation found ${_warnings.size} warning(s):")
-                    appendLine()
-                    _warnings.forEach { warning ->
-                        appendLine(">> ${warning.message}")
-                        appendLine()
-                        appendLine(asyncApiContext.validatorSnippet(warning.line ?: -1))
-                        appendLine()
-                        if (warning.doc != null) appendLine("See documentation: ${warning.doc}")
-                        appendLine("---------------------------------------------------------------------------------------------------------------------")
-                        appendLine()
-                    }
-                }
+                format(
+                    title = "Validation found ${warnings.size} warning(s):",
+                    findings = warnings,
+                    asyncApiContext = asyncApiContext,
+                )
             )
         }
     }

@@ -1,25 +1,19 @@
 package dev.banking.asyncapi.generator.core.model.exceptions
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.validator.ValidationError
+import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter.format
 
 sealed class AsyncApiValidateException(message: String) : Exception(message) {
 
     class ValidateError(
-        val errors: List<ValidationError>,
+        val errors: List<ValidationFinding>,
         val context: AsyncApiContext
     ) : AsyncApiValidateException(
-        buildString {
-            appendLine("Validation failed with ${errors.size} error(s):")
-            appendLine()
-            errors.forEach { err ->
-                appendLine(">> ${err.message}")
-                appendLine()
-                appendLine(context.validatorSnippet(err.line ?: -1))
-                appendLine()
-                if (err.doc != null) appendLine("See documentation: ${err.doc}")
-                appendLine("---------------------------------------------------------------------------------------------------------------------")
-            }
-        }
+        format(
+            title = "Validation failed with ${errors.size} error(s):",
+            findings = errors,
+            asyncApiContext = context,
+        )
     )
 }

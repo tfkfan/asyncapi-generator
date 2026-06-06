@@ -98,13 +98,13 @@ class SourceRepository {
         return buildSnippet(lines, source.file.name, line, contextLines, path)
     }
 
-    fun lineSnippet(
-        line: Int,
+    fun locationSnippet(
+        location: SourceLocation,
         contextLines: Int = 3,
     ): String {
-        val source = current
+        val source = sourceFor(location)
         val lines = source.lines
-        return buildSnippet(lines, source.file.name, line, contextLines, "line $line")
+        return buildSnippet(lines, source.file.name, location.line, contextLines, location.path)
     }
 
     private fun buildSnippet(

@@ -65,10 +65,10 @@ class AsyncApiContext {
         contextLines: Int = 3,
     ): String = sourceRepository.pathSnippet(path, contextLines)
 
-    fun validatorSnippet(
-        line: Int,
+    fun sourceSnippet(
+        sourceLocation: SourceLocation,
         contextLines: Int = 3,
-    ): String = sourceRepository.lineSnippet(line, contextLines)
+    ): String = sourceRepository.locationSnippet(sourceLocation, contextLines)
 
     fun findReference(reference: Reference): Any? = modelRepository.findByReference(reference)
 
