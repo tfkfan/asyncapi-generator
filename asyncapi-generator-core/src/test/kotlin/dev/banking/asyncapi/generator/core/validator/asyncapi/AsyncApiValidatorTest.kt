@@ -1,10 +1,11 @@
 package dev.banking.asyncapi.generator.core.validator.asyncapi
 
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.ValidationStage
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFalse
+import kotlin.test.assertEquals
 
 class AsyncApiValidatorTest : AbstractValidatorTest() {
 
@@ -25,7 +26,39 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
 
         val validationResults = validationStage.validate(asyncApiDocument)
 
-        assertFalse(validationResults.hasErrors(), "Expected no validation errors.")
-        assertFalse(validationResults.hasWarnings(), "Expected no validation warnings.")
+        assertNoFindings(validationResults)
+    }
+
+    @Test
+    fun `validation findings include source locations for top level document diagnostics`() {
+        val validationResults = validate("validator/asyncapi/asyncapi_validator_document_invalid.yaml")
+
+        assertEquals(3, validationResults.errors.size)
+        assertEquals(3, validationResults.findings.size)
+
+        assertFinding(
+            validationResults,
+            severity = ERROR,
+            messageContains = "AsyncAPI version '2.6.0' is not be supported",
+            sourceFile = "asyncapi_validator_document_invalid.yaml",
+            path = "asyncapi_validator_document_invalid.root.asyncapi",
+            line = 1,
+        )
+        assertFinding(
+            validationResults,
+            severity = ERROR,
+            messageContains = "The 'id' field must conform to the URI format",
+            sourceFile = "asyncapi_validator_document_invalid.yaml",
+            path = "asyncapi_validator_document_invalid.root.id",
+            line = 2,
+        )
+        assertFinding(
+            validationResults,
+            severity = ERROR,
+            messageContains = "Invalid 'defaultContentType' format",
+            sourceFile = "asyncapi_validator_document_invalid.yaml",
+            path = "asyncapi_validator_document_invalid.root.defaultContentType",
+            line = 3,
+        )
     }
 }
