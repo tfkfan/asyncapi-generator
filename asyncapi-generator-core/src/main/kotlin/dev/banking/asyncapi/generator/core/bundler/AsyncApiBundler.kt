@@ -7,7 +7,18 @@ import dev.banking.asyncapi.generator.core.bundler.operations.OperationBundler
 import dev.banking.asyncapi.generator.core.bundler.servers.ServerBundler
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 
-class AsyncApiBundler {
+/**
+ * Bundles a parsed and validated [AsyncApiDocument].
+ *
+ * The bundler stage resolves already-registered references into the model shape
+ * expected by generator stages. It does not read files, parse YAML or JSON,
+ * validate AsyncAPI semantics, or generate code.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiBundlerContractTest`
+ * - `AsyncApiBundlerTest`
+ */
+class AsyncApiBundler : BundlingStage {
 
     private val infoBundler = InfoBundler()
     private val serverBundler = ServerBundler()
@@ -15,14 +26,14 @@ class AsyncApiBundler {
     private val operationBundler = OperationBundler()
     private val componentBundler = ComponentBundler()
 
-    fun bundle(document: AsyncApiDocument): AsyncApiDocument {
-        val visited = emptySet<String>()
+    override fun bundle(document: AsyncApiDocument): AsyncApiDocument {
+        val context = BundlingContext.empty()
         return document.copy(
-            info = infoBundler.bundle(document.info, visited),
-            servers = serverBundler.bundleServers(document.servers, visited),
-            channels = channelBundler.bundleMap(document.channels, visited),
-            operations = operationBundler.bundleMap(document.operations, visited),
-            components = componentBundler.bundleComponents(document.components, visited),
+            info = infoBundler.bundle(document.info, context),
+            servers = serverBundler.bundleServers(document.servers, context),
+            channels = channelBundler.bundleMap(document.channels, context),
+            operations = operationBundler.bundleMap(document.operations, context),
+            components = componentBundler.bundleComponents(document.components, context),
         )
     }
 }
