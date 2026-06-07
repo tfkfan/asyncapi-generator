@@ -1,0 +1,4 @@
+kind: SOURCE
+path: com/example/User.kt
+---
+data class User(val id: String)
