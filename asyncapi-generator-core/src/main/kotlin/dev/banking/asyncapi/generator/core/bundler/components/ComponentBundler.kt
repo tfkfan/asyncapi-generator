@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.components
 
+import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.channels.ChannelBundler
 import dev.banking.asyncapi.generator.core.bundler.correlations.CorrelationIdBundler
@@ -19,6 +21,12 @@ import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 
+/**
+ * Bundles component objects and references.
+ *
+ * Expected behavior is covered by:
+ * - `ComponentBundlerTest`
+ */
 class ComponentBundler {
 
     private val schemaBundler = SchemaBundler()
@@ -41,50 +49,55 @@ class ComponentBundler {
     fun bundleComponents(
         components: ComponentInterface?,
         visited: Set<String>,
+    ): ComponentInterface? =
+        bundleComponents(components, BundlingContext.from(visited))
+
+    fun bundleComponents(
+        components: ComponentInterface?,
+        context: BundlingContext,
     ): ComponentInterface? {
         if (components == null) return null
         return when (components) {
             is ComponentInterface.ComponentInline ->
                 ComponentInterface.ComponentInline(
-                    bundleComponent(components.component, visited)
+                    bundleComponent(components.component, context)
                 )
 
             is ComponentInterface.ComponentReference -> {
-                val ref = components.reference.ref
-                if (visited.contains(ref)) {
-                    components
-                } else {
-                    val model = components.reference.requireModel<Component>()
-                    val newVisited = visited + ref
-                    val bundled = bundleComponent(model, newVisited)
-                    components.reference.model = bundled
-                    components.reference.inline()
-                    components
+                ReferenceBundler.bundleReferencedModel<Component>(
+                    reference = components.reference,
+                    context = context,
+                ) { component, nextContext ->
+                    bundleComponent(component, nextContext)
                 }
+                components
             }
         }
     }
 
-    fun bundleComponent(component: Component, visited: Set<String>): Component {
-        val bundledSchemas = schemaBundler.bundleMap(component.schemas, visited)
-        val bundledServers = component.servers?.let { serverBundler.bundleServers(it, visited) }
-        val bundledChannels = component.channels?.let { channelBundler.bundleMap(it, visited) }
-        val bundledOperations = component.operations?.let { operationBundler.bundleMap(it, visited) }
-        val bundledMessages = messagesBundler.bundleMap(component.messages, visited)
-        val bundledSecuritySchemes = securitySchemeBundler.bundleMap(component.securitySchemes, visited)
-        val bundledServerVariables = serverVariableBundler.bundleMap(component.serverVariables, visited)
-        val bundledParameters = parameterBundler.bundleMap(component.parameters, visited)
-        val bundledCorrelationIds = correlationIdBundler.bundleMap(component.correlationIds, visited)
-        val bundledReplies = operationReplyBundler.bundleMap(component.replies, visited)
-        val bundledReplyAddresses = operationReplyAddressBundler.bundleMap(component.replyAddresses, visited)
-        val bundledExternalDocs = externalDocsBundler.bundleMap(component.externalDocs, visited)
-        val bundledTags = tagBundler.bundleMap(component.tags, visited)
-        val bundledOperationTraits = operationTraitBundler.bundleMap(component.operationTraits, visited)
-        val bundledMessageTraits = messageTraitsBundler.bundleMap(component.messageTraits, visited)
-        val bundledServerBindings = bindingBundler.bundleMap(component.serverBindings, visited)
-        val bundledChannelBindings = bindingBundler.bundleMap(component.channelBindings, visited)
-        val bundledOperationBindings = bindingBundler.bundleMap(component.operationBindings, visited)
-        val bundledMessageBindings = bindingBundler.bundleMap(component.messageBindings, visited)
+    fun bundleComponent(component: Component, visited: Set<String>): Component =
+        bundleComponent(component, BundlingContext.from(visited))
+
+    fun bundleComponent(component: Component, context: BundlingContext): Component {
+        val bundledSchemas = schemaBundler.bundleMap(component.schemas, context)
+        val bundledServers = component.servers?.let { serverBundler.bundleServers(it, context) }
+        val bundledChannels = component.channels?.let { channelBundler.bundleMap(it, context) }
+        val bundledOperations = component.operations?.let { operationBundler.bundleMap(it, context) }
+        val bundledMessages = messagesBundler.bundleMap(component.messages, context)
+        val bundledSecuritySchemes = securitySchemeBundler.bundleMap(component.securitySchemes, context)
+        val bundledServerVariables = serverVariableBundler.bundleMap(component.serverVariables, context)
+        val bundledParameters = parameterBundler.bundleMap(component.parameters, context)
+        val bundledCorrelationIds = correlationIdBundler.bundleMap(component.correlationIds, context)
+        val bundledReplies = operationReplyBundler.bundleMap(component.replies, context)
+        val bundledReplyAddresses = operationReplyAddressBundler.bundleMap(component.replyAddresses, context)
+        val bundledExternalDocs = externalDocsBundler.bundleMap(component.externalDocs, context)
+        val bundledTags = tagBundler.bundleMap(component.tags, context)
+        val bundledOperationTraits = operationTraitBundler.bundleMap(component.operationTraits, context)
+        val bundledMessageTraits = messageTraitsBundler.bundleMap(component.messageTraits, context)
+        val bundledServerBindings = bindingBundler.bundleMap(component.serverBindings, context)
+        val bundledChannelBindings = bindingBundler.bundleMap(component.channelBindings, context)
+        val bundledOperationBindings = bindingBundler.bundleMap(component.operationBindings, context)
+        val bundledMessageBindings = bindingBundler.bundleMap(component.messageBindings, context)
         return component.copy(
             schemas = bundledSchemas,
             servers = bundledServers,

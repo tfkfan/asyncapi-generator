@@ -27,13 +27,13 @@ class AsyncApiBundler : BundlingStage {
     private val componentBundler = ComponentBundler()
 
     override fun bundle(document: AsyncApiDocument): AsyncApiDocument {
-        val visited = emptySet<String>()
+        val context = BundlingContext.empty()
         return document.copy(
-            info = infoBundler.bundle(document.info, visited),
-            servers = serverBundler.bundleServers(document.servers, visited),
-            channels = channelBundler.bundleMap(document.channels, visited),
-            operations = operationBundler.bundleMap(document.operations, visited),
-            components = componentBundler.bundleComponents(document.components, visited),
+            info = infoBundler.bundle(document.info, context),
+            servers = serverBundler.bundleServers(document.servers, context),
+            channels = channelBundler.bundleMap(document.channels, context),
+            operations = operationBundler.bundleMap(document.operations, context),
+            components = componentBundler.bundleComponents(document.components, context),
         )
     }
 }
