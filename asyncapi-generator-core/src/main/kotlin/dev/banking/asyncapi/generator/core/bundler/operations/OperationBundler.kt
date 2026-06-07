@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.operations
 
+import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
 import dev.banking.asyncapi.generator.core.bundler.security.SecuritySchemeBundler
@@ -7,6 +9,12 @@ import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
 import dev.banking.asyncapi.generator.core.model.operations.Operation
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 
+/**
+ * Bundles operation objects and references.
+ *
+ * Expected behavior is covered by:
+ * - `OperationBundlerTest`
+ */
 class OperationBundler {
 
     private val tagBundler = TagBundler()
@@ -19,39 +27,50 @@ class OperationBundler {
     fun bundleMap(
         operations: Map<String, OperationInterface>?,
         visited: Set<String>,
+    ): Map<String, OperationInterface>? =
+        bundleMap(operations, BundlingContext.from(visited))
+
+    fun bundleMap(
+        operations: Map<String, OperationInterface>?,
+        context: BundlingContext,
     ): Map<String, OperationInterface>? {
         if (operations == null) return null
         return operations.mapValues { (_, opInterface) ->
-            when (opInterface) {
-                is OperationInterface.OperationInline ->
-                    OperationInterface.OperationInline(
-                        bundleOperation(opInterface.operation, visited)
-                    )
-
-                is OperationInterface.OperationReference -> {
-                    val ref = opInterface.reference.ref
-                    if (visited.contains(ref)) {
-                        opInterface
-                    } else {
-                        val opModel = opInterface.reference.requireModel<Operation>()
-                        val newVisited = visited + ref
-                        val bundledOp = bundleOperation(opModel, newVisited)
-                        opInterface.reference.model = bundledOp
-                        opInterface.reference.inline()
-                        opInterface
-                    }
-                }
-            }
+            bundle(opInterface, context)
         }
     }
 
-    fun bundleOperation(operation: Operation, visited: Set<String>): Operation {
-        val bundledBindings = bindingBundler.bundleMap(operation.bindings, visited)
-        val bundledTraits = operationTraitBundler.bundleList(operation.traits, visited)
-        val bundledTags = tagBundler.bundleList(operation.tags, visited)
-        val bundledExternalDocs = operation.externalDocs?.let { externalDocsBundler.bundle(it, visited) }
-        val bundledReply = operation.reply?.let { operationReplyBundler.bundle(it, visited) }
-        val bundledSecurity = securitySchemeBundler.bundleList(operation.security, visited)
+    fun bundle(operationInterface: OperationInterface, visited: Set<String>): OperationInterface =
+        bundle(operationInterface, BundlingContext.from(visited))
+
+    fun bundle(operationInterface: OperationInterface, context: BundlingContext): OperationInterface =
+        when (operationInterface) {
+            is OperationInterface.OperationInline ->
+                OperationInterface.OperationInline(
+                    bundleOperation(operationInterface.operation, context)
+                )
+
+            is OperationInterface.OperationReference -> {
+                ReferenceBundler.bundleReferencedModel<Operation>(
+                    reference = operationInterface.reference,
+                    context = context,
+                ) { operation, nextContext ->
+                    bundleOperation(operation, nextContext)
+                }
+                operationInterface
+            }
+        }
+
+    fun bundleOperation(operation: Operation, visited: Set<String>): Operation =
+        bundleOperation(operation, BundlingContext.from(visited))
+
+    fun bundleOperation(operation: Operation, context: BundlingContext): Operation {
+        val bundledBindings = bindingBundler.bundleMap(operation.bindings, context)
+        val bundledTraits = operationTraitBundler.bundleList(operation.traits, context)
+        val bundledTags = tagBundler.bundleList(operation.tags, context)
+        val bundledExternalDocs = operation.externalDocs?.let { externalDocsBundler.bundle(it, context) }
+        val bundledReply = operation.reply?.let { operationReplyBundler.bundle(it, context) }
+        val bundledSecurity = securitySchemeBundler.bundleList(operation.security, context)
         return operation.copy(
             bindings = bundledBindings,
             traits = bundledTraits,
