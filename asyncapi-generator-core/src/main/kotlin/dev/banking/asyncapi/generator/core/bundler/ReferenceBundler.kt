@@ -23,4 +23,18 @@ object ReferenceBundler {
         }
         return reference
     }
+
+    inline fun <reified T> bundleReferencedModel(
+        reference: Reference,
+        context: BundlingContext,
+        bundle: (T, BundlingContext) -> T,
+    ): Reference {
+        if (!context.hasVisited(reference)) {
+            val model = reference.requireModel<T>()
+            val bundled = bundle(model, context.enter(reference))
+            reference.model = bundled
+            reference.inline()
+        }
+        return reference
+    }
 }

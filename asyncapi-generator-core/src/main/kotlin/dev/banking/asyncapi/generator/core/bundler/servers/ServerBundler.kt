@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.servers
 
+import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
 import dev.banking.asyncapi.generator.core.bundler.security.SecuritySchemeBundler
@@ -7,6 +9,12 @@ import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 
+/**
+ * Bundles server objects and references.
+ *
+ * Expected behavior is covered by:
+ * - `ServerBundlerTest`
+ */
 class ServerBundler {
 
     private val tagBundler = TagBundler()
@@ -18,6 +26,12 @@ class ServerBundler {
     fun bundleServers(
         servers: Map<String, ServerInterface>?,
         visited: Set<String>,
+    ): Map<String, ServerInterface>? =
+        bundleServers(servers, BundlingContext.from(visited))
+
+    fun bundleServers(
+        servers: Map<String, ServerInterface>?,
+        context: BundlingContext,
     ): Map<String, ServerInterface>? {
         if (servers == null) return null
 
@@ -25,32 +39,31 @@ class ServerBundler {
             when (serverInterface) {
                 is ServerInterface.ServerInline ->
                     ServerInterface.ServerInline(
-                        bundleServer(serverInterface.server, visited)
+                        bundleServer(serverInterface.server, context)
                     )
 
                 is ServerInterface.ServerReference -> {
-                    val ref = serverInterface.reference.ref
-                    if (visited.contains(ref)) {
-                        serverInterface
-                    } else {
-                        val serverModel = serverInterface.reference.requireModel<Server>()
-                        val newVisited = visited + ref
-                        val bundledServer = bundleServer(serverModel, newVisited)
-                        serverInterface.reference.model = bundledServer
-                        serverInterface.reference.inline()
-                        serverInterface
+                    ReferenceBundler.bundleReferencedModel<Server>(
+                        reference = serverInterface.reference,
+                        context = context,
+                    ) { server, nextContext ->
+                        bundleServer(server, nextContext)
                     }
+                    serverInterface
                 }
             }
         }
     }
 
-    fun bundleServer(server: Server, visited: Set<String>): Server {
-        val bundledVariables = serverVariableBundler.bundleMap(server.variables, visited)
-        val bundledSecurity = securitySchemeBundler.bundleList(server.security, visited)
-        val bundledTags = tagBundler.bundleList(server.tags, visited)
-        val bundledExternalDocs = server.externalDocs?.let { externalDocsBundler.bundle(it, visited) }
-        val bundledBindings = bindingBundler.bundleMap(server.bindings, visited)
+    fun bundleServer(server: Server, visited: Set<String>): Server =
+        bundleServer(server, BundlingContext.from(visited))
+
+    fun bundleServer(server: Server, context: BundlingContext): Server {
+        val bundledVariables = serverVariableBundler.bundleMap(server.variables, context)
+        val bundledSecurity = securitySchemeBundler.bundleList(server.security, context)
+        val bundledTags = tagBundler.bundleList(server.tags, context)
+        val bundledExternalDocs = server.externalDocs?.let { externalDocsBundler.bundle(it, context) }
+        val bundledBindings = bindingBundler.bundleMap(server.bindings, context)
         return server.copy(
             variables = bundledVariables,
             security = bundledSecurity,
