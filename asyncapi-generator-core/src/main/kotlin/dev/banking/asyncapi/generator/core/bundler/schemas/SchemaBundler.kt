@@ -1,82 +1,110 @@
 package dev.banking.asyncapi.generator.core.bundler.schemas
 
+import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
+/**
+ * Bundles schema objects and references.
+ *
+ * Expected behavior is covered by:
+ * - `SchemaBundlerTest`
+ */
 class SchemaBundler {
 
     private val externalDocsBundler = ExternalDocsBundler()
     private val bindingsBundler = BindingBundler()
 
     fun bundleMap(schemas: Map<String, SchemaInterface>?, visited: Set<String>): Map<String, SchemaInterface>? =
+        bundleMap(schemas, BundlingContext.from(visited))
+
+    fun bundleMap(schemas: Map<String, SchemaInterface>?, context: BundlingContext): Map<String, SchemaInterface>? =
         schemas?.mapValues { (_, schemaInterface) ->
-            bundle(schemaInterface, visited)
+            bundle(schemaInterface, context)
         }
 
     fun bundleList(schemas: List<SchemaInterface>?, visited: Set<String>): List<SchemaInterface>? =
-        schemas?.map { schemaInterface -> bundle(schemaInterface, visited) }
+        bundleList(schemas, BundlingContext.from(visited))
+
+    fun bundleList(schemas: List<SchemaInterface>?, context: BundlingContext): List<SchemaInterface>? =
+        schemas?.map { schemaInterface -> bundle(schemaInterface, context) }
 
     fun bundle(schemaInterface: SchemaInterface?, visited: Set<String>): SchemaInterface =
+        bundle(schemaInterface, BundlingContext.from(visited))
+
+    fun bundle(schemaInterface: SchemaInterface?, context: BundlingContext): SchemaInterface =
         when (schemaInterface) {
             null ->
                 throw IllegalArgumentException("Schema Interface $schemaInterface is not recognized")
 
             is SchemaInterface.SchemaInline ->
                 SchemaInterface.SchemaInline(
-                    bundleSchema(schemaInterface.schema, visited)
+                    bundleSchema(schemaInterface.schema, context)
                 )
-            is SchemaInterface.SchemaReference -> {
-                val ref = schemaInterface.reference.ref
-                val keepAsReference = isComponentSchemaRef(ref)
-                if (visited.contains(ref)) {
-                    if (keepAsReference) {
-                        schemaInterface
-                    } else {
-                        val model = schemaInterface.reference.requireModel<Schema>()
-                        SchemaInterface.SchemaInline(model)
-                    }
-                } else {
-                    val model = schemaInterface.reference.requireModel<Schema>()
-                    val newVisited = visited + ref
-                    val bundled = bundleSchema(model, newVisited)
-                    if (keepAsReference) {
-                        schemaInterface.reference.model = bundled
-                        schemaInterface.reference.inline()
-                        schemaInterface
-                    } else {
-                        SchemaInterface.SchemaInline(bundled)
-                    }
-                }
-            }
+            is SchemaInterface.SchemaReference ->
+                bundleReference(schemaInterface, context)
             is SchemaInterface.MultiFormatSchemaInline ->
                 schemaInterface
             is SchemaInterface.BooleanSchema ->
                 schemaInterface
         }
 
-    private fun bundleSchema(schema: Schema, visited: Set<String>): Schema {
-        val bundledItems = schema.items?.let { bundle(it, visited) }
-        val bundledAdditionalItems = schema.additionalItems?.let { bundle(it, visited) }
-        val bundledContains = schema.contains?.let { bundle(it, visited) }
+    private fun bundleReference(
+        schemaInterface: SchemaInterface.SchemaReference,
+        context: BundlingContext,
+    ): SchemaInterface {
+        val reference = schemaInterface.reference
+        val keepAsReference = isComponentSchemaRef(reference.ref)
 
-        val bundledProperties = bundleMap(schema.properties, visited)
-        val bundledPatternProperties = bundleMap(schema.patternProperties, visited)
-        val bundledAdditionalProperties = schema.additionalProperties?.let { bundle(it, visited) }
-        val bundledPropertyNames = schema.propertyNames?.let { bundle(it, visited) }
-        val bundledDefinitions = bundleMap(schema.definitions, visited)
+        if (context.hasVisited(reference)) {
+            return if (keepAsReference) {
+                schemaInterface
+            } else {
+                SchemaInterface.SchemaInline(reference.requireModel<Schema>())
+            }
+        }
 
-        val bundledAllOf = bundleList(schema.allOf, visited)
-        val bundledAnyOf = bundleList(schema.anyOf, visited)
-        val bundledOneOf = bundleList(schema.oneOf, visited)
-        val bundledNot = schema.not?.let { bundle(it, visited) }
-        val bundledIf = schema.ifSchema?.let { bundle(it, visited) }
-        val bundledThen = schema.thenSchema?.let { bundle(it, visited) }
-        val bundledElse = schema.elseSchema?.let { bundle(it, visited) }
+        if (keepAsReference) {
+            ReferenceBundler.bundleReferencedModel<Schema>(
+                reference = reference,
+                context = context,
+            ) { schema, nextContext ->
+                bundleSchema(schema, nextContext)
+            }
+            return schemaInterface
+        }
 
-        val bundledExternalDocs = schema.externalDocs?.let { externalDocsBundler.bundle(it, visited) }
-        val bundledBindings = bindingsBundler.bundleMap(schema.bindings, visited)
+        val bundled = bundleSchema(
+            schema = reference.requireModel(),
+            context = context.enter(reference),
+        )
+        return SchemaInterface.SchemaInline(bundled)
+    }
+
+    private fun bundleSchema(schema: Schema, context: BundlingContext): Schema {
+        val bundledItems = schema.items?.let { bundle(it, context) }
+        val bundledAdditionalItems = schema.additionalItems?.let { bundle(it, context) }
+        val bundledContains = schema.contains?.let { bundle(it, context) }
+
+        val bundledProperties = bundleMap(schema.properties, context)
+        val bundledPatternProperties = bundleMap(schema.patternProperties, context)
+        val bundledAdditionalProperties = schema.additionalProperties?.let { bundle(it, context) }
+        val bundledPropertyNames = schema.propertyNames?.let { bundle(it, context) }
+        val bundledDefinitions = bundleMap(schema.definitions, context)
+
+        val bundledAllOf = bundleList(schema.allOf, context)
+        val bundledAnyOf = bundleList(schema.anyOf, context)
+        val bundledOneOf = bundleList(schema.oneOf, context)
+        val bundledNot = schema.not?.let { bundle(it, context) }
+        val bundledIf = schema.ifSchema?.let { bundle(it, context) }
+        val bundledThen = schema.thenSchema?.let { bundle(it, context) }
+        val bundledElse = schema.elseSchema?.let { bundle(it, context) }
+
+        val bundledExternalDocs = schema.externalDocs?.let { externalDocsBundler.bundle(it, context) }
+        val bundledBindings = bindingsBundler.bundleMap(schema.bindings, context)
         return schema.copy(
             items = bundledItems,
             additionalItems = bundledAdditionalItems,
