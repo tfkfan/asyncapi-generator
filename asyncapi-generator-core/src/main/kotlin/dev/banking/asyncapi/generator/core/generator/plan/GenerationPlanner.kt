@@ -54,9 +54,5 @@ class GenerationPlanner {
         )
 
     private fun GeneratorOptions.springKafkaClientType(): SpringKafkaClientType =
-        if (configOptions["client.type"] == "spring-kafka-simple") {
-            SpringKafkaClientType.SIMPLE
-        } else {
-            SpringKafkaClientType.FULL
-        }
+        SpringKafkaClientType.fromConfigValue(configOptions["client.type"])
 }

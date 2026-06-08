@@ -64,6 +64,32 @@ class GenerationPlannerTest {
     }
 
     @Test
+    fun `plan accepts explicit full Spring Kafka client type`() {
+        val plan =
+            planner.plan(
+                generatorOptions(
+                    generateModels = false,
+                    generateSpringKafkaClient = true,
+                    configOptions = mapOf("client.type" to "spring-kafka"),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.HeaderModelArtifacts(
+                    language = GeneratorName.KOTLIN,
+                    packageName = "com.example.client.header",
+                ),
+                GenerationTask.SpringKafkaClient(
+                    language = GeneratorName.KOTLIN,
+                    clientType = SpringKafkaClientType.FULL,
+                ),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
     fun `plan excludes header model task for simple Spring Kafka client generation`() {
         val plan =
             planner.plan(
@@ -133,6 +159,25 @@ class GenerationPlannerTest {
             }
 
         assertEquals("kafka.topics.property.prefix cannot be empty", exception.message)
+    }
+
+    @Test
+    fun `plan rejects unsupported Spring Kafka client type`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                planner.plan(
+                    generatorOptions(
+                        generateModels = false,
+                        generateSpringKafkaClient = true,
+                        configOptions = mapOf("client.type" to "springkafka"),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "Unsupported client.type 'springkafka'. Supported values: spring-kafka, spring-kafka-simple",
+            exception.message,
+        )
     }
 
     private fun generatorOptions(
