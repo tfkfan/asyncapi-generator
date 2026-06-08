@@ -1,0 +1,108 @@
+package dev.banking.asyncapi.generator.core.generator.artifact
+
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
+import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
+import dev.banking.asyncapi.generator.core.generator.java.JavaModelPreparer
+import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
+import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import java.io.File
+
+/**
+ * Renders planned Kotlin and Java model artifacts before writing them.
+ *
+ * Expected behavior is covered by:
+ * - `ModelArtifactGenerationTest`
+ */
+class ModelArtifactGeneration(
+    private val kotlinModelPreparer: KotlinModelPreparer = KotlinModelPreparer(),
+    private val javaModelPreparer: JavaModelPreparer = JavaModelPreparer(),
+) {
+    fun generateModelArtifacts(
+        task: GenerationTask.ModelArtifacts,
+        generationInput: GenerationInput,
+        sourceOutputDirectory: File,
+        artifactWriter: GeneratedArtifactWriter,
+    ) {
+        when (task.language) {
+            KOTLIN -> {
+                val generationModel =
+                    kotlinModelPreparer.prepare(
+                        input = generationInput,
+                        packageName = task.packageName,
+                        annotation = task.annotation,
+                    )
+                val generator =
+                    KotlinGenerator(
+                        packageName = task.packageName,
+                        outputDir = sourceOutputDirectory,
+                        generationModel = generationModel,
+                    )
+                artifactWriter.write(generator.render())
+            }
+            JAVA -> {
+                val generationModel =
+                    javaModelPreparer.prepare(
+                        input = generationInput,
+                        packageName = task.packageName,
+                    )
+                val generator =
+                    JavaGenerator(
+                        packageName = task.packageName,
+                        outputDir = sourceOutputDirectory,
+                        generationModel = generationModel,
+                    )
+                artifactWriter.write(generator.render())
+            }
+        }
+    }
+
+    fun generateHeaderModelArtifacts(
+        task: GenerationTask.HeaderModelArtifacts,
+        asyncApiDocument: AsyncApiDocument,
+        generationInput: GenerationInput,
+        sourceOutputDirectory: File,
+        artifactWriter: GeneratedArtifactWriter,
+    ) {
+        when (task.language) {
+            KOTLIN -> {
+                val headerModels =
+                    kotlinModelPreparer.prepareHeaders(
+                        input = generationInput,
+                        asyncApiDocument = asyncApiDocument,
+                        packageName = task.packageName,
+                    )
+                if (headerModels.isNotEmpty()) {
+                    val generator =
+                        KotlinGenerator(
+                            packageName = task.packageName,
+                            outputDir = sourceOutputDirectory,
+                            generationModel = headerModels,
+                        )
+                    artifactWriter.write(generator.render())
+                }
+            }
+            JAVA -> {
+                val headerModels =
+                    javaModelPreparer.prepareHeaders(
+                        input = generationInput,
+                        asyncApiDocument = asyncApiDocument,
+                        packageName = task.packageName,
+                    )
+                if (headerModels.isNotEmpty()) {
+                    val generator =
+                        JavaGenerator(
+                            packageName = task.packageName,
+                            outputDir = sourceOutputDirectory,
+                            generationModel = headerModels,
+                        )
+                    artifactWriter.write(generator.render())
+                }
+            }
+        }
+    }
+}
