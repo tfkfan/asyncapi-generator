@@ -3,10 +3,12 @@ package dev.banking.asyncapi.generator.core.generator
 import dev.banking.asyncapi.generator.core.generator.avro.AvroGenerator
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
+import dev.banking.asyncapi.generator.core.generator.java.JavaModelPreparer
 import dev.banking.asyncapi.generator.core.generator.java.factory.JavaGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaSimpleGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
+import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
 import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaSimpleGenerator
@@ -28,6 +30,8 @@ class AsyncApiGenerator {
     private val log = LoggerFactory.getLogger(AsyncApiGenerator::class.java)
 
     private val generationInputFactory = GenerationInputFactory()
+    private val kotlinModelPreparer = KotlinModelPreparer()
+    private val javaModelPreparer = JavaModelPreparer()
 
     fun generate(
         asyncApiDocument: AsyncApiDocument,
@@ -43,18 +47,12 @@ class AsyncApiGenerator {
         when (generatorOptions.generatorName) {
             KOTLIN -> {
                 if (generatorOptions.generateModels) {
-                    val annotation = generatorOptions.configOptions["model.annotation"]
-                    val factory =
-                        KotlinGeneratorModelFactory(
-                            generatorOptions.modelPackage,
-                            generationInput.schemaContext,
-                            generationInput.polymorphicRelationships,
-                            annotation,
-                        )
                     val kotlinGenerationModel =
-                        generationInput.schemas.mapNotNull { (name, schema) ->
-                            factory.create(name, schema)
-                        }
+                        kotlinModelPreparer.prepare(
+                            input = generationInput,
+                            packageName = generatorOptions.modelPackage,
+                            annotation = generatorOptions.configOptions["model.annotation"],
+                        )
                     val kotlinModelGenerator =
                         KotlinGenerator(
                             packageName = generatorOptions.modelPackage,
@@ -120,16 +118,11 @@ class AsyncApiGenerator {
 
             JAVA -> {
                 if (generatorOptions.generateModels) {
-                    val factory =
-                        JavaGeneratorModelFactory(
-                            generatorOptions.modelPackage,
-                            generationInput.schemaContext,
-                            generationInput.polymorphicRelationships,
-                        )
                     val javaGenerationModel =
-                        generationInput.schemas.mapNotNull { (name, schema) ->
-                            factory.create(name, schema)
-                        }
+                        javaModelPreparer.prepare(
+                            input = generationInput,
+                            packageName = generatorOptions.modelPackage,
+                        )
                     val javaGenerator =
                         JavaGenerator(
                             packageName = generatorOptions.modelPackage,

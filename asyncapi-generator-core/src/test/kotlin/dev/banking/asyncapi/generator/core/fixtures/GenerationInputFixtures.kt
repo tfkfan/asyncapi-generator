@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
@@ -19,6 +20,34 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * without requiring the tests to repeat the full object graph.
  */
 internal class GenerationInputFixtures {
+    fun generationInputWithObjectEnumAndPrimitive(): GenerationInput {
+        val userSchema =
+            Schema(
+                type = "object",
+                required = listOf("id"),
+                properties =
+                    mapOf(
+                        "id" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                    ),
+            )
+        val statusSchema =
+            Schema(
+                type = "string",
+                enum = listOf("ACTIVE", "INACTIVE"),
+            )
+
+        return GenerationInput(
+            schemas =
+                linkedMapOf(
+                    "User" to userSchema,
+                    "Status" to statusSchema,
+                    "IgnoredPrimitive" to Schema(type = "string"),
+                ),
+            polymorphicRelationships = mapOf("User" to listOf("Command")),
+            channels = emptyList(),
+        )
+    }
+
     fun documentWithPolymorphicComponentAndChannel(): AsyncApiDocument {
         val externalSchema =
             Schema(
