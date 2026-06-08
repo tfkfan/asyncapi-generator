@@ -5,12 +5,9 @@ import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelPreparer
-import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
-import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaSimpleGenerator
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientGeneration
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
-import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
-import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaSimpleGenerator
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
@@ -18,7 +15,6 @@ import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedA
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import org.slf4j.LoggerFactory
 
@@ -35,6 +31,7 @@ class AsyncApiGenerator {
     private val kotlinModelPreparer = KotlinModelPreparer()
     private val javaModelPreparer = JavaModelPreparer()
     private val generationPlanner = GenerationPlanner()
+    private val springKafkaClientGeneration = SpringKafkaClientGeneration()
 
     fun generate(
         asyncApiDocument: AsyncApiDocument,
@@ -66,7 +63,7 @@ class AsyncApiGenerator {
                         artifactWriter = artifactWriter,
                     )
                 is GenerationTask.SpringKafkaClient ->
-                    generateSpringKafkaClient(
+                    springKafkaClientGeneration.generate(
                         task = task,
                         generationInput = generationInput,
                         generatorOptions = generatorOptions,
@@ -163,57 +160,6 @@ class AsyncApiGenerator {
                             generationModel = headerModels,
                         )
                     artifactWriter.write(generator.render())
-                }
-            }
-        }
-    }
-
-    private fun generateSpringKafkaClient(
-        task: GenerationTask.SpringKafkaClient,
-        generationInput: GenerationInput,
-        generatorOptions: GeneratorOptions,
-    ) {
-        when (task.language) {
-            KOTLIN -> {
-                if (task.clientType == SpringKafkaClientType.SIMPLE) {
-                    val kafkaGenerator =
-                        KotlinSpringKafkaSimpleGenerator(
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            clientPackage = generatorOptions.clientPackage,
-                            modelPackage = generatorOptions.modelPackage,
-                        )
-                    kafkaGenerator.generate(generationInput.channels)
-                } else {
-                    val kafkaGenerator =
-                        KotlinSpringKafkaGenerator(
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            clientPackage = generatorOptions.clientPackage,
-                            modelPackage = generatorOptions.modelPackage,
-                            topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                            resourceOutputDir = generatorOptions.resourceOutputDirectory,
-                        )
-                    kafkaGenerator.generate(generationInput.channels)
-                }
-            }
-            JAVA -> {
-                if (task.clientType == SpringKafkaClientType.SIMPLE) {
-                    val kafkaGenerator =
-                        JavaSpringKafkaSimpleGenerator(
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            clientPackage = generatorOptions.clientPackage,
-                            modelPackage = generatorOptions.modelPackage,
-                        )
-                    kafkaGenerator.generate(generationInput.channels)
-                } else {
-                    val kafkaGenerator =
-                        JavaSpringKafkaGenerator(
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            clientPackage = generatorOptions.clientPackage,
-                            modelPackage = generatorOptions.modelPackage,
-                            topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                            resourceOutputDir = generatorOptions.resourceOutputDirectory,
-                        )
-                    kafkaGenerator.generate(generationInput.channels)
                 }
             }
         }

@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
+import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
@@ -20,6 +22,29 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * without requiring the tests to repeat the full object graph.
  */
 internal class GenerationInputFixtures {
+    fun generationInputWithUserSignupChannel(): GenerationInput =
+        GenerationInput(
+            schemas = emptyMap(),
+            polymorphicRelationships = emptyMap(),
+            channels =
+                listOf(
+                    AnalyzedChannel(
+                        channelName = "userEvents",
+                        topic = "user.events",
+                        isProducer = true,
+                        isConsumer = true,
+                        messages =
+                            listOf(
+                                AnalyzedMessage(
+                                    messageName = "UserSignedUp",
+                                    payloadTypeName = "UserSignedUpPayload",
+                                    schema = Schema(type = "object"),
+                                ),
+                            ),
+                    ),
+                ),
+        )
+
     fun generationInputWithObjectEnumAndPrimitive(): GenerationInput {
         val userSchema =
             Schema(
