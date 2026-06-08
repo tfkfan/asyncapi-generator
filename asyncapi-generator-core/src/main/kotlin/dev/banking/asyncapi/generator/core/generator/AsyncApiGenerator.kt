@@ -18,6 +18,7 @@ import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import dev.banking.asyncapi.generator.core.generator.normalizer.SchemaNormalizer
+import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import org.slf4j.LoggerFactory
 
@@ -39,6 +40,11 @@ class AsyncApiGenerator {
 
         val channelAnalyzer = ChannelAnalyzer()
         val analyzedChannels = channelAnalyzer.analyze(asyncApiDocument).channels
+        val artifactWriter =
+            FileSystemGeneratedArtifactWriter(
+                sourceOutputDirectory = generatorOptions.codegenOutputDirectory,
+                resourceOutputDirectory = generatorOptions.resourceOutputDirectory,
+            )
 
         when (generatorOptions.generatorName) {
             KOTLIN -> {
@@ -61,7 +67,7 @@ class AsyncApiGenerator {
                             outputDir = generatorOptions.codegenOutputDirectory,
                             generationModel = kotlinGenerationModel,
                         )
-                    kotlinModelGenerator.generate()
+                    artifactWriter.write(kotlinModelGenerator.render())
                 }
 
                 if (generatorOptions.generateSpringKafkaClient) {
@@ -84,11 +90,13 @@ class AsyncApiGenerator {
                                 headerSchemas.mapNotNull { (name, schema) ->
                                     headerFactory.create(name, schema)
                                 }
-                            KotlinGenerator(
-                                packageName = "${generatorOptions.clientPackage}.header",
-                                outputDir = generatorOptions.codegenOutputDirectory,
-                                generationModel = headerModels,
-                            ).generate()
+                            val headerGenerator =
+                                KotlinGenerator(
+                                    packageName = "${generatorOptions.clientPackage}.header",
+                                    outputDir = generatorOptions.codegenOutputDirectory,
+                                    generationModel = headerModels,
+                                )
+                            artifactWriter.write(headerGenerator.render())
                         }
                     }
                     if (clientType == "spring-kafka-simple") {
@@ -130,7 +138,7 @@ class AsyncApiGenerator {
                             outputDir = generatorOptions.codegenOutputDirectory,
                             generationModel = javaGenerationModel,
                         )
-                    javaGenerator.generate()
+                    artifactWriter.write(javaGenerator.render())
                 }
                 if (generatorOptions.generateSpringKafkaClient) {
                     if (generatorOptions.kafkaTopicsPropertyPrefix.isBlank()) {
@@ -151,11 +159,13 @@ class AsyncApiGenerator {
                                 headerSchemas.mapNotNull { (name, schema) ->
                                     headerFactory.create(name, schema)
                                 }
-                            JavaGenerator(
-                                packageName = "${generatorOptions.clientPackage}.header",
-                                outputDir = generatorOptions.codegenOutputDirectory,
-                                generationModel = headerModels,
-                            ).generate()
+                            val headerGenerator =
+                                JavaGenerator(
+                                    packageName = "${generatorOptions.clientPackage}.header",
+                                    outputDir = generatorOptions.codegenOutputDirectory,
+                                    generationModel = headerModels,
+                                )
+                            artifactWriter.write(headerGenerator.render())
                         }
                     }
                     if (clientType == "spring-kafka-simple") {
@@ -191,7 +201,7 @@ class AsyncApiGenerator {
                     outputDir = generatorOptions.resourceOutputDirectory,
                     packageName = generatorOptions.schemaPackage,
                 )
-            avroGenerator.generate(analyzedSchemas)
+            artifactWriter.write(avroGenerator.render(analyzedSchemas))
         }
     }
 }
