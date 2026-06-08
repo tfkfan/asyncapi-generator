@@ -39,6 +39,28 @@ class GenerationPlannerTest {
     }
 
     @Test
+    fun `plan includes model annotation on model artifact task when configured`() {
+        val plan =
+            planner.plan(
+                generatorOptions(
+                    generateModels = true,
+                    configOptions = mapOf("model.annotation" to "com.example.NoArg"),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.ModelArtifacts(
+                    language = GeneratorName.KOTLIN,
+                    packageName = "com.example.model",
+                    annotation = "com.example.NoArg",
+                ),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
     fun `plan includes header and full Spring Kafka client tasks for full client generation`() {
         val plan =
             planner.plan(

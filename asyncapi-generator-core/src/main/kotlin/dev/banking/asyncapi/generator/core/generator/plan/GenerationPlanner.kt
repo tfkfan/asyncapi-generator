@@ -17,6 +17,7 @@ class GenerationPlanner {
                         GenerationTask.ModelArtifacts(
                             language = generatorOptions.generatorName,
                             packageName = generatorOptions.modelPackage,
+                            annotation = generatorOptions.configOptions["model.annotation"],
                         ),
                     )
                 }

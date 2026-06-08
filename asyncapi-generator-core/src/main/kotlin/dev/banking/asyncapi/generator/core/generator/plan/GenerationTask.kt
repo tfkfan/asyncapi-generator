@@ -12,6 +12,7 @@ sealed interface GenerationTask {
     data class ModelArtifacts(
         val language: GeneratorName,
         val packageName: String,
+        val annotation: String? = null,
     ) : GenerationTask
 
     data class HeaderModelArtifacts(

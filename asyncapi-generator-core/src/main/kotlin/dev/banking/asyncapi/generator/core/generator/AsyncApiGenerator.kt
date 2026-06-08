@@ -93,7 +93,7 @@ class AsyncApiGenerator {
                     kotlinModelPreparer.prepare(
                         input = generationInput,
                         packageName = task.packageName,
-                        annotation = generatorOptions.configOptions["model.annotation"],
+                        annotation = task.annotation,
                     )
                 val generator =
                     KotlinGenerator(
