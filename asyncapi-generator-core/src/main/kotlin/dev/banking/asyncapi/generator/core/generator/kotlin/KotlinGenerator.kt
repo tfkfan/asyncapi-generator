@@ -18,7 +18,7 @@ class KotlinGenerator(
         KotlinEnumGenerator(outputDir)
     }
     private val typeAliasGenerator: KotlinTypeAliasGenerator by lazy {
-        KotlinTypeAliasGenerator(outputDir, packageName)
+        KotlinTypeAliasGenerator(outputDir)
     }
 
     fun generate() {
