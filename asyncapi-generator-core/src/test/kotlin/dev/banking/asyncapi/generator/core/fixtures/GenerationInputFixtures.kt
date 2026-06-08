@@ -48,6 +48,43 @@ internal class GenerationInputFixtures {
         )
     }
 
+    fun documentWithMessageHeaders(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Test API", version = "1.0.0"),
+            channels =
+                mapOf(
+                    "userEvents" to
+                        ChannelInterface.ChannelInline(
+                            Channel(
+                                messages =
+                                    mapOf(
+                                        "userSignup" to
+                                            MessageInterface.MessageInline(
+                                                Message(
+                                                    name = "UserSignup",
+                                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                                    headers =
+                                                        SchemaInterface.SchemaInline(
+                                                            Schema(
+                                                                type = "object",
+                                                                properties =
+                                                                    mapOf(
+                                                                        "correlationId" to
+                                                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                                        "applicationInstanceId" to
+                                                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                                    ),
+                                                            ),
+                                                        ),
+                                                ),
+                                            ),
+                                    ),
+                            ),
+                        ),
+                ),
+        )
+
     fun documentWithPolymorphicComponentAndChannel(): AsyncApiDocument {
         val externalSchema =
             Schema(

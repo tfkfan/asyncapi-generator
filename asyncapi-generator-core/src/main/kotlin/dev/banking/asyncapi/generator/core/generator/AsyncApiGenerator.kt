@@ -4,15 +4,12 @@ import dev.banking.asyncapi.generator.core.generator.avro.AvroGenerator
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelPreparer
-import dev.banking.asyncapi.generator.core.generator.java.factory.JavaGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaSimpleGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
-import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaSimpleGenerator
-import dev.banking.asyncapi.generator.core.generator.loader.HeaderSchemaCollector
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
@@ -68,19 +65,13 @@ class AsyncApiGenerator {
                     }
                     val clientType = generatorOptions.configOptions["client.type"]
                     if (clientType != "spring-kafka-simple") {
-                        val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
-                        if (headerSchemas.isNotEmpty()) {
-                            val headerFactory =
-                                KotlinGeneratorModelFactory(
-                                    packageName = "${generatorOptions.clientPackage}.header",
-                                    context = generationInput.schemaContextWith(headerSchemas),
-                                    polymorphicRelationships = generationInput.polymorphicRelationships,
-                                    annotation = null,
-                                )
-                            val headerModels =
-                                headerSchemas.mapNotNull { (name, schema) ->
-                                    headerFactory.create(name, schema)
-                                }
+                        val headerModels =
+                            kotlinModelPreparer.prepareHeaders(
+                                input = generationInput,
+                                asyncApiDocument = asyncApiDocument,
+                                packageName = "${generatorOptions.clientPackage}.header",
+                            )
+                        if (headerModels.isNotEmpty()) {
                             val headerGenerator =
                                 KotlinGenerator(
                                     packageName = "${generatorOptions.clientPackage}.header",
@@ -137,18 +128,13 @@ class AsyncApiGenerator {
                     }
                     val clientType = generatorOptions.configOptions["client.type"]
                     if (clientType != "spring-kafka-simple") {
-                        val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
-                        if (headerSchemas.isNotEmpty()) {
-                            val headerFactory =
-                                JavaGeneratorModelFactory(
-                                    packageName = "${generatorOptions.clientPackage}.header",
-                                    context = generationInput.schemaContextWith(headerSchemas),
-                                    polymorphicRelationships = generationInput.polymorphicRelationships,
-                                )
-                            val headerModels =
-                                headerSchemas.mapNotNull { (name, schema) ->
-                                    headerFactory.create(name, schema)
-                                }
+                        val headerModels =
+                            javaModelPreparer.prepareHeaders(
+                                input = generationInput,
+                                asyncApiDocument = asyncApiDocument,
+                                packageName = "${generatorOptions.clientPackage}.header",
+                            )
+                        if (headerModels.isNotEmpty()) {
                             val headerGenerator =
                                 JavaGenerator(
                                     packageName = "${generatorOptions.clientPackage}.header",
