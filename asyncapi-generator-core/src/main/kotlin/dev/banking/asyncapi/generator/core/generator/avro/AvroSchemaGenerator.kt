@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.avro.model.AvroUnion
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import java.io.File
 import java.io.StringWriter
@@ -60,7 +61,7 @@ class AvroSchemaGenerator(
         content: String,
     ): GeneratedArtifact =
         GeneratedArtifact(
-            relativePath = "${namespace.replace('.', '/')}/$name.avsc",
+            relativePath = GeneratedArtifactPaths.fromNamespace(namespace, "$name.avsc"),
             content = content,
             kind = GeneratedArtifactKind.SCHEMA,
         )
