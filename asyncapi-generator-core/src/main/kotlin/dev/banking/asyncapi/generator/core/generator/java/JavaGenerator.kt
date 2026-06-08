@@ -5,6 +5,13 @@ import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedA
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import java.io.File
 
+/**
+ * Renders Java model items into a generation result before writing them.
+ *
+ * Expected behavior is covered by:
+ * - `JavaGeneratorTest`
+ * - `JavaModelApprovalTest`
+ */
 class JavaGenerator(
     private val packageName: String,
     private val outputDir: File,

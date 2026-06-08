@@ -10,6 +10,13 @@ import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import java.io.File
 import java.io.StringWriter
 
+/**
+ * Renders Kotlin sealed interface model items into source artifacts.
+ *
+ * Expected behavior is covered by:
+ * - `KotlinModelArtifactGeneratorTest`
+ * - `KotlinModelApprovalTest`
+ */
 class KotlinSealedInterfaceGenerator(
     val outputDir: File,
 ) {

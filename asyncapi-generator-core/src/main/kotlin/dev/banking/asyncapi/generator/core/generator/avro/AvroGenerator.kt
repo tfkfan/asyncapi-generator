@@ -8,6 +8,13 @@ import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import java.io.File
 
+/**
+ * Renders parsed schemas into Avro schema artifacts before writing them.
+ *
+ * Expected behavior is covered by:
+ * - `AvroGeneratorTest`
+ * - `AvroSchemaApprovalTest`
+ */
 class AvroGenerator(
     private val outputDir: File,
     packageName: String,

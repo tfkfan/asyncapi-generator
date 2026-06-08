@@ -5,6 +5,13 @@ import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import java.io.File
 
+/**
+ * Renders Kotlin model items into a generation result before writing them.
+ *
+ * Expected behavior is covered by:
+ * - `KotlinGeneratorTest`
+ * - `KotlinModelApprovalTest`
+ */
 class KotlinGenerator(
     private val packageName: String,
     private val outputDir: File,

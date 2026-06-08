@@ -12,6 +12,13 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.model.KotlinClassTem
 import java.io.File
 import java.io.StringWriter
 
+/**
+ * Renders Kotlin data class model items into source artifacts.
+ *
+ * Expected behavior is covered by:
+ * - `KotlinDataClassGeneratorTest`
+ * - `KotlinModelApprovalTest`
+ */
 class KotlinDataClassGenerator(
     val outputDir: File,
     val packageName: String,

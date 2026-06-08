@@ -22,6 +22,12 @@ import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedA
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import org.slf4j.LoggerFactory
 
+/**
+ * Coordinates generator analysis and writes rendered artifacts to configured outputs.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorOutputContractTest`
+ */
 class AsyncApiGenerator {
     private val log = LoggerFactory.getLogger(AsyncApiGenerator::class.java)
 

@@ -12,6 +12,13 @@ import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import java.io.File
 import java.io.StringWriter
 
+/**
+ * Renders Java class model items into source artifacts.
+ *
+ * Expected behavior is covered by:
+ * - `JavaModelArtifactGeneratorTest`
+ * - `JavaModelApprovalTest`
+ */
 class JavaClassGenerator(
     val outputDir: File,
     val packageName: String,
