@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.generator.avro.AvroGenerator
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelPreparer
@@ -14,11 +15,15 @@ import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
+import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import org.slf4j.LoggerFactory
 
 /**
- * Coordinates generator analysis and writes rendered artifacts to configured outputs.
+ * Coordinates generator input preparation, planning, rendering, and artifact writing.
  *
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorOutputContractTest`
@@ -29,155 +34,205 @@ class AsyncApiGenerator {
     private val generationInputFactory = GenerationInputFactory()
     private val kotlinModelPreparer = KotlinModelPreparer()
     private val javaModelPreparer = JavaModelPreparer()
+    private val generationPlanner = GenerationPlanner()
 
     fun generate(
         asyncApiDocument: AsyncApiDocument,
         generatorOptions: GeneratorOptions,
     ) {
         val generationInput = generationInputFactory.create(asyncApiDocument)
+        val generationPlan = generationPlanner.plan(generatorOptions)
         val artifactWriter =
             FileSystemGeneratedArtifactWriter(
                 sourceOutputDirectory = generatorOptions.codegenOutputDirectory,
                 resourceOutputDirectory = generatorOptions.resourceOutputDirectory,
             )
 
-        when (generatorOptions.generatorName) {
-            KOTLIN -> {
-                if (generatorOptions.generateModels) {
-                    val kotlinGenerationModel =
-                        kotlinModelPreparer.prepare(
-                            input = generationInput,
-                            packageName = generatorOptions.modelPackage,
-                            annotation = generatorOptions.configOptions["model.annotation"],
-                        )
-                    val kotlinModelGenerator =
-                        KotlinGenerator(
-                            packageName = generatorOptions.modelPackage,
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            generationModel = kotlinGenerationModel,
-                        )
-                    artifactWriter.write(kotlinModelGenerator.render())
-                }
-
-                if (generatorOptions.generateSpringKafkaClient) {
-                    if (generatorOptions.kafkaTopicsPropertyPrefix.isBlank()) {
-                        throw IllegalArgumentException("kafka.topics.property.prefix cannot be empty")
-                    }
-                    val clientType = generatorOptions.configOptions["client.type"]
-                    if (clientType != "spring-kafka-simple") {
-                        val headerModels =
-                            kotlinModelPreparer.prepareHeaders(
-                                input = generationInput,
-                                asyncApiDocument = asyncApiDocument,
-                                packageName = "${generatorOptions.clientPackage}.header",
-                            )
-                        if (headerModels.isNotEmpty()) {
-                            val headerGenerator =
-                                KotlinGenerator(
-                                    packageName = "${generatorOptions.clientPackage}.header",
-                                    outputDir = generatorOptions.codegenOutputDirectory,
-                                    generationModel = headerModels,
-                                )
-                            artifactWriter.write(headerGenerator.render())
-                        }
-                    }
-                    if (clientType == "spring-kafka-simple") {
-                        val kafkaGenerator =
-                            KotlinSpringKafkaSimpleGenerator(
-                                outputDir = generatorOptions.codegenOutputDirectory,
-                                clientPackage = generatorOptions.clientPackage,
-                                modelPackage = generatorOptions.modelPackage,
-                            )
-                        kafkaGenerator.generate(generationInput.channels)
-                    } else {
-                        val kafkaGenerator =
-                            KotlinSpringKafkaGenerator(
-                                outputDir = generatorOptions.codegenOutputDirectory,
-                                clientPackage = generatorOptions.clientPackage,
-                                modelPackage = generatorOptions.modelPackage,
-                                topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                                resourceOutputDir = generatorOptions.resourceOutputDirectory,
-                            )
-                        kafkaGenerator.generate(generationInput.channels)
-                    }
-                }
-
-                if (generatorOptions.generateQuarkusKafkaClient) {
-                    log.info("Generate Kotlin Quarkus Kafka Client is not yet implemented. Skipping..")
-                }
+        generationPlan.tasks.forEach { task ->
+            when (task) {
+                is GenerationTask.ModelArtifacts ->
+                    writeModelArtifacts(
+                        task = task,
+                        generationInput = generationInput,
+                        generatorOptions = generatorOptions,
+                        artifactWriter = artifactWriter,
+                    )
+                is GenerationTask.HeaderModelArtifacts ->
+                    writeHeaderModelArtifacts(
+                        task = task,
+                        asyncApiDocument = asyncApiDocument,
+                        generationInput = generationInput,
+                        generatorOptions = generatorOptions,
+                        artifactWriter = artifactWriter,
+                    )
+                is GenerationTask.SpringKafkaClient ->
+                    generateSpringKafkaClient(
+                        task = task,
+                        generationInput = generationInput,
+                        generatorOptions = generatorOptions,
+                    )
+                is GenerationTask.QuarkusKafkaClient ->
+                    log.info("Generate ${task.language.name.titlecase()} Quarkus Kafka Client is not yet implemented. Skipping..")
+                is GenerationTask.AvroSchemaArtifacts ->
+                    writeAvroSchemaArtifacts(
+                        task = task,
+                        generationInput = generationInput,
+                        generatorOptions = generatorOptions,
+                        artifactWriter = artifactWriter,
+                    )
             }
-
-            JAVA -> {
-                if (generatorOptions.generateModels) {
-                    val javaGenerationModel =
-                        javaModelPreparer.prepare(
-                            input = generationInput,
-                            packageName = generatorOptions.modelPackage,
-                        )
-                    val javaGenerator =
-                        JavaGenerator(
-                            packageName = generatorOptions.modelPackage,
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            generationModel = javaGenerationModel,
-                        )
-                    artifactWriter.write(javaGenerator.render())
-                }
-                if (generatorOptions.generateSpringKafkaClient) {
-                    if (generatorOptions.kafkaTopicsPropertyPrefix.isBlank()) {
-                        throw IllegalArgumentException("kafka.topics.property.prefix cannot be empty")
-                    }
-                    val clientType = generatorOptions.configOptions["client.type"]
-                    if (clientType != "spring-kafka-simple") {
-                        val headerModels =
-                            javaModelPreparer.prepareHeaders(
-                                input = generationInput,
-                                asyncApiDocument = asyncApiDocument,
-                                packageName = "${generatorOptions.clientPackage}.header",
-                            )
-                        if (headerModels.isNotEmpty()) {
-                            val headerGenerator =
-                                JavaGenerator(
-                                    packageName = "${generatorOptions.clientPackage}.header",
-                                    outputDir = generatorOptions.codegenOutputDirectory,
-                                    generationModel = headerModels,
-                                )
-                            artifactWriter.write(headerGenerator.render())
-                        }
-                    }
-                    if (clientType == "spring-kafka-simple") {
-                        val kafkaGenerator =
-                            JavaSpringKafkaSimpleGenerator(
-                                outputDir = generatorOptions.codegenOutputDirectory,
-                                clientPackage = generatorOptions.clientPackage,
-                                modelPackage = generatorOptions.modelPackage,
-                            )
-                        kafkaGenerator.generate(generationInput.channels)
-                    } else {
-                        val kafkaGenerator =
-                            JavaSpringKafkaGenerator(
-                                outputDir = generatorOptions.codegenOutputDirectory,
-                                clientPackage = generatorOptions.clientPackage,
-                                modelPackage = generatorOptions.modelPackage,
-                                topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                                resourceOutputDir = generatorOptions.resourceOutputDirectory,
-                            )
-                        kafkaGenerator.generate(generationInput.channels)
-                    }
-                }
-
-                if (generatorOptions.generateQuarkusKafkaClient) {
-                    log.info("Generate Java Quarkus Kafka Client is not yet implemented. Skipping..")
-                }
-            }
-        }
-
-        if (generatorOptions.generateAvroSchema) {
-            val avroGenerator =
-                AvroGenerator(
-                    outputDir = generatorOptions.resourceOutputDirectory,
-                    packageName = generatorOptions.schemaPackage,
-                )
-            artifactWriter.write(avroGenerator.render(generationInput.schemas))
         }
     }
+
+    private fun writeModelArtifacts(
+        task: GenerationTask.ModelArtifacts,
+        generationInput: GenerationInput,
+        generatorOptions: GeneratorOptions,
+        artifactWriter: GeneratedArtifactWriter,
+    ) {
+        when (task.language) {
+            KOTLIN -> {
+                val generationModel =
+                    kotlinModelPreparer.prepare(
+                        input = generationInput,
+                        packageName = task.packageName,
+                        annotation = generatorOptions.configOptions["model.annotation"],
+                    )
+                val generator =
+                    KotlinGenerator(
+                        packageName = task.packageName,
+                        outputDir = generatorOptions.codegenOutputDirectory,
+                        generationModel = generationModel,
+                    )
+                artifactWriter.write(generator.render())
+            }
+            JAVA -> {
+                val generationModel =
+                    javaModelPreparer.prepare(
+                        input = generationInput,
+                        packageName = task.packageName,
+                    )
+                val generator =
+                    JavaGenerator(
+                        packageName = task.packageName,
+                        outputDir = generatorOptions.codegenOutputDirectory,
+                        generationModel = generationModel,
+                    )
+                artifactWriter.write(generator.render())
+            }
+        }
+    }
+
+    private fun writeHeaderModelArtifacts(
+        task: GenerationTask.HeaderModelArtifacts,
+        asyncApiDocument: AsyncApiDocument,
+        generationInput: GenerationInput,
+        generatorOptions: GeneratorOptions,
+        artifactWriter: GeneratedArtifactWriter,
+    ) {
+        when (task.language) {
+            KOTLIN -> {
+                val headerModels =
+                    kotlinModelPreparer.prepareHeaders(
+                        input = generationInput,
+                        asyncApiDocument = asyncApiDocument,
+                        packageName = task.packageName,
+                    )
+                if (headerModels.isNotEmpty()) {
+                    val generator =
+                        KotlinGenerator(
+                            packageName = task.packageName,
+                            outputDir = generatorOptions.codegenOutputDirectory,
+                            generationModel = headerModels,
+                        )
+                    artifactWriter.write(generator.render())
+                }
+            }
+            JAVA -> {
+                val headerModels =
+                    javaModelPreparer.prepareHeaders(
+                        input = generationInput,
+                        asyncApiDocument = asyncApiDocument,
+                        packageName = task.packageName,
+                    )
+                if (headerModels.isNotEmpty()) {
+                    val generator =
+                        JavaGenerator(
+                            packageName = task.packageName,
+                            outputDir = generatorOptions.codegenOutputDirectory,
+                            generationModel = headerModels,
+                        )
+                    artifactWriter.write(generator.render())
+                }
+            }
+        }
+    }
+
+    private fun generateSpringKafkaClient(
+        task: GenerationTask.SpringKafkaClient,
+        generationInput: GenerationInput,
+        generatorOptions: GeneratorOptions,
+    ) {
+        when (task.language) {
+            KOTLIN -> {
+                if (task.clientType == SpringKafkaClientType.SIMPLE) {
+                    val kafkaGenerator =
+                        KotlinSpringKafkaSimpleGenerator(
+                            outputDir = generatorOptions.codegenOutputDirectory,
+                            clientPackage = generatorOptions.clientPackage,
+                            modelPackage = generatorOptions.modelPackage,
+                        )
+                    kafkaGenerator.generate(generationInput.channels)
+                } else {
+                    val kafkaGenerator =
+                        KotlinSpringKafkaGenerator(
+                            outputDir = generatorOptions.codegenOutputDirectory,
+                            clientPackage = generatorOptions.clientPackage,
+                            modelPackage = generatorOptions.modelPackage,
+                            topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
+                            resourceOutputDir = generatorOptions.resourceOutputDirectory,
+                        )
+                    kafkaGenerator.generate(generationInput.channels)
+                }
+            }
+            JAVA -> {
+                if (task.clientType == SpringKafkaClientType.SIMPLE) {
+                    val kafkaGenerator =
+                        JavaSpringKafkaSimpleGenerator(
+                            outputDir = generatorOptions.codegenOutputDirectory,
+                            clientPackage = generatorOptions.clientPackage,
+                            modelPackage = generatorOptions.modelPackage,
+                        )
+                    kafkaGenerator.generate(generationInput.channels)
+                } else {
+                    val kafkaGenerator =
+                        JavaSpringKafkaGenerator(
+                            outputDir = generatorOptions.codegenOutputDirectory,
+                            clientPackage = generatorOptions.clientPackage,
+                            modelPackage = generatorOptions.modelPackage,
+                            topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
+                            resourceOutputDir = generatorOptions.resourceOutputDirectory,
+                        )
+                    kafkaGenerator.generate(generationInput.channels)
+                }
+            }
+        }
+    }
+
+    private fun writeAvroSchemaArtifacts(
+        task: GenerationTask.AvroSchemaArtifacts,
+        generationInput: GenerationInput,
+        generatorOptions: GeneratorOptions,
+        artifactWriter: GeneratedArtifactWriter,
+    ) {
+        val avroGenerator =
+            AvroGenerator(
+                outputDir = generatorOptions.resourceOutputDirectory,
+                packageName = task.packageName,
+            )
+        artifactWriter.write(avroGenerator.render(generationInput.schemas))
+    }
+
+    private fun String.titlecase(): String =
+        lowercase().replaceFirstChar { it.titlecase() }
 }
