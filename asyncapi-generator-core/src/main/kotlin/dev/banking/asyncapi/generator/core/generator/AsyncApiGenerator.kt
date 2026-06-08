@@ -1,9 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.ChannelAnalyzer
-import dev.banking.asyncapi.generator.core.generator.analyzer.SchemaAnalyzer
 import dev.banking.asyncapi.generator.core.generator.avro.AvroGenerator
-import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.factory.JavaGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
@@ -12,12 +10,10 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaSimpleGenerator
-import dev.banking.asyncapi.generator.core.generator.loader.AsyncApiSchemaLoader
 import dev.banking.asyncapi.generator.core.generator.loader.HeaderSchemaCollector
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
-import dev.banking.asyncapi.generator.core.generator.normalizer.SchemaNormalizer
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import org.slf4j.LoggerFactory
@@ -31,21 +27,13 @@ import org.slf4j.LoggerFactory
 class AsyncApiGenerator {
     private val log = LoggerFactory.getLogger(AsyncApiGenerator::class.java)
 
-    private val schemaAnalyzer = SchemaAnalyzer()
-    private val schemaNormalizer = SchemaNormalizer()
+    private val generationInputFactory = GenerationInputFactory()
 
     fun generate(
         asyncApiDocument: AsyncApiDocument,
         generatorOptions: GeneratorOptions,
     ) {
-        val schemas = AsyncApiSchemaLoader.load(asyncApiDocument)
-        val normalizedSchemas = schemaNormalizer.normalize(schemas)
-        val (analyzedSchemas, polymorphic) = schemaAnalyzer.analyze(normalizedSchemas)
-
-        val context = GeneratorContext(analyzedSchemas)
-
-        val channelAnalyzer = ChannelAnalyzer()
-        val analyzedChannels = channelAnalyzer.analyze(asyncApiDocument).channels
+        val generationInput = generationInputFactory.create(asyncApiDocument)
         val artifactWriter =
             FileSystemGeneratedArtifactWriter(
                 sourceOutputDirectory = generatorOptions.codegenOutputDirectory,
@@ -59,12 +47,12 @@ class AsyncApiGenerator {
                     val factory =
                         KotlinGeneratorModelFactory(
                             generatorOptions.modelPackage,
-                            context,
-                            polymorphic,
+                            generationInput.schemaContext,
+                            generationInput.polymorphicRelationships,
                             annotation,
                         )
                     val kotlinGenerationModel =
-                        analyzedSchemas.mapNotNull { (name, schema) ->
+                        generationInput.schemas.mapNotNull { (name, schema) ->
                             factory.create(name, schema)
                         }
                     val kotlinModelGenerator =
@@ -84,12 +72,11 @@ class AsyncApiGenerator {
                     if (clientType != "spring-kafka-simple") {
                         val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
                         if (headerSchemas.isNotEmpty()) {
-                            val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
                             val headerFactory =
                                 KotlinGeneratorModelFactory(
                                     packageName = "${generatorOptions.clientPackage}.header",
-                                    context = headerContext,
-                                    polymorphicRelationships = polymorphic,
+                                    context = generationInput.schemaContextWith(headerSchemas),
+                                    polymorphicRelationships = generationInput.polymorphicRelationships,
                                     annotation = null,
                                 )
                             val headerModels =
@@ -112,7 +99,7 @@ class AsyncApiGenerator {
                                 clientPackage = generatorOptions.clientPackage,
                                 modelPackage = generatorOptions.modelPackage,
                             )
-                        kafkaGenerator.generate(analyzedChannels)
+                        kafkaGenerator.generate(generationInput.channels)
                     } else {
                         val kafkaGenerator =
                             KotlinSpringKafkaGenerator(
@@ -122,7 +109,7 @@ class AsyncApiGenerator {
                                 topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
                                 resourceOutputDir = generatorOptions.resourceOutputDirectory,
                             )
-                        kafkaGenerator.generate(analyzedChannels)
+                        kafkaGenerator.generate(generationInput.channels)
                     }
                 }
 
@@ -133,9 +120,14 @@ class AsyncApiGenerator {
 
             JAVA -> {
                 if (generatorOptions.generateModels) {
-                    val factory = JavaGeneratorModelFactory(generatorOptions.modelPackage, context, polymorphic)
+                    val factory =
+                        JavaGeneratorModelFactory(
+                            generatorOptions.modelPackage,
+                            generationInput.schemaContext,
+                            generationInput.polymorphicRelationships,
+                        )
                     val javaGenerationModel =
-                        analyzedSchemas.mapNotNull { (name, schema) ->
+                        generationInput.schemas.mapNotNull { (name, schema) ->
                             factory.create(name, schema)
                         }
                     val javaGenerator =
@@ -154,12 +146,11 @@ class AsyncApiGenerator {
                     if (clientType != "spring-kafka-simple") {
                         val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
                         if (headerSchemas.isNotEmpty()) {
-                            val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
                             val headerFactory =
                                 JavaGeneratorModelFactory(
                                     packageName = "${generatorOptions.clientPackage}.header",
-                                    context = headerContext,
-                                    polymorphicRelationships = polymorphic,
+                                    context = generationInput.schemaContextWith(headerSchemas),
+                                    polymorphicRelationships = generationInput.polymorphicRelationships,
                                 )
                             val headerModels =
                                 headerSchemas.mapNotNull { (name, schema) ->
@@ -181,7 +172,7 @@ class AsyncApiGenerator {
                                 clientPackage = generatorOptions.clientPackage,
                                 modelPackage = generatorOptions.modelPackage,
                             )
-                        kafkaGenerator.generate(analyzedChannels)
+                        kafkaGenerator.generate(generationInput.channels)
                     } else {
                         val kafkaGenerator =
                             JavaSpringKafkaGenerator(
@@ -191,7 +182,7 @@ class AsyncApiGenerator {
                                 topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
                                 resourceOutputDir = generatorOptions.resourceOutputDirectory,
                             )
-                        kafkaGenerator.generate(analyzedChannels)
+                        kafkaGenerator.generate(generationInput.channels)
                     }
                 }
 
@@ -207,7 +198,7 @@ class AsyncApiGenerator {
                     outputDir = generatorOptions.resourceOutputDirectory,
                     packageName = generatorOptions.schemaPackage,
                 )
-            artifactWriter.write(avroGenerator.render(analyzedSchemas))
+            artifactWriter.write(avroGenerator.render(generationInput.schemas))
         }
     }
 }
