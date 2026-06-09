@@ -19,8 +19,11 @@ class GeneratorConfigurationFactoryTest {
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
-                    modelPackageName = "com.example.model",
-                    modelAnnotation = "com.example.NoArg",
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.model",
+                            annotation = "com.example.NoArg",
+                        ),
                 ),
             )
 
@@ -39,10 +42,16 @@ class GeneratorConfigurationFactoryTest {
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
-                    modelPackageName = "com.example.model",
-                    clientPackageName = "com.example.client",
-                    clientType = GeneratorClientType.SPRING_KAFKA_SIMPLE,
-                    kafkaTopicsPropertyPrefix = "custom.topics",
+                    models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            springKafka =
+                                GeneratorConfigurationRequest.SpringKafka(
+                                    packageName = "com.example.client",
+                                    clientType = SpringKafkaClientType.SIMPLE,
+                                    topicPropertyPrefix = "custom.topics",
+                                ),
+                        ),
                 ),
             )
 
@@ -64,8 +73,13 @@ class GeneratorConfigurationFactoryTest {
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
-                    schemaPackageName = "com.example.schema",
-                    schemaMode = GeneratorSchemaMode.AVRO_PROJECTION,
+                    schemas =
+                        GeneratorConfigurationRequest.Schemas(
+                            avroProjection =
+                                GeneratorConfigurationRequest.AvroProjection(
+                                    packageName = "com.example.schema",
+                                ),
+                        ),
                 ),
             )
 
@@ -76,15 +90,10 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create treats explicit none values as disabled output`() {
+    fun `create returns no configured output when no output requests are configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(
-                request(
-                    clientPackageName = "com.example.client",
-                    schemaPackageName = "com.example.schema",
-                    clientType = GeneratorClientType.NONE,
-                    schemaMode = GeneratorSchemaMode.NONE,
-                ),
+                request(),
             )
 
         assertEquals(emptyList(), configuration.clients)
@@ -97,11 +106,19 @@ class GeneratorConfigurationFactoryTest {
         val exception =
             assertFailsWith<IllegalArgumentException> {
                 GeneratorConfigurationFactory.create(
-                    request(clientType = GeneratorClientType.SPRING_KAFKA),
+                    request(
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                springKafka = GeneratorConfigurationRequest.SpringKafka(),
+                            ),
+                    ),
                 )
             }
 
-        assertEquals("clientType requires clientPackage", exception.message)
+        assertEquals(
+            "clients.springKafka.packageName is required when clients.springKafka is configured",
+            exception.message,
+        )
     }
 
     @Test
@@ -109,11 +126,19 @@ class GeneratorConfigurationFactoryTest {
         val exception =
             assertFailsWith<IllegalArgumentException> {
                 GeneratorConfigurationFactory.create(
-                    request(schemaMode = GeneratorSchemaMode.AVRO_PROJECTION),
+                    request(
+                        schemas =
+                            GeneratorConfigurationRequest.Schemas(
+                                avroProjection = GeneratorConfigurationRequest.AvroProjection(),
+                            ),
+                    ),
                 )
             }
 
-        assertEquals("schemaMode requires schemaPackage", exception.message)
+        assertEquals(
+            "schemas.avroProjection.packageName is required when schemas.avroProjection is configured",
+            exception.message,
+        )
     }
 
     @Test
@@ -121,11 +146,16 @@ class GeneratorConfigurationFactoryTest {
         val exception =
             assertFailsWith<IllegalArgumentException> {
                 GeneratorConfigurationFactory.create(
-                    request(modelAnnotation = "com.example.NoArg"),
+                    request(
+                        models = GeneratorConfigurationRequest.Models(annotation = "com.example.NoArg"),
+                    ),
                 )
             }
 
-        assertEquals("modelAnnotation requires modelPackage", exception.message)
+        assertEquals(
+            "models.packageName is required when models.annotation is configured",
+            exception.message,
+        )
     }
 
     @Test
@@ -133,32 +163,33 @@ class GeneratorConfigurationFactoryTest {
         val exception =
             assertFailsWith<IllegalArgumentException> {
                 GeneratorConfigurationFactory.create(
-                    request(kafkaTopicsPropertyPrefix = ""),
+                    request(
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                springKafka =
+                                    GeneratorConfigurationRequest.SpringKafka(
+                                        packageName = "com.example.client",
+                                        topicPropertyPrefix = "",
+                                    ),
+                            ),
+                    ),
                 )
             }
 
-        assertEquals("kafkaTopicsPropertyPrefix cannot be empty", exception.message)
+        assertEquals("clients.springKafka.topicPropertyPrefix cannot be empty", exception.message)
     }
 
     private fun request(
-        modelPackageName: String? = null,
-        clientPackageName: String? = null,
-        schemaPackageName: String? = null,
-        clientType: GeneratorClientType? = null,
-        schemaMode: GeneratorSchemaMode? = null,
-        modelAnnotation: String? = null,
-        kafkaTopicsPropertyPrefix: String = GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
+        models: GeneratorConfigurationRequest.Models? = null,
+        schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),
+        clients: GeneratorConfigurationRequest.Clients = GeneratorConfigurationRequest.Clients(),
     ): GeneratorConfigurationRequest =
         GeneratorConfigurationRequest(
             language = GeneratorName.KOTLIN,
             sourceOutputDirectory = tempDir.resolve("sources").toFile(),
             resourceOutputDirectory = tempDir.resolve("resources").toFile(),
-            modelPackageName = modelPackageName,
-            clientPackageName = clientPackageName,
-            schemaPackageName = schemaPackageName,
-            clientType = clientType,
-            schemaMode = schemaMode,
-            modelAnnotation = modelAnnotation,
-            kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
+            models = models,
+            schemas = schemas,
+            clients = clients,
         )
 }

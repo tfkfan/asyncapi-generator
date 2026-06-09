@@ -116,15 +116,9 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     language = generator,
                     sourceOutputDirectory = sourceRoot,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    modelPackageName = modelPackage,
-                    clientPackageName = clientPackage,
-                    schemaPackageName = schemaPackage,
-                    clientType = clientType,
-                    schemaMode = schemaMode,
-                    modelAnnotation = modelAnnotation,
-                    kafkaTopicsPropertyPrefix =
-                        kafkaTopicsPropertyPrefix
-                            ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
+                    models = modelRequest(),
+                    schemas = schemaRequest(),
+                    clients = clientRequest(),
                 ),
             )
         if (generatorConfiguration.hasConfiguredOutputs()) {
@@ -132,4 +126,48 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         }
         echo("Generation complete.")
     }
+
+    private fun modelRequest(): GeneratorConfigurationRequest.Models? =
+        if (modelPackage != null || modelAnnotation != null) {
+            GeneratorConfigurationRequest.Models(
+                packageName = modelPackage,
+                annotation = modelAnnotation,
+            )
+        } else {
+            null
+        }
+
+    private fun schemaRequest(): GeneratorConfigurationRequest.Schemas =
+        GeneratorConfigurationRequest.Schemas(
+            avroProjection =
+                if (schemaMode == GeneratorSchemaMode.AVRO_PROJECTION) {
+                    GeneratorConfigurationRequest.AvroProjection(packageName = schemaPackage)
+                } else {
+                    null
+                },
+        )
+
+    private fun clientRequest(): GeneratorConfigurationRequest.Clients =
+        GeneratorConfigurationRequest.Clients(
+            springKafka =
+                clientType?.springKafkaClientType?.let { springKafkaClientType ->
+                    GeneratorConfigurationRequest.SpringKafka(
+                        packageName = clientPackage,
+                        modelPackageName = modelPackage,
+                        clientType = springKafkaClientType,
+                        topicPropertyPrefix =
+                            kafkaTopicsPropertyPrefix
+                                ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
+                    )
+                },
+            quarkusKafka =
+                if (clientType == GeneratorClientType.QUARKUS_KAFKA) {
+                    GeneratorConfigurationRequest.QuarkusKafka(
+                        packageName = clientPackage,
+                        modelPackageName = modelPackage,
+                    )
+                } else {
+                    null
+                },
+        )
 }

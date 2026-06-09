@@ -19,7 +19,9 @@
                         <configuration>
                             <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
                             <codegenOutputDirectory>${project.build.directory}/custom-codegen</codegenOutputDirectory>
-                            <modelPackage>com.example.codegen</modelPackage>
+                            <models>
+                                <packageName>com.example.codegen</packageName>
+                            </models>
                             <generatorName>kotlin</generatorName>
                         </configuration>
                     </execution>

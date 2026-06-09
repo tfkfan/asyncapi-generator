@@ -10,9 +10,7 @@ object GeneratorConfigurationFactory {
     fun create(request: GeneratorConfigurationRequest): GeneratorConfiguration {
         validate(request)
 
-        val effectiveModelPackage = request.modelPackageName ?: "unused"
-        val effectiveClientPackage = request.clientPackageName ?: "unused"
-        val effectiveSchemaPackage = request.schemaPackageName ?: "unused"
+        val effectiveModelPackage = request.models?.packageName ?: "unused"
 
         return GeneratorConfiguration(
             language = request.language,
@@ -22,43 +20,36 @@ object GeneratorConfigurationFactory {
                     resourceOutputDirectory = request.resourceOutputDirectory,
                 ),
             models =
-                request.modelPackageName?.let { packageName ->
+                request.models?.packageName?.let { packageName ->
                     ModelGeneration.Enabled(
                         packageName = packageName,
-                        annotation = request.modelAnnotation,
+                        annotation = request.models.annotation,
                     )
                 } ?: ModelGeneration.Disabled,
             schemas =
                 buildList {
-                    if (
-                        request.schemaPackageName != null &&
-                        request.schemaMode == GeneratorSchemaMode.AVRO_PROJECTION
-                    ) {
-                        add(SchemaGeneration.AvroProjection(effectiveSchemaPackage))
+                    request.schemas.avroProjection?.packageName?.let { packageName ->
+                        add(SchemaGeneration.AvroProjection(packageName))
                     }
                 },
             clients =
                 buildList {
-                    val springKafkaClientType = request.clientType?.springKafkaClientType
-                    if (request.clientPackageName != null && springKafkaClientType != null) {
+                    request.clients.springKafka?.let { springKafka ->
                         add(
                             ClientGeneration.SpringKafka(
-                                packageName = effectiveClientPackage,
-                                modelPackageName = effectiveModelPackage,
-                                clientType = springKafkaClientType,
-                                topicPropertyPrefix = request.kafkaTopicsPropertyPrefix,
+                                packageName = springKafka.packageName!!,
+                                modelPackageName = springKafka.modelPackageName ?: effectiveModelPackage,
+                                clientType = springKafka.clientType,
+                                topicPropertyPrefix = springKafka.topicPropertyPrefix,
                             ),
                         )
                     }
 
-                    if (
-                        request.clientPackageName != null &&
-                        request.clientType == GeneratorClientType.QUARKUS_KAFKA
-                    ) {
+                    request.clients.quarkusKafka?.let { quarkusKafka ->
                         add(
                             ClientGeneration.QuarkusKafka(
-                                packageName = effectiveClientPackage,
-                                modelPackageName = effectiveModelPackage,
+                                packageName = quarkusKafka.packageName!!,
+                                modelPackageName = quarkusKafka.modelPackageName ?: effectiveModelPackage,
                             ),
                         )
                     }
@@ -67,20 +58,30 @@ object GeneratorConfigurationFactory {
     }
 
     private fun validate(request: GeneratorConfigurationRequest) {
-        if (request.clientType != null && request.clientType != GeneratorClientType.NONE && request.clientPackageName == null) {
-            throw IllegalArgumentException("clientType requires clientPackage")
+        if (request.models?.annotation != null && request.models.packageName == null) {
+            throw IllegalArgumentException("models.packageName is required when models.annotation is configured")
         }
 
-        if (request.schemaMode != null && request.schemaMode != GeneratorSchemaMode.NONE && request.schemaPackageName == null) {
-            throw IllegalArgumentException("schemaMode requires schemaPackage")
+        if (request.schemas.avroProjection != null && request.schemas.avroProjection.packageName == null) {
+            throw IllegalArgumentException(
+                "schemas.avroProjection.packageName is required when schemas.avroProjection is configured",
+            )
         }
 
-        if (request.modelAnnotation != null && request.modelPackageName == null) {
-            throw IllegalArgumentException("modelAnnotation requires modelPackage")
+        if (request.clients.springKafka != null && request.clients.springKafka.packageName == null) {
+            throw IllegalArgumentException(
+                "clients.springKafka.packageName is required when clients.springKafka is configured",
+            )
         }
 
-        if (request.kafkaTopicsPropertyPrefix.isBlank()) {
-            throw IllegalArgumentException("kafkaTopicsPropertyPrefix cannot be empty")
+        if (request.clients.quarkusKafka != null && request.clients.quarkusKafka.packageName == null) {
+            throw IllegalArgumentException(
+                "clients.quarkusKafka.packageName is required when clients.quarkusKafka is configured",
+            )
+        }
+
+        if (request.clients.springKafka?.topicPropertyPrefix?.isBlank() == true) {
+            throw IllegalArgumentException("clients.springKafka.topicPropertyPrefix cannot be empty")
         }
     }
 }

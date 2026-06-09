@@ -120,13 +120,23 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     language = targetLanguage,
                     sourceOutputDirectory = codegenSourceRoot,
                     resourceOutputDirectory = resourceOutputDirectory.get().asFile,
-                    modelPackageName = modelPackage.orNull,
-                    clientPackageName = clientPackage.orNull,
-                    schemaPackageName = schemaPackage.orNull,
-                    clientType = selectedClientType,
-                    schemaMode = selectedSchemaMode,
-                    modelAnnotation = selectedModelAnnotation,
-                    kafkaTopicsPropertyPrefix = topicPropertyPrefix,
+                    models =
+                        modelRequest(
+                            packageName = modelPackage.orNull,
+                            annotation = selectedModelAnnotation,
+                        ),
+                    schemas =
+                        schemaRequest(
+                            schemaMode = selectedSchemaMode,
+                            packageName = schemaPackage.orNull,
+                        ),
+                    clients =
+                        clientRequest(
+                            clientType = selectedClientType,
+                            packageName = clientPackage.orNull,
+                            modelPackageName = modelPackage.orNull,
+                            topicPropertyPrefix = topicPropertyPrefix,
+                        ),
                 ),
             )
         if (generatorConfiguration.hasConfiguredOutputs()) {
@@ -134,4 +144,57 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         }
         logger.lifecycle("asyncapi-generator-gradle-plugin completed")
     }
+
+    private fun modelRequest(
+        packageName: String?,
+        annotation: String?,
+    ): GeneratorConfigurationRequest.Models? =
+        if (packageName != null || annotation != null) {
+            GeneratorConfigurationRequest.Models(
+                packageName = packageName,
+                annotation = annotation,
+            )
+        } else {
+            null
+        }
+
+    private fun schemaRequest(
+        schemaMode: GeneratorSchemaMode?,
+        packageName: String?,
+    ): GeneratorConfigurationRequest.Schemas =
+        GeneratorConfigurationRequest.Schemas(
+            avroProjection =
+                if (schemaMode == GeneratorSchemaMode.AVRO_PROJECTION) {
+                    GeneratorConfigurationRequest.AvroProjection(packageName = packageName)
+                } else {
+                    null
+                },
+        )
+
+    private fun clientRequest(
+        clientType: GeneratorClientType?,
+        packageName: String?,
+        modelPackageName: String?,
+        topicPropertyPrefix: String,
+    ): GeneratorConfigurationRequest.Clients =
+        GeneratorConfigurationRequest.Clients(
+            springKafka =
+                clientType?.springKafkaClientType?.let { springKafkaClientType ->
+                    GeneratorConfigurationRequest.SpringKafka(
+                        packageName = packageName,
+                        modelPackageName = modelPackageName,
+                        clientType = springKafkaClientType,
+                        topicPropertyPrefix = topicPropertyPrefix,
+                    )
+                },
+            quarkusKafka =
+                if (clientType == GeneratorClientType.QUARKUS_KAFKA) {
+                    GeneratorConfigurationRequest.QuarkusKafka(
+                        packageName = packageName,
+                        modelPackageName = modelPackageName,
+                    )
+                } else {
+                    null
+                },
+        )
 }

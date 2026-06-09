@@ -36,11 +36,20 @@ Example usage in your `pom.xml`:
             <configuration>
                 <generatorName>kotlin</generatorName> <!-- options: kotlin, java - default kotlin -->
                 <inputFile>path/to/my/asyncapi_specification.yaml</inputFile>
-                <modelPackage>my.package.path.model</modelPackage> <!-- package name for data class/POJO -->
-                <clientPackage>my.package.path.client</clientPackage> <!-- package name for kafka client - default modelPackage-->
-                <schemaPackage>my.package.path.schema</schemaPackage> <!-- package name for avro schema - default modePackage -->
-                <clientType>spring-kafka</clientType> <!-- options: none, spring-kafka, spring-kafka-simple, quarkus-kafka -->
-                <schemaMode>avro-projection</schemaMode> <!-- options: none, avro-projection -->
+                <models>
+                    <packageName>my.package.path.model</packageName>
+                </models>
+                <clients>
+                    <springKafka>
+                        <packageName>my.package.path.client</packageName>
+                        <mode>full</mode> <!-- options: full, simple -->
+                    </springKafka>
+                </clients>
+                <schemas>
+                    <avroProjection>
+                        <packageName>my.package.path.schema</packageName>
+                    </avroProjection>
+                </schemas>
             </configuration>
         </execution>
     </executions>

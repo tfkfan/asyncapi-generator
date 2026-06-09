@@ -21,9 +21,15 @@
                         <configuration>
                             <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
                             <generatorName>kotlin</generatorName>
-                            <modelPackage>com.example.simple.model</modelPackage>
-                            <clientPackage>com.example.simple.client</clientPackage>
-                            <clientType>spring-kafka-simple</clientType>
+                            <models>
+                                <packageName>com.example.simple.model</packageName>
+                            </models>
+                            <clients>
+                                <springKafka>
+                                    <packageName>com.example.simple.client</packageName>
+                                    <mode>simple</mode>
+                                </springKafka>
+                            </clients>
                         </configuration>
                     </execution>
                 </executions>

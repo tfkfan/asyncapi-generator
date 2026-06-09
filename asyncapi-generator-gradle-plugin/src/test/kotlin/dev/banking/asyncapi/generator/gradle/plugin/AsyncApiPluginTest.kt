@@ -79,7 +79,11 @@ class AsyncApiPluginTest {
               }""")
         val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
-        assertTrue(result.output.contains("clientType requires clientPackage"))
+        assertTrue(
+            result.output.contains(
+                "clients.springKafka.packageName is required when clients.springKafka is configured",
+            ),
+        )
     }
 
     @Test

@@ -3,10 +3,8 @@ package dev.banking.asyncapi.generator.maven.plugin
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSchemaMode
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
@@ -46,26 +44,14 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     )
     private lateinit var resourceOutputDirectory: File
 
-    @Parameter(property = "modelPackage")
-    private var modelPackage: String? = null
+    @Parameter
+    private var models: MavenModelGenerationConfiguration? = null
 
-    @Parameter(property = "clientPackage")
-    private var clientPackage: String? = null
+    @Parameter
+    private var schemas: MavenSchemaGenerationConfiguration? = null
 
-    @Parameter(property = "schemaPackage")
-    private var schemaPackage: String? = null
-
-    @Parameter(property = "clientType")
-    private var clientType: String? = null
-
-    @Parameter(property = "schemaMode")
-    private var schemaMode: String? = null
-
-    @Parameter(property = "modelAnnotation")
-    private var modelAnnotation: String? = null
-
-    @Parameter(property = "kafkaTopicsPropertyPrefix", defaultValue = "kafka.topics")
-    private var kafkaTopicsPropertyPrefix: String = "kafka.topics"
+    @Parameter
+    private var clients: MavenClientGenerationConfiguration? = null
 
     private val context = AsyncApiContext()
     private val parser = AsyncApiParser(context)
@@ -101,18 +87,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                         }",
                     )
                 }
-            val selectedClientType =
-                try {
-                    GeneratorClientType.fromConfigValue(clientType)
-                } catch (exception: IllegalArgumentException) {
-                    throw MojoExecutionException(exception.message, exception)
-                }
-            val selectedSchemaMode =
-                try {
-                    GeneratorSchemaMode.fromConfigValue(schemaMode)
-                } catch (exception: IllegalArgumentException) {
-                    throw MojoExecutionException(exception.message, exception)
-                }
+            val modelRequest = models?.toRequest()
 
             val generatorConfiguration =
                 GeneratorConfigurationFactory.create(
@@ -120,13 +95,10 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                         language = targetLanguage,
                         sourceOutputDirectory = codegenOutputDirectory,
                         resourceOutputDirectory = resourceOutputDirectory,
-                        modelPackageName = modelPackage,
-                        clientPackageName = clientPackage,
-                        schemaPackageName = schemaPackage,
-                        clientType = selectedClientType,
-                        schemaMode = selectedSchemaMode,
-                        modelAnnotation = modelAnnotation,
-                        kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
+                        models = modelRequest,
+                        schemas = schemas?.toRequest() ?: GeneratorConfigurationRequest.Schemas(),
+                        clients = clients?.toRequest(modelPackageName = modelRequest?.packageName)
+                            ?: GeneratorConfigurationRequest.Clients(),
                     ),
                 )
             if (generatorConfiguration.hasConfiguredOutputs()) {
@@ -134,8 +106,12 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             }
             project.addCompileSourceRoot(codegenOutputDirectory.absolutePath)
             log.info("asyncapi-generator-maven-plugin completed successfully")
+        } catch (e: MojoExecutionException) {
+            throw e
+        } catch (e: IllegalArgumentException) {
+            throw MojoExecutionException(e.message, e)
         } catch (e: Exception) {
-            throw MojoExecutionException(e)
+            throw MojoExecutionException(e.message, e)
         }
     }
 }
