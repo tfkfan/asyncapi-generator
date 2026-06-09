@@ -3,7 +3,6 @@ package dev.banking.asyncapi.generator.cli
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
@@ -13,12 +12,13 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSchemaMode
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -60,10 +60,26 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         "--kafka-topics-property-prefix",
         help = "Kafka topic property prefix (default: kafka.topics)",
     )
-    private val configOptionsRaw by option(
-        "--config-option",
-        help = "Additional generator options (key=value). Repeatable.",
-    ).multiple()
+    private val clientType by option(
+        "--client-type",
+        help = "Client generation mode",
+    ).choice(
+        "none" to GeneratorClientType.NONE,
+        "spring-kafka" to GeneratorClientType.SPRING_KAFKA,
+        "spring-kafka-simple" to GeneratorClientType.SPRING_KAFKA_SIMPLE,
+        "quarkus-kafka" to GeneratorClientType.QUARKUS_KAFKA,
+    )
+    private val schemaMode by option(
+        "--schema-mode",
+        help = "Schema generation mode",
+    ).choice(
+        "none" to GeneratorSchemaMode.NONE,
+        "avro-projection" to GeneratorSchemaMode.AVRO_PROJECTION,
+    )
+    private val modelAnnotation by option(
+        "--model-annotation",
+        help = "Fully qualified annotation added to generated model classes",
+    )
 
     override fun run() {
         echo("Generating AsyncAPI code from $input...")
@@ -90,26 +106,23 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         outputFile?.let { file ->
             AsyncApiRegistry.writeYaml(file, bundledDoc)
         }
-        val configOptions = parseConfigOptions(configOptionsRaw)
-
-        val clientType = configOptions["client.type"]
-        val schemaType = configOptions["schema.type"]
-        val modelAnnotation = configOptions["model.annotation"]
+        val selectedClientType = clientType
+        val selectedSchemaMode = schemaMode
 
         val hasModelPackage = modelPackage != null
         val hasClientPackage = clientPackage != null
         val hasSchemaPackage = schemaPackage != null
 
-        if (clientType != null && !hasClientPackage) {
-            throw IllegalArgumentException("client.type requires --client-package")
+        if (selectedClientType != null && selectedClientType != GeneratorClientType.NONE && !hasClientPackage) {
+            throw IllegalArgumentException("clientType requires --client-package")
         }
 
-        if (schemaType != null && !hasSchemaPackage) {
-            throw IllegalArgumentException("schema.type requires --schema-package")
+        if (selectedSchemaMode != null && selectedSchemaMode != GeneratorSchemaMode.NONE && !hasSchemaPackage) {
+            throw IllegalArgumentException("schemaMode requires --schema-package")
         }
 
         if (modelAnnotation != null && !hasModelPackage) {
-            throw IllegalArgumentException("model.annotation requires --model-package")
+            throw IllegalArgumentException("modelAnnotation requires --model-package")
         }
 
         if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
@@ -142,23 +155,24 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                         },
                     schemas =
                         buildList {
-                            if (hasSchemaPackage && schemaType == "avro") {
+                            if (hasSchemaPackage && selectedSchemaMode == GeneratorSchemaMode.AVRO_PROJECTION) {
                                 add(SchemaGeneration.AvroProjection(effectiveSchemaPackage))
                             }
                         },
                     clients =
                         buildList {
-                            if (hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple")) {
+                            val springKafkaClientType = selectedClientType?.springKafkaClientType
+                            if (hasClientPackage && springKafkaClientType != null) {
                                 add(
                                     ClientGeneration.SpringKafka(
                                         packageName = effectiveClientPackage,
                                         modelPackageName = effectiveModelPackage,
-                                        clientType = SpringKafkaClientType.fromConfigValue(clientType),
+                                        clientType = springKafkaClientType,
                                         topicPropertyPrefix = kafkaTopicsPropertyPrefix ?: "kafka.topics",
                                     ),
                                 )
                             }
-                            if (hasClientPackage && clientType == "quarkus-kafka") {
+                            if (hasClientPackage && selectedClientType == GeneratorClientType.QUARKUS_KAFKA) {
                                 add(
                                     ClientGeneration.QuarkusKafka(
                                         packageName = effectiveClientPackage,
@@ -172,23 +186,5 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             coreGenerator.generate(bundledDoc, generatorConfiguration)
         }
         echo("Generation complete.")
-    }
-
-    private fun parseConfigOptions(raw: List<String>): Map<String, String> {
-        if (raw.isEmpty()) return emptyMap()
-        val result = mutableMapOf<String, String>()
-        raw.forEach { entry ->
-            val idx = entry.indexOf("=")
-            require(idx > 0 && idx < entry.length - 1) {
-                "Invalid --config-option '$entry'. Expected key=value."
-            }
-            val key = entry.take(idx).trim()
-            val value = entry.substring(idx + 1).trim()
-            require(key.isNotEmpty() && value.isNotEmpty()) {
-                "Invalid --config-option '$entry'. Expected key=value."
-            }
-            result[key] = value
-        }
-        return result
     }
 }

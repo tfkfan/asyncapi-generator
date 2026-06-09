@@ -5,20 +5,20 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSchemaMode
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.work.DisableCachingByDefault
@@ -58,7 +58,18 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val configOptions: MapProperty<String, String>
+    abstract val clientType: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val schemaMode: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val modelAnnotation: Property<String>
+
+    @get:Input
+    abstract val kafkaTopicsPropertyPrefix: Property<String>
 
     @TaskAction
     fun generate() {
@@ -98,33 +109,32 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             when (targetLanguage) {
                 KOTLIN -> "src/main/kotlin"
                 JAVA -> "src/main/java"
-            }
+        }
         val codegenSourceRoot = codegenOutputDirectory.get().asFile.resolve(sourceRootName)
-        val configMap = configOptions.getOrElse(emptyMap())
 
-        val clientType = configMap["client.type"]
-        val schemaType = configMap["schema.type"]
-        val modelAnnotation = configMap["model.annotation"]
-        val prefixOverride = configMap["kafka.topics.property.prefix"]
+        val selectedClientType = GeneratorClientType.fromConfigValue(clientType.orNull)
+        val selectedSchemaMode = GeneratorSchemaMode.fromConfigValue(schemaMode.orNull)
+        val selectedModelAnnotation = modelAnnotation.orNull
+        val topicPropertyPrefix = kafkaTopicsPropertyPrefix.get()
 
         val hasModelPackage = modelPackage.isPresent
         val hasClientPackage = clientPackage.isPresent
         val hasSchemaPackage = schemaPackage.isPresent
 
-        if (clientType != null && !hasClientPackage) {
-            throw IllegalArgumentException("client.type requires clientPackage")
+        if (selectedClientType != null && selectedClientType != GeneratorClientType.NONE && !hasClientPackage) {
+            throw IllegalArgumentException("clientType requires clientPackage")
         }
 
-        if (schemaType != null && !hasSchemaPackage) {
-            throw IllegalArgumentException("schema.type requires schemaPackage")
+        if (selectedSchemaMode != null && selectedSchemaMode != GeneratorSchemaMode.NONE && !hasSchemaPackage) {
+            throw IllegalArgumentException("schemaMode requires schemaPackage")
         }
 
-        if (modelAnnotation != null && !hasModelPackage) {
-            throw IllegalArgumentException("model.annotation requires modelPackage")
+        if (selectedModelAnnotation != null && !hasModelPackage) {
+            throw IllegalArgumentException("modelAnnotation requires modelPackage")
         }
 
-        if (prefixOverride != null && prefixOverride.isBlank()) {
-            throw IllegalArgumentException("kafka.topics.property.prefix cannot be empty")
+        if (topicPropertyPrefix.isBlank()) {
+            throw IllegalArgumentException("kafkaTopicsPropertyPrefix cannot be empty")
         }
 
         if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
@@ -144,30 +154,31 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                         if (hasModelPackage) {
                             ModelGeneration.Enabled(
                                 packageName = effectiveModelPackage,
-                                annotation = modelAnnotation,
+                                annotation = selectedModelAnnotation,
                             )
                         } else {
                             ModelGeneration.Disabled
                         },
                     schemas =
                         buildList {
-                            if (hasSchemaPackage && schemaType == "avro") {
+                            if (hasSchemaPackage && selectedSchemaMode == GeneratorSchemaMode.AVRO_PROJECTION) {
                                 add(SchemaGeneration.AvroProjection(effectiveSchemaPackage))
                             }
                         },
                     clients =
                         buildList {
-                            if (hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple")) {
+                            val springKafkaClientType = selectedClientType?.springKafkaClientType
+                            if (hasClientPackage && springKafkaClientType != null) {
                                 add(
                                     ClientGeneration.SpringKafka(
                                         packageName = effectiveClientPackage,
                                         modelPackageName = effectiveModelPackage,
-                                        clientType = SpringKafkaClientType.fromConfigValue(clientType),
-                                        topicPropertyPrefix = prefixOverride ?: "kafka.topics",
+                                        clientType = springKafkaClientType,
+                                        topicPropertyPrefix = topicPropertyPrefix,
                                     ),
                                 )
                             }
-                            if (hasClientPackage && clientType == "quarkus-kafka") {
+                            if (hasClientPackage && selectedClientType == GeneratorClientType.QUARKUS_KAFKA) {
                                 add(
                                     ClientGeneration.QuarkusKafka(
                                         packageName = effectiveClientPackage,

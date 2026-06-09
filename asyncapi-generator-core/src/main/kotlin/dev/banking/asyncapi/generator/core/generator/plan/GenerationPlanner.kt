@@ -31,7 +31,7 @@ class GenerationPlanner {
                     when (client) {
                         is ClientGeneration.SpringKafka -> {
                             require(client.topicPropertyPrefix.isNotBlank()) {
-                                "kafka.topics.property.prefix cannot be empty"
+                                "topicPropertyPrefix cannot be empty"
                             }
 
                             if (client.clientType != SpringKafkaClientType.SIMPLE) {

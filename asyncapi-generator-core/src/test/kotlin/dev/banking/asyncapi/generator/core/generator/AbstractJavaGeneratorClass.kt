@@ -27,7 +27,8 @@ abstract class AbstractJavaGeneratorClass {
         generateSpringKafkaClient: Boolean = false,
         generateQuarkusKafkaClient: Boolean = false,
         kafkaTopicsPropertyPrefix: String = "kafka.topics",
-        configOptions: Map<String, String> = emptyMap(),
+        springKafkaClientType: SpringKafkaClientType = SpringKafkaClientType.FULL,
+        modelAnnotation: String? = null,
     ): String {
         val bundled = bundlerFixtures.bundledDocument(yaml)
         val effectiveClientPackage = clientPackage ?: modelPackage
@@ -43,7 +44,7 @@ abstract class AbstractJavaGeneratorClass {
                     if (generateModels) {
                         ModelGeneration.Enabled(
                             packageName = modelPackage,
-                            annotation = configOptions["model.annotation"],
+                            annotation = modelAnnotation,
                         )
                     } else {
                         ModelGeneration.Disabled
@@ -55,7 +56,7 @@ abstract class AbstractJavaGeneratorClass {
                                 ClientGeneration.SpringKafka(
                                     packageName = effectiveClientPackage,
                                     modelPackageName = modelPackage,
-                                    clientType = SpringKafkaClientType.fromConfigValue(configOptions["client.type"]),
+                                    clientType = springKafkaClientType,
                                     topicPropertyPrefix = kafkaTopicsPropertyPrefix,
                                 ),
                             )

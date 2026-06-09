@@ -75,17 +75,15 @@ class AsyncApiPluginTest {
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   modelPackage.set("com.example.model")
                   generatorName.set("kotlin")
-                  configOptions.set(mapOf(
-                      "client.type" to "spring-kafka"
-                  ))
+                  clientType.set("spring-kafka")
               }""")
         val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
-        assertTrue(result.output.contains("client.type requires clientPackage"))
+        assertTrue(result.output.contains("clientType requires clientPackage"))
     }
 
     @Test
-    fun `should generate models only when no client or schema type is set`() {
+    fun `should generate models only when no client type or schema mode is set`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_valid_content_kotlin.yaml")
         val yamlFile = File(yamlUrl.toURI())
@@ -109,8 +107,8 @@ class AsyncApiPluginTest {
         val clientDir = File(projectDir, "build/generated/asyncapi/src/main/kotlin/com/example/client")
         val schemaDir = File(projectDir, "build/generated/asyncapi/src/main/kotlin/com/example/schema")
         assertTrue(modelDir.exists(), "Model directory should exist")
-        assertTrue(!clientDir.exists(), "Client directory should not exist without client.type")
-        assertTrue(!schemaDir.exists(), "Schema directory should not exist without schema.type")
+        assertTrue(!clientDir.exists(), "Client directory should not exist without clientType")
+        assertTrue(!schemaDir.exists(), "Schema directory should not exist without schemaMode")
     }
 
     @Test
@@ -131,9 +129,7 @@ class AsyncApiPluginTest {
                   modelPackage.set("com.example.kafka.model")
                   clientPackage.set("com.example.kafka.client")
                   generatorName.set("kotlin")
-                  configOptions.set(mapOf(
-                      "client.type" to "spring-kafka"
-                  ))
+                  clientType.set("spring-kafka")
               }"""
         )
 
@@ -162,9 +158,7 @@ class AsyncApiPluginTest {
                   modelPackage.set("com.example.kafka.model")
                   clientPackage.set("com.example.kafka.client")
                   generatorName.set("java")
-                  configOptions.set(mapOf(
-                      "client.type" to "spring-kafka"
-                  ))
+                  clientType.set("spring-kafka")
               }"""
         )
 
@@ -203,7 +197,7 @@ class AsyncApiPluginTest {
     }
 
     @Test
-    fun `should generate avro schema when schema type is avro`() {
+    fun `should generate avro schema when schema mode is avro projection`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
         val yamlFile = File(yamlUrl.toURI())
@@ -219,9 +213,7 @@ class AsyncApiPluginTest {
                   modelPackage.set("com.example.avro.model")
                   schemaPackage.set("com.example.avro.schema")
                   generatorName.set("kotlin")
-                  configOptions.set(mapOf(
-                      "schema.type" to "avro"
-                  ))
+                  schemaMode.set("avro-projection")
               }"""
         )
         val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")

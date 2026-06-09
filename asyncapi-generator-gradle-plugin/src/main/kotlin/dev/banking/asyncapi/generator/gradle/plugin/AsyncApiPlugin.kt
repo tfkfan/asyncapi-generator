@@ -19,6 +19,7 @@ class AsyncApiPlugin : Plugin<Project> {
         extension.codegenOutputDirectory.convention(project.layout.buildDirectory.dir("generated/asyncapi"))
         extension.resourceOutputDirectory.convention(project.layout.buildDirectory.dir("generated-resources/asyncapi"))
         extension.generatorName.convention("kotlin")
+        extension.kafkaTopicsPropertyPrefix.convention("kafka.topics")
 
         val task = project.tasks.register<GenerateAsyncApiTask>("generateAsyncApi") {
 
@@ -30,7 +31,10 @@ class AsyncApiPlugin : Plugin<Project> {
             clientPackage.set(extension.clientPackage)
             schemaPackage.set(extension.schemaPackage)
             generatorName.set(extension.generatorName)
-            configOptions.set(extension.configOptions)
+            clientType.set(extension.clientType)
+            schemaMode.set(extension.schemaMode)
+            modelAnnotation.set(extension.modelAnnotation)
+            kafkaTopicsPropertyPrefix.set(extension.kafkaTopicsPropertyPrefix)
         }
 
         // Register Source Set (Standard Gradle way to make generated code usable)

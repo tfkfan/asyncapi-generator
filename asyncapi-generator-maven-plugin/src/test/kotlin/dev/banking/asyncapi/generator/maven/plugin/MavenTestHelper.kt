@@ -49,8 +49,20 @@ object MavenTestHelper {
         writeField("generatorName", value)
     }
 
-    fun Mojo.configOptions(value: Map<String, String>) {
-        writeField("configOptions", value)
+    fun Mojo.clientType(value: String?) {
+        writeField("clientType", value)
+    }
+
+    fun Mojo.schemaMode(value: String?) {
+        writeField("schemaMode", value)
+    }
+
+    fun Mojo.modelAnnotation(value: String?) {
+        writeField("modelAnnotation", value)
+    }
+
+    fun Mojo.kafkaTopicsPropertyPrefix(value: String) {
+        writeField("kafkaTopicsPropertyPrefix", value)
     }
 
     private fun Mojo.writeField(name: String, value: Any?) {

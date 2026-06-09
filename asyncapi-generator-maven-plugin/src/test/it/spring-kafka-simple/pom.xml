@@ -23,9 +23,7 @@
                             <generatorName>kotlin</generatorName>
                             <modelPackage>com.example.simple.model</modelPackage>
                             <clientPackage>com.example.simple.client</clientPackage>
-                            <configOptions>
-                                <client.type>spring-kafka-simple</client.type>
-                            </configOptions>
+                            <clientType>spring-kafka-simple</clientType>
                         </configuration>
                     </execution>
                 </executions>

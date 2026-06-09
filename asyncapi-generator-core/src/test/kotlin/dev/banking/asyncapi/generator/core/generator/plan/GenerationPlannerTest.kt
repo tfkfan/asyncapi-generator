@@ -213,7 +213,7 @@ class GenerationPlannerTest {
                 )
             }
 
-        assertEquals("kafka.topics.property.prefix cannot be empty", exception.message)
+        assertEquals("topicPropertyPrefix cannot be empty", exception.message)
     }
 
     private fun generatorConfiguration(

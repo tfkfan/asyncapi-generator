@@ -21,9 +21,7 @@
                             <resourceOutputDirectory>${project.build.directory}/custom-resources</resourceOutputDirectory>
                             <schemaPackage>com.example.avro</schemaPackage>
                             <generatorName>kotlin</generatorName>
-                            <configOptions>
-                                <schema.type>avro</schema.type>
-                            </configOptions>
+                            <schemaMode>avro-projection</schemaMode>
                         </configuration>
                     </execution>
                 </executions>

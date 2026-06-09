@@ -39,11 +39,8 @@ Example usage in your `pom.xml`:
                 <modelPackage>my.package.path.model</modelPackage> <!-- package name for data class/POJO -->
                 <clientPackage>my.package.path.client</clientPackage> <!-- package name for kafka client - default modelPackage-->
                 <schemaPackage>my.package.path.schema</schemaPackage> <!-- package name for avro schema - default modePackage -->
-                <configuration>
-                    <generateModels>true</generateModels> <!-- can skip models - default is true -->
-                    <generateSpringKafkaClient>true</generateSpringKafkaClient> <!-- default is false -->
-                    <generateAvroSchema>true</generateAvroSchema> <!-- default is false -->
-                </configuration>
+                <clientType>spring-kafka</clientType> <!-- options: none, spring-kafka, spring-kafka-simple, quarkus-kafka -->
+                <schemaMode>avro-projection</schemaMode> <!-- options: none, avro-projection -->
             </configuration>
         </execution>
     </executions>
@@ -67,13 +64,8 @@ asyncapiGenerate {
     modelPackage.set("my.package.path.model")
     clientPackage.set("my.package.path.client")   // default: modelPackage
     schemaPackage.set("my.package.path.schema")   // default: modelPackage
-    configOptions.set(
-        mapOf(
-            "generateModels" to "true",            // default: true
-            "generateSpringKafkaClient" to "true", // default: false
-            "generateAvroSchema" to "true"         // default: false
-        )
-    )
+    clientType.set("spring-kafka")                 // options: none, spring-kafka, spring-kafka-simple, quarkus-kafka
+    schemaMode.set("avro-projection")             // options: none, avro-projection
 }
 
 tasks.named("compileKotlin") {
@@ -94,11 +86,8 @@ asyncapiGenerate {
     modelPackage = 'my.package.path.model'
     clientPackage = 'my.package.path.client'
     schemaPackage = 'my.package.path.schema'
-    configOptions = [
-        generateModels             : 'true',
-        generateSpringKafkaClient  : 'true',
-        generateAvroSchema         : 'true'
-    ]
+    clientType = 'spring-kafka'
+    schemaMode = 'avro-projection'
 }
 
 tasks.named('compileJava') {

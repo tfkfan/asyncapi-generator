@@ -36,19 +36,15 @@
                             <modelPackage>com.example.b.model</modelPackage>
                             <clientPackage>com.example.b.client</clientPackage>
                             <schemaPackage>com.example.b.schema</schemaPackage>
-                            <configOptions>
-                                <client.type>none</client.type>
-                                <schema.type>none</schema.type>
-                            </configOptions>
+                            <clientType>none</clientType>
+                            <schemaMode>none</schemaMode>
                         </configuration>
                     </execution>
                 </executions>
                 <configuration>
                     <generatorName>kotlin</generatorName>
-                    <configOptions>
-                        <client.type>spring-kafka</client.type>
-                        <schema.type>avro</schema.type>
-                    </configOptions>
+                    <clientType>spring-kafka</clientType>
+                    <schemaMode>avro-projection</schemaMode>
                 </configuration>
             </plugin>
         </plugins>
