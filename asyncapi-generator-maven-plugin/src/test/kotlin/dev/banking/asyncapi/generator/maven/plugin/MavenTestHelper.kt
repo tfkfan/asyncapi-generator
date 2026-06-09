@@ -93,12 +93,14 @@ object MavenTestHelper {
 
     fun springKafka(
         packageName: String? = null,
+        modelPackageName: String? = null,
         mode: String? = null,
         topicPropertyPrefix: String? = null,
         enabled: Boolean? = null,
     ): MavenSpringKafkaConfiguration =
         MavenSpringKafkaConfiguration().apply {
             this.packageName = packageName
+            this.modelPackageName = modelPackageName
             this.mode = mode
             this.topicPropertyPrefix = topicPropertyPrefix
             this.enabled = enabled
@@ -106,10 +108,12 @@ object MavenTestHelper {
 
     fun quarkusKafka(
         packageName: String? = null,
+        modelPackageName: String? = null,
         enabled: Boolean? = null,
     ): MavenQuarkusKafkaConfiguration =
         MavenQuarkusKafkaConfiguration().apply {
             this.packageName = packageName
+            this.modelPackageName = modelPackageName
             this.enabled = enabled
         }
 }

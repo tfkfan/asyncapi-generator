@@ -18,10 +18,12 @@ class AsyncApiGeneratorCliTest {
     fun `should generate kotlin code from valid input`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
         cli.parse(
             arrayOf(
                 "--input", inputFile.absolutePath,
                 "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
                 "--models-package", "com.example.cli.model",
                 "--clients-spring-kafka-package", "com.example.cli.client",
                 "--generator", "kotlin",
@@ -31,6 +33,27 @@ class AsyncApiGeneratorCliTest {
         val packageDir = codegenDir.resolve("src/main/kotlin/com/example/cli/client")
         assertTrue(packageDir.exists(), "Output package directory should exist")
         assertTrue(packageDir.list()?.isNotEmpty() == true, "Output directory should contain generated files")
+    }
+
+    @Test
+    fun `should generate client with explicit model package when models are not generated`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
+        cli.parse(
+            arrayOf(
+                "--input", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
+                "--clients-spring-kafka-package", "com.example.cli.client",
+                "--clients-spring-kafka-model-package", "com.example.cli.model",
+                "--generator", "kotlin",
+            )
+        )
+        val clientDir = codegenDir.resolve("src/main/kotlin/com/example/cli/client")
+        val modelDir = codegenDir.resolve("src/main/kotlin/com/example/cli/model")
+        assertTrue(clientDir.exists(), "Client output directory should exist")
+        assertTrue(!modelDir.exists(), "Model output directory should not exist when models are not generated")
     }
 
     @Test

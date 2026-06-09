@@ -97,8 +97,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                         resourceOutputDirectory = resourceOutputDirectory,
                         models = modelRequest,
                         schemas = schemas?.toRequest() ?: GeneratorConfigurationRequest.Schemas(),
-                        clients = clients?.toRequest(modelPackageName = modelRequest?.packageName)
-                            ?: GeneratorConfigurationRequest.Clients(),
+                        clients = clients?.toRequest() ?: GeneratorConfigurationRequest.Clients(),
                     ),
                 )
             if (generatorConfiguration.hasConfiguredOutputs()) {

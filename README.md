@@ -42,6 +42,8 @@ Example usage in your `pom.xml`:
                 <clients>
                     <springKafka>
                         <packageName>my.package.path.client</packageName>
+                        <!-- Optional: defaults to models.packageName when models are configured -->
+                        <modelPackageName>my.package.path.model</modelPackageName>
                         <mode>full</mode> <!-- options: full, simple -->
                     </springKafka>
                 </clients>
@@ -76,6 +78,8 @@ asyncapiGenerate {
     clients {
         springKafka {
             packageName.set("my.package.path.client")
+            // Optional: defaults to models.packageName when models are configured
+            modelPackageName.set("my.package.path.model")
             mode.set("full") // options: full, simple
         }
     }
@@ -107,6 +111,8 @@ asyncapiGenerate {
     clients {
         springKafka {
             packageName = 'my.package.path.client'
+            // Optional: defaults to models.packageName when models are configured
+            modelPackageName = 'my.package.path.model'
             mode = 'full'
         }
     }
@@ -131,6 +137,8 @@ The plugin wires generated sources into the `main` source set automatically when
 ### Spring Kafka Clients
 
 Spring Kafka output is configured under `clients.springKafka`.
+
+Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.springKafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
 
 The current generator has two modes:
 

@@ -37,11 +37,13 @@ class AsyncApiPlugin : Plugin<Project> {
 
             springKafkaEnabled.set(extension.clients.springKafka.enabled)
             springKafkaPackageName.set(extension.clients.springKafka.packageName)
+            springKafkaModelPackageName.set(extension.clients.springKafka.modelPackageName)
             springKafkaMode.set(extension.clients.springKafka.mode)
             springKafkaTopicPropertyPrefix.set(extension.clients.springKafka.topicPropertyPrefix)
 
             quarkusKafkaEnabled.set(extension.clients.quarkusKafka.enabled)
             quarkusKafkaPackageName.set(extension.clients.quarkusKafka.packageName)
+            quarkusKafkaModelPackageName.set(extension.clients.quarkusKafka.modelPackageName)
         }
 
         // Register Source Set (Standard Gradle way to make generated code usable)

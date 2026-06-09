@@ -68,6 +68,31 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
+    fun `should generate kafka client with explicit model package when models are not generated`() {
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-client-only"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-client-only"))
+            clients(
+                clients(
+                    springKafka =
+                        springKafka(
+                            packageName = "com.example.kafka.client",
+                            modelPackageName = "com.example.kafka.model",
+                        ),
+                ),
+            )
+            generatorName("kotlin")
+        }.execute()
+
+        val clientDir = File("target/generated-sources/asyncapi-client-only/com/example/kafka/client")
+        val modelDir = File("target/generated-sources/asyncapi-client-only/com/example/kafka/model")
+        assertTrue(clientDir.exists(), "Client directory should exist")
+        assertTrue(!modelDir.exists(), "Model directory should not exist when model generation is not configured")
+    }
+
+    @Test
     fun `should support outputFile option to save bundled yaml`() {
         val bundledFile = File("target/generated-sources/asyncapi/bundled/asyncapi.bundled.yaml")
         if (bundledFile.exists()) bundledFile.delete()

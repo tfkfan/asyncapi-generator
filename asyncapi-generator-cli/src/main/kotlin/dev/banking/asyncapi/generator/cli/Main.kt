@@ -70,6 +70,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         help = "Package for generated Spring Kafka clients",
     )
 
+    private val clientsSpringKafkaModelPackage by option(
+        "--clients-spring-kafka-model-package",
+        help = "Package containing model types used by generated Spring Kafka clients",
+    )
+
     private val clientsSpringKafkaMode by option(
         "--clients-spring-kafka-mode",
         help = "Spring Kafka generation mode",
@@ -91,6 +96,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val clientsQuarkusKafkaPackage by option(
         "--clients-quarkus-kafka-package",
         help = "Package for generated Quarkus Kafka clients",
+    )
+
+    private val clientsQuarkusKafkaModelPackage by option(
+        "--clients-quarkus-kafka-model-package",
+        help = "Package containing model types used by generated Quarkus Kafka clients",
     )
 
     override fun run() {
@@ -172,12 +182,13 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                 if (
                     clientsSpringKafka ||
                     clientsSpringKafkaPackage != null ||
+                    clientsSpringKafkaModelPackage != null ||
                     clientsSpringKafkaMode != null ||
                     clientsSpringKafkaTopicPropertyPrefix != null
                 ) {
                     GeneratorConfigurationRequest.SpringKafka(
                         packageName = clientsSpringKafkaPackage,
-                        modelPackageName = modelsPackage,
+                        modelPackageName = clientsSpringKafkaModelPackage,
                         clientType = clientsSpringKafkaMode ?: SpringKafkaClientType.FULL,
                         topicPropertyPrefix =
                             clientsSpringKafkaTopicPropertyPrefix
@@ -187,10 +198,14 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     null
                 },
             quarkusKafka =
-                if (clientsQuarkusKafka || clientsQuarkusKafkaPackage != null) {
+                if (
+                    clientsQuarkusKafka ||
+                    clientsQuarkusKafkaPackage != null ||
+                    clientsQuarkusKafkaModelPackage != null
+                ) {
                     GeneratorConfigurationRequest.QuarkusKafka(
                         packageName = clientsQuarkusKafkaPackage,
-                        modelPackageName = modelsPackage,
+                        modelPackageName = clientsQuarkusKafkaModelPackage,
                     )
                 } else {
                     null

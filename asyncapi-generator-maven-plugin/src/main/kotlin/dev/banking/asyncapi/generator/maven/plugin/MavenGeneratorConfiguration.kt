@@ -72,10 +72,10 @@ class MavenClientGenerationConfiguration {
     var springKafka: MavenSpringKafkaConfiguration? = null
     var quarkusKafka: MavenQuarkusKafkaConfiguration? = null
 
-    fun toRequest(modelPackageName: String?): GeneratorConfigurationRequest.Clients =
+    fun toRequest(): GeneratorConfigurationRequest.Clients =
         GeneratorConfigurationRequest.Clients(
-            springKafka = springKafka?.toRequest(modelPackageName),
-            quarkusKafka = quarkusKafka?.toRequest(modelPackageName),
+            springKafka = springKafka?.toRequest(),
+            quarkusKafka = quarkusKafka?.toRequest(),
         )
 }
 
@@ -88,13 +88,20 @@ class MavenClientGenerationConfiguration {
 class MavenSpringKafkaConfiguration {
     var enabled: Boolean? = null
     var packageName: String? = null
+    var modelPackageName: String? = null
     var mode: String? = null
     var topicPropertyPrefix: String? = null
 
-    fun toRequest(modelPackageName: String?): GeneratorConfigurationRequest.SpringKafka? =
+    fun toRequest(): GeneratorConfigurationRequest.SpringKafka? =
         if (enabled == false) {
             null
-        } else if (enabled == true || packageName != null || mode != null || topicPropertyPrefix != null) {
+        } else if (
+            enabled == true ||
+            packageName != null ||
+            modelPackageName != null ||
+            mode != null ||
+            topicPropertyPrefix != null
+        ) {
             GeneratorConfigurationRequest.SpringKafka(
                 packageName = packageName,
                 modelPackageName = modelPackageName,
@@ -132,11 +139,12 @@ class MavenSpringKafkaConfiguration {
 class MavenQuarkusKafkaConfiguration {
     var enabled: Boolean? = null
     var packageName: String? = null
+    var modelPackageName: String? = null
 
-    fun toRequest(modelPackageName: String?): GeneratorConfigurationRequest.QuarkusKafka? =
+    fun toRequest(): GeneratorConfigurationRequest.QuarkusKafka? =
         if (enabled == false) {
             null
-        } else if (enabled == true || packageName != null) {
+        } else if (enabled == true || packageName != null || modelPackageName != null) {
             GeneratorConfigurationRequest.QuarkusKafka(
                 packageName = packageName,
                 modelPackageName = modelPackageName,

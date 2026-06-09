@@ -217,6 +217,39 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should generate kafka client with explicit model package when models are not generated`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        val yamlFile = File(yamlUrl.toURI())
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
+
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  generatorName.set("kotlin")
+                  clients {
+                      springKafka {
+                          packageName.set("com.example.kafka.client")
+                          modelPackageName.set("com.example.kafka.model")
+                      }
+                  }
+              }"""
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val clientDir = File(projectDir, "build/generated/asyncapi/src/main/kotlin/com/example/kafka/client")
+        val modelDir = File(projectDir, "build/generated/asyncapi/src/main/kotlin/com/example/kafka/model")
+        assertTrue(clientDir.exists(), "Client directory should exist")
+        assertTrue(!modelDir.exists(), "Model directory should not exist when model generation is not configured")
+    }
+
+    @Test
     fun `should generate java kafka client from generic kafka yaml`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
 

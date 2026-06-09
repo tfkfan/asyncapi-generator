@@ -66,6 +66,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
+    abstract val springKafkaModelPackageName: Property<String>
+
+    @get:Input
+    @get:Optional
     abstract val springKafkaMode: Property<String>
 
     @get:Input
@@ -79,6 +83,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     @get:Input
     @get:Optional
     abstract val quarkusKafkaPackageName: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val quarkusKafkaModelPackageName: Property<String>
 
     @get:Input
     abstract val generatorName: Property<String>
@@ -145,11 +153,12 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                         clientRequest(
                             springKafkaEnabled = springKafkaEnabled.orNull,
                             springKafkaPackageName = springKafkaPackageName.orNull,
+                            springKafkaModelPackageName = springKafkaModelPackageName.orNull,
                             springKafkaMode = springKafkaMode.orNull,
                             springKafkaTopicPropertyPrefix = springKafkaTopicPropertyPrefix.orNull,
                             quarkusKafkaEnabled = quarkusKafkaEnabled.orNull,
                             quarkusKafkaPackageName = quarkusKafkaPackageName.orNull,
-                            modelPackageName = modelsPackageName.orNull,
+                            quarkusKafkaModelPackageName = quarkusKafkaModelPackageName.orNull,
                         ),
                 ),
             )
@@ -191,28 +200,31 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     private fun clientRequest(
         springKafkaEnabled: Boolean?,
         springKafkaPackageName: String?,
+        springKafkaModelPackageName: String?,
         springKafkaMode: String?,
         springKafkaTopicPropertyPrefix: String?,
         quarkusKafkaEnabled: Boolean?,
         quarkusKafkaPackageName: String?,
-        modelPackageName: String?,
+        quarkusKafkaModelPackageName: String?,
     ): GeneratorConfigurationRequest.Clients =
         GeneratorConfigurationRequest.Clients(
             springKafka =
                 springKafkaRequest(
                     enabled = springKafkaEnabled,
                     packageName = springKafkaPackageName,
+                    modelPackageName = springKafkaModelPackageName,
                     mode = springKafkaMode,
                     topicPropertyPrefix = springKafkaTopicPropertyPrefix,
-                    modelPackageName = modelPackageName,
                 ),
             quarkusKafka =
                 when {
                     quarkusKafkaEnabled == false -> null
-                    quarkusKafkaEnabled == true || quarkusKafkaPackageName != null ->
+                    quarkusKafkaEnabled == true ||
+                        quarkusKafkaPackageName != null ||
+                        quarkusKafkaModelPackageName != null ->
                         GeneratorConfigurationRequest.QuarkusKafka(
                             packageName = quarkusKafkaPackageName,
-                            modelPackageName = modelPackageName,
+                            modelPackageName = quarkusKafkaModelPackageName,
                         )
                     else -> null
                 },
@@ -221,13 +233,17 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     private fun springKafkaRequest(
         enabled: Boolean?,
         packageName: String?,
+        modelPackageName: String?,
         mode: String?,
         topicPropertyPrefix: String?,
-        modelPackageName: String?,
     ): GeneratorConfigurationRequest.SpringKafka? =
         when {
             enabled == false -> null
-            enabled == true || packageName != null || mode != null || topicPropertyPrefix != null ->
+            enabled == true ||
+                packageName != null ||
+                modelPackageName != null ||
+                mode != null ||
+                topicPropertyPrefix != null ->
                 GeneratorConfigurationRequest.SpringKafka(
                     packageName = packageName,
                     modelPackageName = modelPackageName,
