@@ -89,6 +89,8 @@ class AsyncApiGeneratorCliTest {
 
         val packageDir = codegenDir.resolve("src/main/java/com/example/cli/model")
         assertTrue(packageDir.exists(), "Java output directory should exist")
+        val generatedRecord = packageDir.resolve("User.java")
+        assertTrue(generatedRecord.readText().contains("public record User("))
     }
 
     @Test

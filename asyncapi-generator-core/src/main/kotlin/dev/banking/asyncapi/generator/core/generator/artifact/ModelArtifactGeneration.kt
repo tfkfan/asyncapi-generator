@@ -55,6 +55,7 @@ class ModelArtifactGeneration(
                         packageName = task.packageName,
                         outputDir = sourceOutputDirectory,
                         generationModel = generationModel,
+                        javaModelType = task.javaModelType,
                     )
                 artifactWriter.write(generator.render())
             }

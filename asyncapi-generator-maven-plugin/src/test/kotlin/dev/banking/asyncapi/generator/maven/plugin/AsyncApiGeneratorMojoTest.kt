@@ -81,6 +81,8 @@ class AsyncApiGeneratorMojoTest {
 
         val modelDir = File("target/generated-sources/asyncapi/com/example/record/model")
         assertTrue(modelDir.exists(), "Model directory should exist")
+        val generatedRecord = modelDir.resolve("User.java")
+        assertTrue(generatedRecord.readText().contains("public record User("))
     }
 
     @Test

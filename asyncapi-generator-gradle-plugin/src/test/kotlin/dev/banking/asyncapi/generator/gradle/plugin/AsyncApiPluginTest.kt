@@ -181,6 +181,36 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should generate java record models when java model type is configured`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  generatorName.set("java")
+                  models {
+                      packageName.set("com.example.model")
+                      javaModelType.set("record")
+                  }
+              }"""
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val generatedRecord =
+            File(
+                projectDir,
+                "build/generated/asyncapi/src/main/java/com/example/model/User.java",
+            )
+        assertTrue(generatedRecord.readText().contains("public record User("))
+    }
+
+    @Test
     fun `should generate models only when no client or schema outputs are configured`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_valid_content_kotlin.yaml")

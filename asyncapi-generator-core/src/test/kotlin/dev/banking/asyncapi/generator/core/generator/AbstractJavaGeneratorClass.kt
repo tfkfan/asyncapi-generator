@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
@@ -29,6 +30,7 @@ abstract class AbstractJavaGeneratorClass {
         kafkaTopicsPropertyPrefix: String = "kafka.topics",
         springKafkaClientType: SpringKafkaClientType = SpringKafkaClientType.FULL,
         modelAnnotation: String? = null,
+        javaModelType: JavaModelType = JavaModelType.CLASS,
     ): String {
         val bundled = bundlerFixtures.bundledDocument(yaml)
         val effectiveClientPackage = clientPackage ?: modelPackage
@@ -45,6 +47,7 @@ abstract class AbstractJavaGeneratorClass {
                         ModelGeneration.Enabled(
                             packageName = modelPackage,
                             annotation = modelAnnotation,
+                            javaModelType = javaModelType,
                         )
                     } else {
                         ModelGeneration.Disabled
