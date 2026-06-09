@@ -3,13 +3,12 @@ package dev.banking.asyncapi.generator.gradle.plugin.tasks
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSchemaMode
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
+import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -20,7 +19,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.work.DisableCachingByDefault
 import java.util.Locale
-import kotlin.text.get
 
 @DisableCachingByDefault(because = "Codegen output is cheap to reproduce and not worth caching")
 abstract class GenerateAsyncApiTask : DefaultTask() {
@@ -40,33 +38,50 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val modelPackage: Property<String>
+    abstract val modelsEnabled: Property<Boolean>
 
     @get:Input
     @get:Optional
-    abstract val clientPackage: Property<String>
+    abstract val modelsPackageName: Property<String>
 
     @get:Input
     @get:Optional
-    abstract val schemaPackage: Property<String>
+    abstract val modelsAnnotation: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val avroProjectionEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val avroProjectionPackageName: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val springKafkaEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val springKafkaPackageName: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val springKafkaMode: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val springKafkaTopicPropertyPrefix: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val quarkusKafkaEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val quarkusKafkaPackageName: Property<String>
 
     @get:Input
     abstract val generatorName: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val clientType: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val schemaMode: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val modelAnnotation: Property<String>
-
-    @get:Input
-    abstract val kafkaTopicsPropertyPrefix: Property<String>
 
     @TaskAction
     fun generate() {
@@ -109,11 +124,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         }
         val codegenSourceRoot = codegenOutputDirectory.get().asFile.resolve(sourceRootName)
 
-        val selectedClientType = GeneratorClientType.fromConfigValue(clientType.orNull)
-        val selectedSchemaMode = GeneratorSchemaMode.fromConfigValue(schemaMode.orNull)
-        val selectedModelAnnotation = modelAnnotation.orNull
-        val topicPropertyPrefix = kafkaTopicsPropertyPrefix.get()
-
         val generatorConfiguration =
             GeneratorConfigurationFactory.create(
                 GeneratorConfigurationRequest(
@@ -122,20 +132,24 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     resourceOutputDirectory = resourceOutputDirectory.get().asFile,
                     models =
                         modelRequest(
-                            packageName = modelPackage.orNull,
-                            annotation = selectedModelAnnotation,
+                            enabled = modelsEnabled.orNull,
+                            packageName = modelsPackageName.orNull,
+                            annotation = modelsAnnotation.orNull,
                         ),
                     schemas =
                         schemaRequest(
-                            schemaMode = selectedSchemaMode,
-                            packageName = schemaPackage.orNull,
+                            avroProjectionEnabled = avroProjectionEnabled.orNull,
+                            avroProjectionPackageName = avroProjectionPackageName.orNull,
                         ),
                     clients =
                         clientRequest(
-                            clientType = selectedClientType,
-                            packageName = clientPackage.orNull,
-                            modelPackageName = modelPackage.orNull,
-                            topicPropertyPrefix = topicPropertyPrefix,
+                            springKafkaEnabled = springKafkaEnabled.orNull,
+                            springKafkaPackageName = springKafkaPackageName.orNull,
+                            springKafkaMode = springKafkaMode.orNull,
+                            springKafkaTopicPropertyPrefix = springKafkaTopicPropertyPrefix.orNull,
+                            quarkusKafkaEnabled = quarkusKafkaEnabled.orNull,
+                            quarkusKafkaPackageName = quarkusKafkaPackageName.orNull,
+                            modelPackageName = modelsPackageName.orNull,
                         ),
                 ),
             )
@@ -146,55 +160,97 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     }
 
     private fun modelRequest(
+        enabled: Boolean?,
         packageName: String?,
         annotation: String?,
     ): GeneratorConfigurationRequest.Models? =
-        if (packageName != null || annotation != null) {
-            GeneratorConfigurationRequest.Models(
-                packageName = packageName,
-                annotation = annotation,
-            )
-        } else {
-            null
+        when {
+            enabled == false -> null
+            enabled == true || packageName != null || annotation != null ->
+                GeneratorConfigurationRequest.Models(
+                    packageName = packageName,
+                    annotation = annotation,
+                )
+            else -> null
         }
 
     private fun schemaRequest(
-        schemaMode: GeneratorSchemaMode?,
-        packageName: String?,
+        avroProjectionEnabled: Boolean?,
+        avroProjectionPackageName: String?,
     ): GeneratorConfigurationRequest.Schemas =
         GeneratorConfigurationRequest.Schemas(
             avroProjection =
-                if (schemaMode == GeneratorSchemaMode.AVRO_PROJECTION) {
-                    GeneratorConfigurationRequest.AvroProjection(packageName = packageName)
-                } else {
-                    null
+                when {
+                    avroProjectionEnabled == false -> null
+                    avroProjectionEnabled == true || avroProjectionPackageName != null ->
+                        GeneratorConfigurationRequest.AvroProjection(packageName = avroProjectionPackageName)
+                    else -> null
                 },
         )
 
     private fun clientRequest(
-        clientType: GeneratorClientType?,
-        packageName: String?,
+        springKafkaEnabled: Boolean?,
+        springKafkaPackageName: String?,
+        springKafkaMode: String?,
+        springKafkaTopicPropertyPrefix: String?,
+        quarkusKafkaEnabled: Boolean?,
+        quarkusKafkaPackageName: String?,
         modelPackageName: String?,
-        topicPropertyPrefix: String,
     ): GeneratorConfigurationRequest.Clients =
         GeneratorConfigurationRequest.Clients(
             springKafka =
-                clientType?.springKafkaClientType?.let { springKafkaClientType ->
-                    GeneratorConfigurationRequest.SpringKafka(
-                        packageName = packageName,
-                        modelPackageName = modelPackageName,
-                        clientType = springKafkaClientType,
-                        topicPropertyPrefix = topicPropertyPrefix,
-                    )
-                },
+                springKafkaRequest(
+                    enabled = springKafkaEnabled,
+                    packageName = springKafkaPackageName,
+                    mode = springKafkaMode,
+                    topicPropertyPrefix = springKafkaTopicPropertyPrefix,
+                    modelPackageName = modelPackageName,
+                ),
             quarkusKafka =
-                if (clientType == GeneratorClientType.QUARKUS_KAFKA) {
-                    GeneratorConfigurationRequest.QuarkusKafka(
-                        packageName = packageName,
-                        modelPackageName = modelPackageName,
-                    )
-                } else {
-                    null
+                when {
+                    quarkusKafkaEnabled == false -> null
+                    quarkusKafkaEnabled == true || quarkusKafkaPackageName != null ->
+                        GeneratorConfigurationRequest.QuarkusKafka(
+                            packageName = quarkusKafkaPackageName,
+                            modelPackageName = modelPackageName,
+                        )
+                    else -> null
                 },
         )
+
+    private fun springKafkaRequest(
+        enabled: Boolean?,
+        packageName: String?,
+        mode: String?,
+        topicPropertyPrefix: String?,
+        modelPackageName: String?,
+    ): GeneratorConfigurationRequest.SpringKafka? =
+        when {
+            enabled == false -> null
+            enabled == true || packageName != null || mode != null || topicPropertyPrefix != null ->
+                GeneratorConfigurationRequest.SpringKafka(
+                    packageName = packageName,
+                    modelPackageName = modelPackageName,
+                    clientType = springKafkaClientType(mode),
+                    topicPropertyPrefix =
+                        topicPropertyPrefix
+                            ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
+                )
+            else -> null
+        }
+
+    private fun springKafkaClientType(mode: String?): SpringKafkaClientType =
+        when (mode ?: FULL_MODE) {
+            FULL_MODE -> SpringKafkaClientType.FULL
+            SIMPLE_MODE -> SpringKafkaClientType.SIMPLE
+            else ->
+                throw IllegalArgumentException(
+                    "Invalid clients.springKafka.mode '$mode'. Supported values: $FULL_MODE, $SIMPLE_MODE",
+                )
+        }
+
+    companion object {
+        private const val FULL_MODE = "full"
+        private const val SIMPLE_MODE = "simple"
+    }
 }

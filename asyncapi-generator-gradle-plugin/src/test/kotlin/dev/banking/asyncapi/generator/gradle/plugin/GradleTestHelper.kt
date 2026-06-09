@@ -18,6 +18,12 @@ object GradleTestHelper {
             writeText(content.trimIndent())
         }
 
+    fun writeGroovyBuildScript(dir: File, content: String): File =
+        File(dir, "build.gradle").apply {
+            parentFile.mkdirs()
+            writeText(content.trimIndent())
+        }
+
     fun runGradle(dir: File, vararg args: String): BuildResult =
         GradleRunner.create()
             .withProjectDir(dir)
@@ -41,4 +47,3 @@ object GradleTestHelper {
         if (sourceDir.exists()) sourceDir.copyRecursively(targetDir, overwrite = true)
     }
 }
-

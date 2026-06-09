@@ -19,7 +19,6 @@ class AsyncApiPlugin : Plugin<Project> {
         extension.codegenOutputDirectory.convention(project.layout.buildDirectory.dir("generated/asyncapi"))
         extension.resourceOutputDirectory.convention(project.layout.buildDirectory.dir("generated-resources/asyncapi"))
         extension.generatorName.convention("kotlin")
-        extension.kafkaTopicsPropertyPrefix.convention("kafka.topics")
 
         val task = project.tasks.register<GenerateAsyncApiTask>("generateAsyncApi") {
 
@@ -27,14 +26,22 @@ class AsyncApiPlugin : Plugin<Project> {
             outputFile.set(extension.outputFile)
             codegenOutputDirectory.set(extension.codegenOutputDirectory)
             resourceOutputDirectory.set(extension.resourceOutputDirectory)
-            modelPackage.set(extension.modelPackage)
-            clientPackage.set(extension.clientPackage)
-            schemaPackage.set(extension.schemaPackage)
             generatorName.set(extension.generatorName)
-            clientType.set(extension.clientType)
-            schemaMode.set(extension.schemaMode)
-            modelAnnotation.set(extension.modelAnnotation)
-            kafkaTopicsPropertyPrefix.set(extension.kafkaTopicsPropertyPrefix)
+
+            modelsEnabled.set(extension.models.enabled)
+            modelsPackageName.set(extension.models.packageName)
+            modelsAnnotation.set(extension.models.annotation)
+
+            avroProjectionEnabled.set(extension.schemas.avroProjection.enabled)
+            avroProjectionPackageName.set(extension.schemas.avroProjection.packageName)
+
+            springKafkaEnabled.set(extension.clients.springKafka.enabled)
+            springKafkaPackageName.set(extension.clients.springKafka.packageName)
+            springKafkaMode.set(extension.clients.springKafka.mode)
+            springKafkaTopicPropertyPrefix.set(extension.clients.springKafka.topicPropertyPrefix)
+
+            quarkusKafkaEnabled.set(extension.clients.quarkusKafka.enabled)
+            quarkusKafkaPackageName.set(extension.clients.quarkusKafka.packageName)
         }
 
         // Register Source Set (Standard Gradle way to make generated code usable)

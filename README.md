@@ -70,11 +70,20 @@ plugins {
 asyncapiGenerate {
     inputFile.set(file("src/main/resources/asyncapi.yaml"))
     generatorName.set("kotlin") // options: kotlin, java - default kotlin
-    modelPackage.set("my.package.path.model")
-    clientPackage.set("my.package.path.client")   // default: modelPackage
-    schemaPackage.set("my.package.path.schema")   // default: modelPackage
-    clientType.set("spring-kafka")                 // options: none, spring-kafka, spring-kafka-simple, quarkus-kafka
-    schemaMode.set("avro-projection")             // options: none, avro-projection
+    models {
+        packageName.set("my.package.path.model")
+    }
+    clients {
+        springKafka {
+            packageName.set("my.package.path.client")
+            mode.set("full") // options: full, simple
+        }
+    }
+    schemas {
+        avroProjection {
+            packageName.set("my.package.path.schema")
+        }
+    }
 }
 
 tasks.named("compileKotlin") {
@@ -92,11 +101,20 @@ plugins {
 asyncapiGenerate {
     inputFile = file('src/main/resources/asyncapi.yaml')
     generatorName = 'kotlin'
-    modelPackage = 'my.package.path.model'
-    clientPackage = 'my.package.path.client'
-    schemaPackage = 'my.package.path.schema'
-    clientType = 'spring-kafka'
-    schemaMode = 'avro-projection'
+    models {
+        packageName = 'my.package.path.model'
+    }
+    clients {
+        springKafka {
+            packageName = 'my.package.path.client'
+            mode = 'full'
+        }
+    }
+    schemas {
+        avroProjection {
+            packageName = 'my.package.path.schema'
+        }
+    }
 }
 
 tasks.named('compileJava') {
