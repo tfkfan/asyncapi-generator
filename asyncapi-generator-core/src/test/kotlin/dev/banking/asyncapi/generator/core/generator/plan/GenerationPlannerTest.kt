@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.plan
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
@@ -61,6 +62,32 @@ class GenerationPlannerTest {
                     language = GeneratorName.KOTLIN,
                     packageName = "com.example.model",
                     annotation = "com.example.NoArg",
+                ),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan includes Java model type on model artifact task when configured`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    language = GeneratorName.JAVA,
+                    models =
+                        ModelGeneration.Enabled(
+                            packageName = "com.example.model",
+                            javaModelType = JavaModelType.RECORD,
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.ModelArtifacts(
+                    language = GeneratorName.JAVA,
+                    packageName = "com.example.model",
+                    javaModelType = JavaModelType.RECORD,
                 ),
             ),
             plan.tasks,

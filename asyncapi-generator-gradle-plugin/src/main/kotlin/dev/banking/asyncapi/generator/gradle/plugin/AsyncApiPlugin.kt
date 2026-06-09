@@ -31,6 +31,7 @@ class AsyncApiPlugin : Plugin<Project> {
             modelsEnabled.set(extension.models.enabled)
             modelsPackageName.set(extension.models.packageName)
             modelsAnnotation.set(extension.models.annotation)
+            modelsJavaModelType.set(extension.models.javaModelType)
 
             avroProjectionEnabled.set(extension.schemas.avroProjection.enabled)
             avroProjectionPackageName.set(extension.schemas.avroProjection.packageName)

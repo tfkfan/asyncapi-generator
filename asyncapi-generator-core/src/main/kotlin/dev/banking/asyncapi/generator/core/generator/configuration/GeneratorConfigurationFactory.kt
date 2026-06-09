@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
+
 /**
  * Assembles core generator configuration from frontend-neutral requests.
  *
@@ -24,6 +26,7 @@ object GeneratorConfigurationFactory {
                     ModelGeneration.Enabled(
                         packageName = packageName,
                         annotation = request.models.annotation,
+                        javaModelType = request.models.javaModelType,
                     )
                 } ?: ModelGeneration.Disabled,
             schemas =
@@ -74,6 +77,14 @@ object GeneratorConfigurationFactory {
     private fun validate(request: GeneratorConfigurationRequest) {
         if (request.models?.annotation != null && request.models.packageName == null) {
             throw IllegalArgumentException("models.packageName is required when models.annotation is configured")
+        }
+
+        if (request.models != null && request.models.packageName == null) {
+            throw IllegalArgumentException("models.packageName is required when models are configured")
+        }
+
+        if (request.models?.javaModelType == JavaModelType.RECORD && request.language != JAVA) {
+            throw IllegalArgumentException("models.javaModelType=record is only supported when generatorName is java")
         }
 
         if (request.schemas.avroProjection != null && request.schemas.avroProjection.packageName == null) {

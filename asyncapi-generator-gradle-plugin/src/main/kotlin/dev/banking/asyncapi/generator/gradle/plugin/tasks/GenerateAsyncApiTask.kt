@@ -48,6 +48,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
+    abstract val modelsJavaModelType: Property<String>
+
+    @get:Input
+    @get:Optional
     abstract val avroProjectionEnabled: Property<Boolean>
 
     @get:Input
@@ -140,6 +144,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                             enabled = modelsEnabled.orNull,
                             packageName = modelsPackageName.orNull,
                             annotation = modelsAnnotation.orNull,
+                            javaModelType = modelsJavaModelType.orNull,
                         ),
                     schemas =
                         schemaRequest(
@@ -169,11 +174,13 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         enabled: Boolean?,
         packageName: String?,
         annotation: String?,
+        javaModelType: String?,
     ): GeneratorConfigurationRequest.Models? =
         GeneratorConfigurationRequest.models(
             enabled = enabled,
             packageName = packageName,
             annotation = annotation,
+            javaModelType = javaModelType,
         )
 
     private fun schemaRequest(

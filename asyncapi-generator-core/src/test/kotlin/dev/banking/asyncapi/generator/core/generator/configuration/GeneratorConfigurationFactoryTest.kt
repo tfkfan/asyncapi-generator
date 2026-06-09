@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -31,10 +32,34 @@ class GeneratorConfigurationFactoryTest {
             ModelGeneration.Enabled(
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
+                javaModelType = JavaModelType.CLASS,
             ),
             configuration.models,
         )
         assertTrue(configuration.hasConfiguredOutputs())
+    }
+
+    @Test
+    fun `create enables Java record model generation when configured for Java`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    language = JAVA,
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.model",
+                            javaModelType = JavaModelType.RECORD,
+                        ),
+                ),
+            )
+
+        assertEquals(
+            ModelGeneration.Enabled(
+                packageName = "com.example.model",
+                javaModelType = JavaModelType.RECORD,
+            ),
+            configuration.models,
+        )
     }
 
     @Test
@@ -210,6 +235,44 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create rejects model configuration without model package`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models = GeneratorConfigurationRequest.Models(),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "models.packageName is required when models are configured",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects Java record model generation for Kotlin`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models =
+                            GeneratorConfigurationRequest.Models(
+                                packageName = "com.example.model",
+                                javaModelType = JavaModelType.RECORD,
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "models.javaModelType=record is only supported when generatorName is java",
+            exception.message,
+        )
+    }
+
+    @Test
     fun `create rejects blank Kafka topics property prefix`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {
@@ -325,12 +388,13 @@ class GeneratorConfigurationFactoryTest {
     }
 
     private fun request(
+        language: GeneratorName = GeneratorName.KOTLIN,
         models: GeneratorConfigurationRequest.Models? = null,
         schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),
         clients: GeneratorConfigurationRequest.Clients = GeneratorConfigurationRequest.Clients(),
     ): GeneratorConfigurationRequest =
         GeneratorConfigurationRequest(
-            language = GeneratorName.KOTLIN,
+            language = language,
             sourceOutputDirectory = tempDir.resolve("sources").toFile(),
             resourceOutputDirectory = tempDir.resolve("resources").toFile(),
             models = models,

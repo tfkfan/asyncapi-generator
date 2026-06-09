@@ -154,6 +154,33 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should fail if java model type is invalid`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
+        GradleTestHelper.writeBuildScript(projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  generatorName.set("java")
+                  models {
+                      packageName.set("com.example.model")
+                      javaModelType.set("data")
+                  }
+              }""")
+
+        val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
+        assertTrue(
+            result.output.contains(
+                "Invalid models.javaModelType 'data'. Supported values: class, record",
+            ),
+        )
+    }
+
+    @Test
     fun `should generate models only when no client or schema outputs are configured`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_valid_content_kotlin.yaml")

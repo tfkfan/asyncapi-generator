@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 
 /**
  * Planned generator work item.
@@ -13,6 +14,7 @@ sealed interface GenerationTask {
         val language: GeneratorName,
         val packageName: String,
         val annotation: String? = null,
+        val javaModelType: JavaModelType = JavaModelType.CLASS,
     ) : GenerationTask
 
     data class HeaderModelArtifacts(

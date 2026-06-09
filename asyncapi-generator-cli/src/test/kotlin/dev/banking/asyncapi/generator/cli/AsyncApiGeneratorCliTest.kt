@@ -74,6 +74,24 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
+    fun `should accept java record model type for java model generation`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--models-package", "com.example.cli.model",
+                "--models-java-model-type", "record",
+                "-g", "java",
+            )
+        )
+
+        val packageDir = codegenDir.resolve("src/main/java/com/example/cli/model")
+        assertTrue(packageDir.exists(), "Java output directory should exist")
+    }
+
+    @Test
     fun `should generate avro schema when schema mode is avro projection`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()
@@ -191,6 +209,47 @@ class AsyncApiGeneratorCliTest {
                 )
             )
         }
+    }
+
+    @Test
+    fun `should fail if java model type is invalid`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        assertFailsWith<BadParameterValue> {
+            cli.parse(
+                arrayOf(
+                    "-i", inputFile.absolutePath,
+                    "--codegen-output", codegenDir.absolutePath,
+                    "--models-package", "com.example.cli.model",
+                    "--models-java-model-type", "data",
+                    "-g", "java",
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should fail if java record model type is configured for kotlin`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val exception =
+            assertFailsWith<UsageError> {
+                cli.parse(
+                    arrayOf(
+                        "-i", inputFile.absolutePath,
+                        "--codegen-output", codegenDir.absolutePath,
+                        "--models-package", "com.example.cli.model",
+                        "--models-java-model-type", "record",
+                        "-g", "kotlin",
+                    )
+                )
+            }
+
+        assertTrue(
+            exception.message.orEmpty().contains(
+                "models.javaModelType=record is only supported when generatorName is java",
+            ),
+        )
     }
 
     @Test

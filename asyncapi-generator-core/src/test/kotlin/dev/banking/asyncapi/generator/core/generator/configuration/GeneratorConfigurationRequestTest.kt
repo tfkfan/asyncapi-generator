@@ -14,6 +14,7 @@ class GeneratorConfigurationRequestTest {
                 enabled = false,
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
+                javaModelType = "record",
             ),
         )
 
@@ -21,10 +22,12 @@ class GeneratorConfigurationRequestTest {
             GeneratorConfigurationRequest.Models(
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
+                javaModelType = JavaModelType.RECORD,
             ),
             GeneratorConfigurationRequest.models(
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
+                javaModelType = "record",
             ),
         )
     }

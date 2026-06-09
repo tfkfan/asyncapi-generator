@@ -12,12 +12,14 @@ class MavenModelGenerationConfiguration {
     var enabled: Boolean? = null
     var packageName: String? = null
     var annotation: String? = null
+    var javaModelType: String? = null
 
     fun toRequest(): GeneratorConfigurationRequest.Models? =
         GeneratorConfigurationRequest.models(
             enabled = enabled,
             packageName = packageName,
             annotation = annotation,
+            javaModelType = javaModelType,
         )
 }
 

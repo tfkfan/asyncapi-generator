@@ -69,6 +69,21 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
+    fun `should accept java record model type for java model generation`() {
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
+            models(models(packageName = "com.example.record.model", javaModelType = "record"))
+            generatorName("java")
+        }.execute()
+
+        val modelDir = File("target/generated-sources/asyncapi/com/example/record/model")
+        assertTrue(modelDir.exists(), "Model directory should exist")
+    }
+
+    @Test
     fun `should generate kafka client with explicit model package when models are not generated`() {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
@@ -196,5 +211,26 @@ class AsyncApiGeneratorMojoTest {
         assertThrows<MojoExecutionException> {
             mojo.execute()
         }
+    }
+
+    @Test
+    fun `should fail when java model type is invalid`() {
+        val mojo = AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
+            codegenOutputDirectory(outputPath("target/should-fail-java-model-type"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
+            models(models(packageName = "com.fail", javaModelType = "data"))
+            generatorName("java")
+        }
+        val exception =
+            assertThrows<MojoExecutionException> {
+                mojo.execute()
+            }
+
+        assertEquals(
+            "Invalid models.javaModelType 'data'. Supported values: class, record",
+            exception.message,
+        )
     }
 }

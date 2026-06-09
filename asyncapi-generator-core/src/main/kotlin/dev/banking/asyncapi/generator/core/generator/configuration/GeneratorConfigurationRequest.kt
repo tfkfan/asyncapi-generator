@@ -25,6 +25,7 @@ data class GeneratorConfigurationRequest(
     data class Models(
         val packageName: String? = null,
         val annotation: String? = null,
+        val javaModelType: JavaModelType = JavaModelType.CLASS,
     )
 
     data class Schemas(
@@ -59,13 +60,19 @@ data class GeneratorConfigurationRequest(
             enabled: Boolean? = null,
             packageName: String? = null,
             annotation: String? = null,
+            javaModelType: String? = null,
         ): Models? =
             when {
                 enabled == false -> null
-                enabled == true || packageName != null || annotation != null ->
+                enabled == true || packageName != null || annotation != null || javaModelType != null ->
                     Models(
                         packageName = packageName,
                         annotation = annotation,
+                        javaModelType =
+                            JavaModelType.fromConfigurationValue(
+                                value = javaModelType,
+                                path = "models.javaModelType",
+                            ),
                     )
                 else -> null
             }

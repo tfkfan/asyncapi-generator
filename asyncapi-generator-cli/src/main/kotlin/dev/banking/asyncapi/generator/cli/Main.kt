@@ -14,6 +14,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -47,6 +48,14 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val modelsAnnotation by option(
         "--models-annotation",
         help = "Fully qualified annotation added to generated model classes",
+    )
+
+    private val modelsJavaModelType by option(
+        "--models-java-model-type",
+        help = "Java model shape for generated models (default: class)",
+    ).choice(
+        JavaModelType.CLASS.configurationValue to JavaModelType.CLASS,
+        JavaModelType.RECORD.configurationValue to JavaModelType.RECORD,
     )
 
     private val schemasAvroProjection by option(
@@ -159,6 +168,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         GeneratorConfigurationRequest.models(
             packageName = modelsPackage,
             annotation = modelsAnnotation,
+            javaModelType = modelsJavaModelType?.configurationValue,
         )
 
     private fun schemaRequest(): GeneratorConfigurationRequest.Schemas =

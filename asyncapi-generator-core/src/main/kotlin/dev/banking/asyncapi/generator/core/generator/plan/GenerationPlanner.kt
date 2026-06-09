@@ -23,6 +23,7 @@ class GenerationPlanner {
                                 language = configuration.language,
                                 packageName = models.packageName,
                                 annotation = models.annotation,
+                                javaModelType = models.javaModelType,
                             ),
                         )
                 }

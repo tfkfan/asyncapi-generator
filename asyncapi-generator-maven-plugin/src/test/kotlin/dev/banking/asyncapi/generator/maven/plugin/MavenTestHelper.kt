@@ -58,11 +58,13 @@ object MavenTestHelper {
     fun models(
         packageName: String? = null,
         annotation: String? = null,
+        javaModelType: String? = null,
         enabled: Boolean? = null,
     ): MavenModelGenerationConfiguration =
         MavenModelGenerationConfiguration().apply {
             this.packageName = packageName
             this.annotation = annotation
+            this.javaModelType = javaModelType
             this.enabled = enabled
         }
 
