@@ -386,6 +386,6 @@ class AsyncApiPluginTest {
 
         val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
-        assertTrue(result.output.contains("Invalid generatorName 'python'"))
+        assertTrue(result.output.contains("Invalid generatorName 'python'. Supported values: kotlin, java"))
     }
 }

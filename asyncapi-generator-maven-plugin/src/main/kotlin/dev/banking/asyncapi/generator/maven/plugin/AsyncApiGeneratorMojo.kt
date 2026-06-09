@@ -16,7 +16,6 @@ import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 import java.io.File
-import java.util.Locale
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 class AsyncApiGeneratorMojo : AbstractMojo() {
@@ -76,17 +75,10 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 AsyncApiRegistry.writeYaml(file, bundled)
             }
             val targetLanguage =
-                try {
-                    GeneratorName.valueOf(generatorName.uppercase(Locale.getDefault()))
-                } catch (_: IllegalArgumentException) {
-                    throw MojoExecutionException(
-                        "Invalid generatorName '$generatorName'. Supported values: ${
-                            GeneratorName.entries.joinToString(
-                                ", "
-                            )
-                        }",
-                    )
-                }
+                GeneratorName.fromConfigurationValue(
+                    value = generatorName,
+                    path = "generatorName",
+                )
             val modelRequest = models?.toRequest()
 
             val generatorConfiguration =

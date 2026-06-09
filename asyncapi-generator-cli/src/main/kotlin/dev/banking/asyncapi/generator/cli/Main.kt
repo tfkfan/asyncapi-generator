@@ -14,8 +14,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
@@ -37,11 +36,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val outputFile by option("--output-file", help = "Write bundled AsyncAPI YAML to file")
         .file(canBeDir = false)
 
-    private val generator by option("--generator", "-g", help = "Target language (KOTLIN, JAVA)")
+    private val generator by option("--generator", "-g", help = "Target language (default: kotlin)")
         .choice(
-            "kotlin" to KOTLIN,
-            "java" to JAVA,
-        ).default(KOTLIN)
+            GeneratorName.KOTLIN.configurationValue to GeneratorName.KOTLIN,
+            GeneratorName.JAVA.configurationValue to GeneratorName.JAVA,
+        ).default(GeneratorName.KOTLIN)
 
     private val modelsPackage by option("--models-package", help = "Package for generated models")
 
@@ -129,7 +128,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             AsyncApiRegistry.writeYaml(file, bundledDoc)
         }
         val sourceRootName =
-            if (generator == KOTLIN) {
+            if (generator == GeneratorName.KOTLIN) {
                 "src/main/kotlin"
             } else {
                 "src/main/java"

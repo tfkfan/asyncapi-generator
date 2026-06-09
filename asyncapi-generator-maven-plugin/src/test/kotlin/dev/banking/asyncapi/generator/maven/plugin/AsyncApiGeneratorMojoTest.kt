@@ -15,6 +15,7 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemas
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.springKafka
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -170,9 +171,15 @@ class AsyncApiGeneratorMojoTest {
             models(models(packageName = "com.fail"))
             generatorName("invalid-lang")
         }
-        assertThrows<MojoExecutionException> {
-            mojo.execute()
-        }
+        val exception =
+            assertThrows<MojoExecutionException> {
+                mojo.execute()
+            }
+
+        assertEquals(
+            "Invalid generatorName 'invalid-lang'. Supported values: kotlin, java",
+            exception.message,
+        )
     }
 
     @Test

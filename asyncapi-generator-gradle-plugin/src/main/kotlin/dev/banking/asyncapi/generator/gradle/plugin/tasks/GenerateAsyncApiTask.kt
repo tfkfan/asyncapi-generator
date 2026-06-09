@@ -18,7 +18,6 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.work.DisableCachingByDefault
-import java.util.Locale
 
 @DisableCachingByDefault(because = "Codegen output is cheap to reproduce and not worth caching")
 abstract class GenerateAsyncApiTask : DefaultTask() {
@@ -118,11 +117,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
         val genNameString = generatorName.get()
         val targetLanguage =
-            try {
-                GeneratorName.valueOf(genNameString.uppercase(Locale.getDefault()))
-            } catch (_: IllegalArgumentException) {
-                throw IllegalArgumentException("Invalid generatorName '$genNameString'. Supported values: ${GeneratorName.entries}")
-            }
+            GeneratorName.fromConfigurationValue(
+                value = genNameString,
+                path = "generatorName",
+            )
 
         // Calculate Source Root
         val sourceRootName =
