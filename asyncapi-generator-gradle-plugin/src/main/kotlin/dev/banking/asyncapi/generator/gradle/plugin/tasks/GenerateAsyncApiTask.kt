@@ -247,26 +247,15 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                 GeneratorConfigurationRequest.SpringKafka(
                     packageName = packageName,
                     modelPackageName = modelPackageName,
-                    clientType = springKafkaClientType(mode),
+                    clientType =
+                        SpringKafkaClientType.fromConfigurationValue(
+                            value = mode,
+                            path = "clients.springKafka.mode",
+                        ),
                     topicPropertyPrefix =
                         topicPropertyPrefix
                             ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
                 )
             else -> null
         }
-
-    private fun springKafkaClientType(mode: String?): SpringKafkaClientType =
-        when (mode ?: FULL_MODE) {
-            FULL_MODE -> SpringKafkaClientType.FULL
-            SIMPLE_MODE -> SpringKafkaClientType.SIMPLE
-            else ->
-                throw IllegalArgumentException(
-                    "Invalid clients.springKafka.mode '$mode'. Supported values: $FULL_MODE, $SIMPLE_MODE",
-                )
-        }
-
-    companion object {
-        private const val FULL_MODE = "full"
-        private const val SIMPLE_MODE = "simple"
-    }
 }

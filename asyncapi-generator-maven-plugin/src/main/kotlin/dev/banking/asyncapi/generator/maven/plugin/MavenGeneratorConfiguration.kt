@@ -105,7 +105,11 @@ class MavenSpringKafkaConfiguration {
             GeneratorConfigurationRequest.SpringKafka(
                 packageName = packageName,
                 modelPackageName = modelPackageName,
-                clientType = springKafkaClientType(),
+                clientType =
+                    SpringKafkaClientType.fromConfigurationValue(
+                        value = mode,
+                        path = "clients.springKafka.mode",
+                    ),
                 topicPropertyPrefix =
                     topicPropertyPrefix
                         ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
@@ -113,21 +117,6 @@ class MavenSpringKafkaConfiguration {
         } else {
             null
         }
-
-    private fun springKafkaClientType(): SpringKafkaClientType =
-        when (mode ?: FULL_MODE) {
-            FULL_MODE -> SpringKafkaClientType.FULL
-            SIMPLE_MODE -> SpringKafkaClientType.SIMPLE
-            else ->
-                throw IllegalArgumentException(
-                    "Invalid springKafka mode '$mode'. Supported values: $FULL_MODE, $SIMPLE_MODE",
-                )
-        }
-
-    companion object {
-        private const val FULL_MODE = "full"
-        private const val SIMPLE_MODE = "simple"
-    }
 }
 
 /**

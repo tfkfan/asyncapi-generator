@@ -89,6 +89,7 @@ class GeneratorConfigurationFactoryTest {
                 ClientGeneration.SpringKafka(
                     packageName = "com.example.client",
                     modelPackageName = "com.example.external.model",
+                    clientType = SpringKafkaClientType.SIMPLE,
                 ),
             ),
             configuration.clients,

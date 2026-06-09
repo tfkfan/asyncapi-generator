@@ -42,7 +42,7 @@ data class GeneratorConfigurationRequest(
     data class SpringKafka(
         val packageName: String? = null,
         val modelPackageName: String? = null,
-        val clientType: SpringKafkaClientType = SpringKafkaClientType.FULL,
+        val clientType: SpringKafkaClientType = SpringKafkaClientType.SIMPLE,
         val topicPropertyPrefix: String = DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
     )
 

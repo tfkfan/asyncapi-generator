@@ -77,10 +77,10 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
     private val clientsSpringKafkaMode by option(
         "--clients-spring-kafka-mode",
-        help = "Spring Kafka generation mode",
+        help = "Spring Kafka generation mode (default: simple)",
     ).choice(
-        "full" to SpringKafkaClientType.FULL,
-        "simple" to SpringKafkaClientType.SIMPLE,
+        SpringKafkaClientType.FULL.configurationValue to SpringKafkaClientType.FULL,
+        SpringKafkaClientType.SIMPLE.configurationValue to SpringKafkaClientType.SIMPLE,
     )
 
     private val clientsSpringKafkaTopicPropertyPrefix by option(
@@ -189,7 +189,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     GeneratorConfigurationRequest.SpringKafka(
                         packageName = clientsSpringKafkaPackage,
                         modelPackageName = clientsSpringKafkaModelPackage,
-                        clientType = clientsSpringKafkaMode ?: SpringKafkaClientType.FULL,
+                        clientType = clientsSpringKafkaMode ?: SpringKafkaClientType.SIMPLE,
                         topicPropertyPrefix =
                             clientsSpringKafkaTopicPropertyPrefix
                                 ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,

@@ -44,7 +44,7 @@ Example usage in your `pom.xml`:
                         <packageName>my.package.path.client</packageName>
                         <!-- Optional: defaults to models.packageName when models are configured -->
                         <modelPackageName>my.package.path.model</modelPackageName>
-                        <mode>full</mode> <!-- options: full, simple -->
+                        <mode>simple</mode> <!-- options: full, simple - default simple -->
                     </springKafka>
                 </clients>
                 <schemas>
@@ -80,7 +80,7 @@ asyncapiGenerate {
             packageName.set("my.package.path.client")
             // Optional: defaults to models.packageName when models are configured
             modelPackageName.set("my.package.path.model")
-            mode.set("full") // options: full, simple
+            mode.set("simple") // options: full, simple - default simple
         }
     }
     schemas {
@@ -113,7 +113,7 @@ asyncapiGenerate {
             packageName = 'my.package.path.client'
             // Optional: defaults to models.packageName when models are configured
             modelPackageName = 'my.package.path.model'
-            mode = 'full'
+            mode = 'simple' // options: full, simple - default simple
         }
     }
     schemas {
@@ -144,6 +144,8 @@ The current generator has two modes:
 
 - `mode = "full"` generates Spring Boot-oriented client artifacts. This includes producer classes, listener classes, handler interfaces, an auto-configuration class, and the Spring Boot auto-configuration import resource. Generated producers and listeners use topic property keys, for example `kafka.topics.customerUpdated`, instead of hard-coding topic names directly in the generated source.
 - `mode = "simple"` generates lightweight producer and consumer source artifacts without Spring Boot auto-configuration. The application owns how those generated types are instantiated and connected to Spring Kafka infrastructure.
+
+When `mode` is omitted, the generator uses `simple`.
 
 The generated output depends on the channel direction from the AsyncAPI operations. Producer-oriented channels generate producer artifacts. Consumer-oriented channels generate consumer, listener, or handler artifacts depending on the selected mode. When the channel direction is not declared, the generator treats the channel as both producer and consumer.
 

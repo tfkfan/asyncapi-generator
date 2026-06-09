@@ -12,7 +12,7 @@ sealed interface ClientGeneration {
     data class SpringKafka(
         val packageName: String,
         val modelPackageName: String,
-        val clientType: SpringKafkaClientType = SpringKafkaClientType.FULL,
+        val clientType: SpringKafkaClientType = SpringKafkaClientType.SIMPLE,
         val topicPropertyPrefix: String = "kafka.topics",
     ) : ClientGeneration
 
