@@ -10,13 +10,10 @@ import com.github.ajalt.clikt.parameters.types.file
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorClientType
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSchemaMode
-import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
-import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -106,84 +103,32 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         outputFile?.let { file ->
             AsyncApiRegistry.writeYaml(file, bundledDoc)
         }
-        val selectedClientType = clientType
-        val selectedSchemaMode = schemaMode
-
-        val hasModelPackage = modelPackage != null
-        val hasClientPackage = clientPackage != null
-        val hasSchemaPackage = schemaPackage != null
-
-        if (selectedClientType != null && selectedClientType != GeneratorClientType.NONE && !hasClientPackage) {
-            throw IllegalArgumentException("clientType requires --client-package")
-        }
-
-        if (selectedSchemaMode != null && selectedSchemaMode != GeneratorSchemaMode.NONE && !hasSchemaPackage) {
-            throw IllegalArgumentException("schemaMode requires --schema-package")
-        }
-
-        if (modelAnnotation != null && !hasModelPackage) {
-            throw IllegalArgumentException("modelAnnotation requires --model-package")
-        }
-
-        if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
-            val effectiveModelPackage = modelPackage ?: "unused"
-            val effectiveClientPackage = clientPackage ?: "unused"
-            val effectiveSchemaPackage = schemaPackage ?: "unused"
-            val sourceRootName =
-                if (generator == KOTLIN) {
-                    "src/main/kotlin"
-                } else {
-                    "src/main/java"
-                }
-            val sourceRoot = codegenOutputDirectory.resolve(sourceRootName)
-            val generatorConfiguration =
-                GeneratorConfiguration(
+        val sourceRootName =
+            if (generator == KOTLIN) {
+                "src/main/kotlin"
+            } else {
+                "src/main/java"
+            }
+        val sourceRoot = codegenOutputDirectory.resolve(sourceRootName)
+        val generatorConfiguration =
+            GeneratorConfigurationFactory.create(
+                GeneratorConfigurationRequest(
                     language = generator,
-                    output =
-                        GeneratorOutputConfiguration(
-                            sourceOutputDirectory = sourceRoot,
-                            resourceOutputDirectory = resourceOutputDirectory,
-                        ),
-                    models =
-                        if (hasModelPackage) {
-                            ModelGeneration.Enabled(
-                                packageName = effectiveModelPackage,
-                                annotation = modelAnnotation,
-                            )
-                        } else {
-                            ModelGeneration.Disabled
-                        },
-                    schemas =
-                        buildList {
-                            if (hasSchemaPackage && selectedSchemaMode == GeneratorSchemaMode.AVRO_PROJECTION) {
-                                add(SchemaGeneration.AvroProjection(effectiveSchemaPackage))
-                            }
-                        },
-                    clients =
-                        buildList {
-                            val springKafkaClientType = selectedClientType?.springKafkaClientType
-                            if (hasClientPackage && springKafkaClientType != null) {
-                                add(
-                                    ClientGeneration.SpringKafka(
-                                        packageName = effectiveClientPackage,
-                                        modelPackageName = effectiveModelPackage,
-                                        clientType = springKafkaClientType,
-                                        topicPropertyPrefix = kafkaTopicsPropertyPrefix ?: "kafka.topics",
-                                    ),
-                                )
-                            }
-                            if (hasClientPackage && selectedClientType == GeneratorClientType.QUARKUS_KAFKA) {
-                                add(
-                                    ClientGeneration.QuarkusKafka(
-                                        packageName = effectiveClientPackage,
-                                        modelPackageName = effectiveModelPackage,
-                                    ),
-                                )
-                            }
-                        },
-                )
-            val coreGenerator = AsyncApiGenerator()
-            coreGenerator.generate(bundledDoc, generatorConfiguration)
+                    sourceOutputDirectory = sourceRoot,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    modelPackageName = modelPackage,
+                    clientPackageName = clientPackage,
+                    schemaPackageName = schemaPackage,
+                    clientType = clientType,
+                    schemaMode = schemaMode,
+                    modelAnnotation = modelAnnotation,
+                    kafkaTopicsPropertyPrefix =
+                        kafkaTopicsPropertyPrefix
+                            ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
+                ),
+            )
+        if (generatorConfiguration.hasConfiguredOutputs()) {
+            AsyncApiGenerator().generate(bundledDoc, generatorConfiguration)
         }
         echo("Generation complete.")
     }

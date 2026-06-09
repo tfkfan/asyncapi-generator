@@ -17,4 +17,9 @@ data class GeneratorConfiguration(
     val models: ModelGeneration = ModelGeneration.Disabled,
     val schemas: List<SchemaGeneration> = emptyList(),
     val clients: List<ClientGeneration> = emptyList(),
-)
+) {
+    fun hasConfiguredOutputs(): Boolean =
+        models != ModelGeneration.Disabled ||
+            schemas.isNotEmpty() ||
+            clients.isNotEmpty()
+}

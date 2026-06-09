@@ -3,13 +3,10 @@ package dev.banking.asyncapi.generator.gradle.plugin.tasks
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorClientType
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSchemaMode
-import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
-import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
@@ -117,77 +114,22 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         val selectedModelAnnotation = modelAnnotation.orNull
         val topicPropertyPrefix = kafkaTopicsPropertyPrefix.get()
 
-        val hasModelPackage = modelPackage.isPresent
-        val hasClientPackage = clientPackage.isPresent
-        val hasSchemaPackage = schemaPackage.isPresent
-
-        if (selectedClientType != null && selectedClientType != GeneratorClientType.NONE && !hasClientPackage) {
-            throw IllegalArgumentException("clientType requires clientPackage")
-        }
-
-        if (selectedSchemaMode != null && selectedSchemaMode != GeneratorSchemaMode.NONE && !hasSchemaPackage) {
-            throw IllegalArgumentException("schemaMode requires schemaPackage")
-        }
-
-        if (selectedModelAnnotation != null && !hasModelPackage) {
-            throw IllegalArgumentException("modelAnnotation requires modelPackage")
-        }
-
-        if (topicPropertyPrefix.isBlank()) {
-            throw IllegalArgumentException("kafkaTopicsPropertyPrefix cannot be empty")
-        }
-
-        if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
-            val effectiveModelPackage = if (hasModelPackage) modelPackage.get() else "unused"
-            val effectiveClientPackage = if (hasClientPackage) clientPackage.get() else "unused"
-            val effectiveSchemaPackage = if (hasSchemaPackage) schemaPackage.get() else "unused"
-
-            val generatorConfiguration =
-                GeneratorConfiguration(
+        val generatorConfiguration =
+            GeneratorConfigurationFactory.create(
+                GeneratorConfigurationRequest(
                     language = targetLanguage,
-                    output =
-                        GeneratorOutputConfiguration(
-                            sourceOutputDirectory = codegenSourceRoot,
-                            resourceOutputDirectory = resourceOutputDirectory.get().asFile,
-                        ),
-                    models =
-                        if (hasModelPackage) {
-                            ModelGeneration.Enabled(
-                                packageName = effectiveModelPackage,
-                                annotation = selectedModelAnnotation,
-                            )
-                        } else {
-                            ModelGeneration.Disabled
-                        },
-                    schemas =
-                        buildList {
-                            if (hasSchemaPackage && selectedSchemaMode == GeneratorSchemaMode.AVRO_PROJECTION) {
-                                add(SchemaGeneration.AvroProjection(effectiveSchemaPackage))
-                            }
-                        },
-                    clients =
-                        buildList {
-                            val springKafkaClientType = selectedClientType?.springKafkaClientType
-                            if (hasClientPackage && springKafkaClientType != null) {
-                                add(
-                                    ClientGeneration.SpringKafka(
-                                        packageName = effectiveClientPackage,
-                                        modelPackageName = effectiveModelPackage,
-                                        clientType = springKafkaClientType,
-                                        topicPropertyPrefix = topicPropertyPrefix,
-                                    ),
-                                )
-                            }
-                            if (hasClientPackage && selectedClientType == GeneratorClientType.QUARKUS_KAFKA) {
-                                add(
-                                    ClientGeneration.QuarkusKafka(
-                                        packageName = effectiveClientPackage,
-                                        modelPackageName = effectiveModelPackage,
-                                    ),
-                                )
-                            }
-                        },
-                )
+                    sourceOutputDirectory = codegenSourceRoot,
+                    resourceOutputDirectory = resourceOutputDirectory.get().asFile,
+                    modelPackageName = modelPackage.orNull,
+                    clientPackageName = clientPackage.orNull,
+                    schemaPackageName = schemaPackage.orNull,
+                    clientType = selectedClientType,
+                    schemaMode = selectedSchemaMode,
+                    modelAnnotation = selectedModelAnnotation,
+                    kafkaTopicsPropertyPrefix = topicPropertyPrefix,
+                ),
+            )
+        if (generatorConfiguration.hasConfiguredOutputs()) {
             generator.generate(bundled, generatorConfiguration)
         }
         logger.lifecycle("asyncapi-generator-gradle-plugin completed")
