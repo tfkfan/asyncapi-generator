@@ -10,8 +10,6 @@ object GeneratorConfigurationFactory {
     fun create(request: GeneratorConfigurationRequest): GeneratorConfiguration {
         validate(request)
 
-        val effectiveModelPackage = request.models?.packageName ?: "unused"
-
         return GeneratorConfiguration(
             language = request.language,
             output =
@@ -37,8 +35,15 @@ object GeneratorConfigurationFactory {
                     request.clients.springKafka?.let { springKafka ->
                         add(
                             ClientGeneration.SpringKafka(
-                                packageName = springKafka.packageName!!,
-                                modelPackageName = springKafka.modelPackageName ?: effectiveModelPackage,
+                                packageName = requiredPackageName(
+                                    path = "clients.springKafka.packageName",
+                                    value = springKafka.packageName,
+                                ),
+                                modelPackageName = requiredClientModelPackageName(
+                                    path = "clients.springKafka.modelPackageName",
+                                    configuredModelPackageName = springKafka.modelPackageName,
+                                    modelsPackageName = request.models?.packageName,
+                                ),
                                 clientType = springKafka.clientType,
                                 topicPropertyPrefix = springKafka.topicPropertyPrefix,
                             ),
@@ -48,8 +53,15 @@ object GeneratorConfigurationFactory {
                     request.clients.quarkusKafka?.let { quarkusKafka ->
                         add(
                             ClientGeneration.QuarkusKafka(
-                                packageName = quarkusKafka.packageName!!,
-                                modelPackageName = quarkusKafka.modelPackageName ?: effectiveModelPackage,
+                                packageName = requiredPackageName(
+                                    path = "clients.quarkusKafka.packageName",
+                                    value = quarkusKafka.packageName,
+                                ),
+                                modelPackageName = requiredClientModelPackageName(
+                                    path = "clients.quarkusKafka.modelPackageName",
+                                    configuredModelPackageName = quarkusKafka.modelPackageName,
+                                    modelsPackageName = request.models?.packageName,
+                                ),
                             ),
                         )
                     }
@@ -84,4 +96,20 @@ object GeneratorConfigurationFactory {
             throw IllegalArgumentException("clients.springKafka.topicPropertyPrefix cannot be empty")
         }
     }
+
+    private fun requiredPackageName(
+        path: String,
+        value: String?,
+    ): String =
+        value ?: throw IllegalArgumentException("$path is required")
+
+    private fun requiredClientModelPackageName(
+        path: String,
+        configuredModelPackageName: String?,
+        modelsPackageName: String?,
+    ): String =
+        configuredModelPackageName ?: modelsPackageName
+            ?: throw IllegalArgumentException(
+                "$path is required when models.packageName is not configured",
+            )
 }

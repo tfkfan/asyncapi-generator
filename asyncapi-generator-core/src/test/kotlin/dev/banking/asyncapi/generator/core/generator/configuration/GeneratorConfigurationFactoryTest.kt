@@ -69,6 +69,33 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create uses client model package when model generation is not configured`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            springKafka =
+                                GeneratorConfigurationRequest.SpringKafka(
+                                    packageName = "com.example.client",
+                                    modelPackageName = "com.example.external.model",
+                                ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                ClientGeneration.SpringKafka(
+                    packageName = "com.example.client",
+                    modelPackageName = "com.example.external.model",
+                ),
+            ),
+            configuration.clients,
+        )
+    }
+
+    @Test
     fun `create enables Avro projection when schema mode is configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(
@@ -117,6 +144,29 @@ class GeneratorConfigurationFactoryTest {
 
         assertEquals(
             "clients.springKafka.packageName is required when clients.springKafka is configured",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects client generation without model package`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                springKafka =
+                                    GeneratorConfigurationRequest.SpringKafka(
+                                        packageName = "com.example.client",
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "clients.springKafka.modelPackageName is required when models.packageName is not configured",
             exception.message,
         )
     }
