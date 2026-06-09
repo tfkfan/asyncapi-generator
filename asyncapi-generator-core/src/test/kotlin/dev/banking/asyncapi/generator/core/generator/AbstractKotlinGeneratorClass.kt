@@ -2,8 +2,12 @@ package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
+import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import java.io.File
 
 abstract class AbstractKotlinGeneratorClass {
@@ -26,23 +30,49 @@ abstract class AbstractKotlinGeneratorClass {
         configOptions: Map<String, String> = emptyMap(),
     ): String {
         val bundled = bundlerFixtures.bundledDocument(yaml)
-        val generatorOptions =
-            GeneratorOptions(
-                generatorName = GeneratorName.KOTLIN,
-                modelPackage = modelPackage,
-                clientPackage = clientPackage ?: modelPackage,
-                schemaPackage = schemaPackage ?: modelPackage,
-                codegenOutputDirectory = codegenOutputDirectory,
-                resourceOutputDirectory = resourceOutputDirectory,
-                kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
-                generateModels = generateModels,
-                generateSpringKafkaClient = generateSpringKafkaClient,
-                generateQuarkusKafkaClient = generateQuarkusKafkaClient,
-                configOptions = configOptions,
+        val effectiveClientPackage = clientPackage ?: modelPackage
+        val generatorConfiguration =
+            GeneratorConfiguration(
+                language = GeneratorName.KOTLIN,
+                output =
+                    GeneratorOutputConfiguration(
+                        sourceOutputDirectory = codegenOutputDirectory,
+                        resourceOutputDirectory = resourceOutputDirectory,
+                    ),
+                models =
+                    if (generateModels) {
+                        ModelGeneration.Enabled(
+                            packageName = modelPackage,
+                            annotation = configOptions["model.annotation"],
+                        )
+                    } else {
+                        ModelGeneration.Disabled
+                    },
+                clients =
+                    buildList {
+                        if (generateSpringKafkaClient) {
+                            add(
+                                ClientGeneration.SpringKafka(
+                                    packageName = effectiveClientPackage,
+                                    modelPackageName = modelPackage,
+                                    clientType = SpringKafkaClientType.fromConfigValue(configOptions["client.type"]),
+                                    topicPropertyPrefix = kafkaTopicsPropertyPrefix,
+                                ),
+                            )
+                        }
+                        if (generateQuarkusKafkaClient) {
+                            add(
+                                ClientGeneration.QuarkusKafka(
+                                    packageName = effectiveClientPackage,
+                                    modelPackageName = modelPackage,
+                                ),
+                            )
+                        }
+                    },
             )
         generator.generate(
             asyncApiDocument = bundled,
-            generatorOptions = generatorOptions,
+            generatorConfiguration = generatorConfiguration,
         )
         if (generated != null) {
             val modelPath = modelPackage.replace('.', '/')

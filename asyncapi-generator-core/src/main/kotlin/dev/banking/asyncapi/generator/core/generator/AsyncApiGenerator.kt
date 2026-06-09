@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.generator.artifact.ModelArtifactGener
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientGeneration
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -74,16 +73,6 @@ class AsyncApiGenerator {
                     )
             }
         }
-    }
-
-    fun generate(
-        asyncApiDocument: AsyncApiDocument,
-        generatorOptions: GeneratorOptions,
-    ) {
-        generate(
-            asyncApiDocument = asyncApiDocument,
-            generatorConfiguration = generatorOptions.toGeneratorConfiguration(),
-        )
     }
 
     private fun String.titlecase(): String =

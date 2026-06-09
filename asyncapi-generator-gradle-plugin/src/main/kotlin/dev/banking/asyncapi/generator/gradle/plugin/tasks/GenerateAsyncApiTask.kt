@@ -3,10 +3,15 @@ package dev.banking.asyncapi.generator.gradle.plugin.tasks
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
+import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -127,22 +132,52 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             val effectiveClientPackage = if (hasClientPackage) clientPackage.get() else "unused"
             val effectiveSchemaPackage = if (hasSchemaPackage) schemaPackage.get() else "unused"
 
-            val options =
-                GeneratorOptions(
-                    generatorName = targetLanguage,
-                    modelPackage = effectiveModelPackage,
-                    clientPackage = effectiveClientPackage,
-                    schemaPackage = effectiveSchemaPackage,
-                    codegenOutputDirectory = codegenSourceRoot,
-                    resourceOutputDirectory = resourceOutputDirectory.get().asFile,
-                    kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
-                    generateModels = hasModelPackage,
-                    generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
-                    generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
-                    generateAvroSchema = hasSchemaPackage && schemaType == "avro",
-                    configOptions = configMap,
+            val generatorConfiguration =
+                GeneratorConfiguration(
+                    language = targetLanguage,
+                    output =
+                        GeneratorOutputConfiguration(
+                            sourceOutputDirectory = codegenSourceRoot,
+                            resourceOutputDirectory = resourceOutputDirectory.get().asFile,
+                        ),
+                    models =
+                        if (hasModelPackage) {
+                            ModelGeneration.Enabled(
+                                packageName = effectiveModelPackage,
+                                annotation = modelAnnotation,
+                            )
+                        } else {
+                            ModelGeneration.Disabled
+                        },
+                    schemas =
+                        buildList {
+                            if (hasSchemaPackage && schemaType == "avro") {
+                                add(SchemaGeneration.AvroProjection(effectiveSchemaPackage))
+                            }
+                        },
+                    clients =
+                        buildList {
+                            if (hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple")) {
+                                add(
+                                    ClientGeneration.SpringKafka(
+                                        packageName = effectiveClientPackage,
+                                        modelPackageName = effectiveModelPackage,
+                                        clientType = SpringKafkaClientType.fromConfigValue(clientType),
+                                        topicPropertyPrefix = prefixOverride ?: "kafka.topics",
+                                    ),
+                                )
+                            }
+                            if (hasClientPackage && clientType == "quarkus-kafka") {
+                                add(
+                                    ClientGeneration.QuarkusKafka(
+                                        packageName = effectiveClientPackage,
+                                        modelPackageName = effectiveModelPackage,
+                                    ),
+                                )
+                            }
+                        },
                 )
-            generator.generate(bundled, options)
+            generator.generate(bundled, generatorConfiguration)
         }
         logger.lifecycle("asyncapi-generator-gradle-plugin completed")
     }

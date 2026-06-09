@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 
 /**
  * Creates an ordered generation plan from generator options.
@@ -67,6 +66,4 @@ class GenerationPlanner {
             },
         )
 
-    fun plan(generatorOptions: GeneratorOptions): GenerationPlan =
-        plan(generatorOptions.toGeneratorConfiguration())
 }
