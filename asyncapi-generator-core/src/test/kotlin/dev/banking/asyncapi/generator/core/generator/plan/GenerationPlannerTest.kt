@@ -1,7 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -18,9 +22,9 @@ class GenerationPlannerTest {
     fun `plan includes model and schema artifact tasks when enabled`() {
         val plan =
             planner.plan(
-                generatorOptions(
-                    generateModels = true,
-                    generateAvroSchema = true,
+                generatorConfiguration(
+                    models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                    schemas = listOf(SchemaGeneration.AvroProjection(packageName = "com.example.schema")),
                 ),
             )
 
@@ -42,9 +46,12 @@ class GenerationPlannerTest {
     fun `plan includes model annotation on model artifact task when configured`() {
         val plan =
             planner.plan(
-                generatorOptions(
-                    generateModels = true,
-                    configOptions = mapOf("model.annotation" to "com.example.NoArg"),
+                generatorConfiguration(
+                    models =
+                        ModelGeneration.Enabled(
+                            packageName = "com.example.model",
+                            annotation = "com.example.NoArg",
+                        ),
                 ),
             )
 
@@ -64,9 +71,8 @@ class GenerationPlannerTest {
     fun `plan includes header and full Spring Kafka client tasks for full client generation`() {
         val plan =
             planner.plan(
-                generatorOptions(
-                    generateModels = false,
-                    generateSpringKafkaClient = true,
+                generatorConfiguration(
+                    clients = listOf(springKafkaClientGeneration(clientType = SpringKafkaClientType.FULL)),
                 ),
             )
 
@@ -86,10 +92,8 @@ class GenerationPlannerTest {
     fun `plan accepts explicit full Spring Kafka client type`() {
         val plan =
             planner.plan(
-                generatorOptions(
-                    generateModels = false,
-                    generateSpringKafkaClient = true,
-                    configOptions = mapOf("client.type" to "spring-kafka"),
+                generatorConfiguration(
+                    clients = listOf(springKafkaClientGeneration(clientType = SpringKafkaClientType.FULL)),
                 ),
             )
 
@@ -109,10 +113,8 @@ class GenerationPlannerTest {
     fun `plan excludes header model task for simple Spring Kafka client generation`() {
         val plan =
             planner.plan(
-                generatorOptions(
-                    generateModels = false,
-                    generateSpringKafkaClient = true,
-                    configOptions = mapOf("client.type" to "spring-kafka-simple"),
+                generatorConfiguration(
+                    clients = listOf(springKafkaClientGeneration(clientType = SpringKafkaClientType.SIMPLE)),
                 ),
             )
 
@@ -128,10 +130,14 @@ class GenerationPlannerTest {
     fun `plan includes custom topic prefix on Spring Kafka client task`() {
         val plan =
             planner.plan(
-                generatorOptions(
-                    generateModels = false,
-                    generateSpringKafkaClient = true,
-                    kafkaTopicsPropertyPrefix = "custom.topics",
+                generatorConfiguration(
+                    clients =
+                        listOf(
+                            springKafkaClientGeneration(
+                                clientType = SpringKafkaClientType.FULL,
+                                topicPropertyPrefix = "custom.topics",
+                            ),
+                        ),
                 ),
             )
 
@@ -154,11 +160,17 @@ class GenerationPlannerTest {
     fun `plan uses selected language for language-specific tasks`() {
         val plan =
             planner.plan(
-                generatorOptions(
-                    generatorName = GeneratorName.JAVA,
-                    generateModels = true,
-                    generateSpringKafkaClient = true,
-                    generateQuarkusKafkaClient = true,
+                generatorConfiguration(
+                    language = GeneratorName.JAVA,
+                    models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                    clients =
+                        listOf(
+                            springKafkaClientGeneration(clientType = SpringKafkaClientType.FULL),
+                            ClientGeneration.QuarkusKafka(
+                                packageName = "com.example.client",
+                                modelPackageName = "com.example.model",
+                            ),
+                        ),
                 ),
             )
 
@@ -189,10 +201,14 @@ class GenerationPlannerTest {
         val exception =
             assertFailsWith<IllegalArgumentException> {
                 planner.plan(
-                    generatorOptions(
-                        generateModels = false,
-                        generateSpringKafkaClient = true,
-                        kafkaTopicsPropertyPrefix = "",
+                    generatorConfiguration(
+                        clients =
+                            listOf(
+                                springKafkaClientGeneration(
+                                    clientType = SpringKafkaClientType.FULL,
+                                    topicPropertyPrefix = "",
+                                ),
+                            ),
                     ),
                 )
             }
@@ -200,47 +216,35 @@ class GenerationPlannerTest {
         assertEquals("kafka.topics.property.prefix cannot be empty", exception.message)
     }
 
-    @Test
-    fun `plan rejects unsupported Spring Kafka client type`() {
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                planner.plan(
-                    generatorOptions(
-                        generateModels = false,
-                        generateSpringKafkaClient = true,
-                        configOptions = mapOf("client.type" to "springkafka"),
-                    ),
-                )
-            }
-
-        assertEquals(
-            "Unsupported client.type 'springkafka'. Supported values: spring-kafka, spring-kafka-simple",
-            exception.message,
+    private fun generatorConfiguration(
+        language: GeneratorName = GeneratorName.KOTLIN,
+        models: ModelGeneration = ModelGeneration.Disabled,
+        schemas: List<SchemaGeneration> = emptyList(),
+        clients: List<ClientGeneration> = emptyList(),
+    ): GeneratorConfiguration =
+        GeneratorConfiguration(
+            language = language,
+            output =
+                GeneratorOutputConfiguration(
+                    sourceOutputDirectory = tempDir.resolve("sources").toFile(),
+                    resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+                ),
+            models = models,
+            schemas = schemas,
+            clients = clients,
         )
-    }
 
-    private fun generatorOptions(
-        generatorName: GeneratorName = GeneratorName.KOTLIN,
-        generateModels: Boolean = true,
-        generateSpringKafkaClient: Boolean = false,
-        generateQuarkusKafkaClient: Boolean = false,
-        generateAvroSchema: Boolean = false,
-        kafkaTopicsPropertyPrefix: String = "kafka.topics",
-        configOptions: Map<String, String> = emptyMap(),
-    ): GeneratorOptions =
-        GeneratorOptions(
-            generatorName = generatorName,
-            modelPackage = "com.example.model",
-            clientPackage = "com.example.client",
-            schemaPackage = "com.example.schema",
-            codegenOutputDirectory = tempDir.resolve("sources").toFile(),
-            resourceOutputDirectory = tempDir.resolve("resources").toFile(),
-            kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
-            generateModels = generateModels,
-            generateSpringKafkaClient = generateSpringKafkaClient,
-            generateQuarkusKafkaClient = generateQuarkusKafkaClient,
-            generateAvroSchema = generateAvroSchema,
-            configOptions = configOptions,
+    private fun springKafkaClientGeneration(
+        clientType: SpringKafkaClientType,
+        clientPackage: String = "com.example.client",
+        modelPackage: String = "com.example.model",
+        topicPropertyPrefix: String = "kafka.topics",
+    ): ClientGeneration.SpringKafka =
+        ClientGeneration.SpringKafka(
+            packageName = clientPackage,
+            modelPackageName = modelPackage,
+            clientType = clientType,
+            topicPropertyPrefix = topicPropertyPrefix,
         )
 
     private fun springKafkaClientTask(

@@ -2,8 +2,11 @@ package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -27,16 +30,11 @@ class AsyncApiGeneratorOutputContractTest {
 
         generator.generate(
             asyncApiDocument = bundled,
-            generatorOptions =
-                GeneratorOptions(
-                    generatorName = GeneratorName.KOTLIN,
-                    modelPackage = "com.example.model",
-                    clientPackage = "com.example.client",
-                    schemaPackage = "com.example.schema",
-                    codegenOutputDirectory = sourceOutputDirectory,
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    generateModels = true,
-                    generateAvroSchema = false,
+                    models = ModelGeneration.Enabled(packageName = "com.example.model"),
                 ),
         )
 
@@ -52,16 +50,11 @@ class AsyncApiGeneratorOutputContractTest {
 
         generator.generate(
             asyncApiDocument = bundled,
-            generatorOptions =
-                GeneratorOptions(
-                    generatorName = GeneratorName.KOTLIN,
-                    modelPackage = "com.example.model",
-                    clientPackage = "com.example.client",
-                    schemaPackage = "com.example.avro",
-                    codegenOutputDirectory = sourceOutputDirectory,
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    generateModels = false,
-                    generateAvroSchema = true,
+                    schemas = listOf(SchemaGeneration.AvroProjection(packageName = "com.example.avro")),
                 ),
         )
 
@@ -72,5 +65,22 @@ class AsyncApiGeneratorOutputContractTest {
     private fun bundledDocument() =
         bundlerFixtures.bundledDocument(
             File("src/test/resources/generator/asyncapi_enum_default_value.yaml"),
+        )
+
+    private fun generatorConfiguration(
+        sourceOutputDirectory: File,
+        resourceOutputDirectory: File,
+        models: ModelGeneration = ModelGeneration.Disabled,
+        schemas: List<SchemaGeneration> = emptyList(),
+    ): GeneratorConfiguration =
+        GeneratorConfiguration(
+            language = GeneratorName.KOTLIN,
+            output =
+                GeneratorOutputConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                ),
+            models = models,
+            schemas = schemas,
         )
 }

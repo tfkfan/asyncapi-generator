@@ -1,5 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 
 /**
@@ -9,54 +13,60 @@ import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
  * - `GenerationPlannerTest`
  */
 class GenerationPlanner {
-    fun plan(generatorOptions: GeneratorOptions): GenerationPlan =
+    fun plan(configuration: GeneratorConfiguration): GenerationPlan =
         GenerationPlan(
             buildList {
-                if (generatorOptions.generateModels) {
-                    add(
-                        GenerationTask.ModelArtifacts(
-                            language = generatorOptions.generatorName,
-                            packageName = generatorOptions.modelPackage,
-                            annotation = generatorOptions.configOptions["model.annotation"],
-                        ),
-                    )
-                }
-
-                if (generatorOptions.generateSpringKafkaClient) {
-                    require(generatorOptions.kafkaTopicsPropertyPrefix.isNotBlank()) {
-                        "kafka.topics.property.prefix cannot be empty"
-                    }
-
-                    val clientType = generatorOptions.springKafkaClientType()
-                    if (clientType != SpringKafkaClientType.SIMPLE) {
+                when (val models = configuration.models) {
+                    ModelGeneration.Disabled -> Unit
+                    is ModelGeneration.Enabled ->
                         add(
-                            GenerationTask.HeaderModelArtifacts(
-                                language = generatorOptions.generatorName,
-                                packageName = "${generatorOptions.clientPackage}.header",
+                            GenerationTask.ModelArtifacts(
+                                language = configuration.language,
+                                packageName = models.packageName,
+                                annotation = models.annotation,
                             ),
                         )
+                }
+
+                configuration.clients.forEach { client ->
+                    when (client) {
+                        is ClientGeneration.SpringKafka -> {
+                            require(client.topicPropertyPrefix.isNotBlank()) {
+                                "kafka.topics.property.prefix cannot be empty"
+                            }
+
+                            if (client.clientType != SpringKafkaClientType.SIMPLE) {
+                                add(
+                                    GenerationTask.HeaderModelArtifacts(
+                                        language = configuration.language,
+                                        packageName = "${client.packageName}.header",
+                                    ),
+                                )
+                            }
+                            add(
+                                GenerationTask.SpringKafkaClient(
+                                    language = configuration.language,
+                                    clientType = client.clientType,
+                                    clientPackage = client.packageName,
+                                    modelPackage = client.modelPackageName,
+                                    topicPropertyPrefix = client.topicPropertyPrefix,
+                                ),
+                            )
+                        }
+                        is ClientGeneration.QuarkusKafka ->
+                            add(GenerationTask.QuarkusKafkaClient(configuration.language))
                     }
-                    add(
-                        GenerationTask.SpringKafkaClient(
-                            language = generatorOptions.generatorName,
-                            clientType = clientType,
-                            clientPackage = generatorOptions.clientPackage,
-                            modelPackage = generatorOptions.modelPackage,
-                            topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                        ),
-                    )
                 }
 
-                if (generatorOptions.generateQuarkusKafkaClient) {
-                    add(GenerationTask.QuarkusKafkaClient(generatorOptions.generatorName))
-                }
-
-                if (generatorOptions.generateAvroSchema) {
-                    add(GenerationTask.AvroSchemaArtifacts(generatorOptions.schemaPackage))
+                configuration.schemas.forEach { schema ->
+                    when (schema) {
+                        is SchemaGeneration.AvroProjection ->
+                            add(GenerationTask.AvroSchemaArtifacts(schema.packageName))
+                    }
                 }
             },
         )
 
-    private fun GeneratorOptions.springKafkaClientType(): SpringKafkaClientType =
-        SpringKafkaClientType.fromConfigValue(configOptions["client.type"])
+    fun plan(generatorOptions: GeneratorOptions): GenerationPlan =
+        plan(generatorOptions.toGeneratorConfiguration())
 }
