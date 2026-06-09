@@ -12,6 +12,7 @@ import java.io.File
  *
  * Expected behavior is covered by:
  * - `GeneratorConfigurationFactoryTest`
+ * - `GeneratorConfigurationRequestTest`
  */
 data class GeneratorConfigurationRequest(
     val language: GeneratorName,
@@ -53,5 +54,73 @@ data class GeneratorConfigurationRequest(
 
     companion object {
         const val DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX = "kafka.topics"
+
+        fun models(
+            enabled: Boolean? = null,
+            packageName: String? = null,
+            annotation: String? = null,
+        ): Models? =
+            when {
+                enabled == false -> null
+                enabled == true || packageName != null || annotation != null ->
+                    Models(
+                        packageName = packageName,
+                        annotation = annotation,
+                    )
+                else -> null
+            }
+
+        fun avroProjection(
+            enabled: Boolean? = null,
+            packageName: String? = null,
+        ): AvroProjection? =
+            when {
+                enabled == false -> null
+                enabled == true || packageName != null ->
+                    AvroProjection(packageName = packageName)
+                else -> null
+            }
+
+        fun springKafka(
+            enabled: Boolean? = null,
+            packageName: String? = null,
+            modelPackageName: String? = null,
+            mode: String? = null,
+            topicPropertyPrefix: String? = null,
+        ): SpringKafka? =
+            when {
+                enabled == false -> null
+                enabled == true ||
+                    packageName != null ||
+                    modelPackageName != null ||
+                    mode != null ||
+                    topicPropertyPrefix != null ->
+                    SpringKafka(
+                        packageName = packageName,
+                        modelPackageName = modelPackageName,
+                        clientType =
+                            SpringKafkaClientType.fromConfigurationValue(
+                                value = mode,
+                                path = "clients.springKafka.mode",
+                            ),
+                        topicPropertyPrefix = topicPropertyPrefix ?: DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
+                    )
+                else -> null
+            }
+
+        fun quarkusKafka(
+            enabled: Boolean? = null,
+            packageName: String? = null,
+            modelPackageName: String? = null,
+        ): QuarkusKafka? =
+            when {
+                enabled == false -> null
+                enabled == true || packageName != null || modelPackageName != null ->
+                    QuarkusKafka(
+                        packageName = packageName,
+                        modelPackageName = modelPackageName,
+                    )
+                else -> null
+            }
     }
 }

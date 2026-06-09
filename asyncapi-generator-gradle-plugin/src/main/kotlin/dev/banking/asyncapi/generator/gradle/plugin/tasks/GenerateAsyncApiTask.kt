@@ -8,7 +8,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -171,15 +170,11 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         packageName: String?,
         annotation: String?,
     ): GeneratorConfigurationRequest.Models? =
-        when {
-            enabled == false -> null
-            enabled == true || packageName != null || annotation != null ->
-                GeneratorConfigurationRequest.Models(
-                    packageName = packageName,
-                    annotation = annotation,
-                )
-            else -> null
-        }
+        GeneratorConfigurationRequest.models(
+            enabled = enabled,
+            packageName = packageName,
+            annotation = annotation,
+        )
 
     private fun schemaRequest(
         avroProjectionEnabled: Boolean?,
@@ -187,12 +182,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     ): GeneratorConfigurationRequest.Schemas =
         GeneratorConfigurationRequest.Schemas(
             avroProjection =
-                when {
-                    avroProjectionEnabled == false -> null
-                    avroProjectionEnabled == true || avroProjectionPackageName != null ->
-                        GeneratorConfigurationRequest.AvroProjection(packageName = avroProjectionPackageName)
-                    else -> null
-                },
+                GeneratorConfigurationRequest.avroProjection(
+                    enabled = avroProjectionEnabled,
+                    packageName = avroProjectionPackageName,
+                ),
         )
 
     private fun clientRequest(
@@ -215,17 +208,11 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     topicPropertyPrefix = springKafkaTopicPropertyPrefix,
                 ),
             quarkusKafka =
-                when {
-                    quarkusKafkaEnabled == false -> null
-                    quarkusKafkaEnabled == true ||
-                        quarkusKafkaPackageName != null ||
-                        quarkusKafkaModelPackageName != null ->
-                        GeneratorConfigurationRequest.QuarkusKafka(
-                            packageName = quarkusKafkaPackageName,
-                            modelPackageName = quarkusKafkaModelPackageName,
-                        )
-                    else -> null
-                },
+                GeneratorConfigurationRequest.quarkusKafka(
+                    enabled = quarkusKafkaEnabled,
+                    packageName = quarkusKafkaPackageName,
+                    modelPackageName = quarkusKafkaModelPackageName,
+                ),
         )
 
     private fun springKafkaRequest(
@@ -235,25 +222,11 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         mode: String?,
         topicPropertyPrefix: String?,
     ): GeneratorConfigurationRequest.SpringKafka? =
-        when {
-            enabled == false -> null
-            enabled == true ||
-                packageName != null ||
-                modelPackageName != null ||
-                mode != null ||
-                topicPropertyPrefix != null ->
-                GeneratorConfigurationRequest.SpringKafka(
-                    packageName = packageName,
-                    modelPackageName = modelPackageName,
-                    clientType =
-                        SpringKafkaClientType.fromConfigurationValue(
-                            value = mode,
-                            path = "clients.springKafka.mode",
-                        ),
-                    topicPropertyPrefix =
-                        topicPropertyPrefix
-                            ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
-                )
-            else -> null
-        }
+        GeneratorConfigurationRequest.springKafka(
+            enabled = enabled,
+            packageName = packageName,
+            modelPackageName = modelPackageName,
+            mode = mode,
+            topicPropertyPrefix = topicPropertyPrefix,
+        )
 }

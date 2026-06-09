@@ -1,0 +1,111 @@
+package dev.banking.asyncapi.generator.core.generator.configuration
+
+import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+
+class GeneratorConfigurationRequestTest {
+    @Test
+    fun `models request is created only when model output is configured`() {
+        assertNull(GeneratorConfigurationRequest.models())
+        assertNull(
+            GeneratorConfigurationRequest.models(
+                enabled = false,
+                packageName = "com.example.model",
+                annotation = "com.example.NoArg",
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.Models(
+                packageName = "com.example.model",
+                annotation = "com.example.NoArg",
+            ),
+            GeneratorConfigurationRequest.models(
+                packageName = "com.example.model",
+                annotation = "com.example.NoArg",
+            ),
+        )
+    }
+
+    @Test
+    fun `avro projection request is created only when schema output is configured`() {
+        assertNull(GeneratorConfigurationRequest.avroProjection())
+        assertNull(
+            GeneratorConfigurationRequest.avroProjection(
+                enabled = false,
+                packageName = "com.example.schema",
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.AvroProjection(packageName = "com.example.schema"),
+            GeneratorConfigurationRequest.avroProjection(packageName = "com.example.schema"),
+        )
+    }
+
+    @Test
+    fun `spring kafka request is created only when client output is configured`() {
+        assertNull(GeneratorConfigurationRequest.springKafka())
+        assertNull(
+            GeneratorConfigurationRequest.springKafka(
+                enabled = false,
+                packageName = "com.example.client",
+                modelPackageName = "com.example.model",
+                mode = "full",
+                topicPropertyPrefix = "custom.topics",
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.SpringKafka(
+                packageName = "com.example.client",
+                modelPackageName = "com.example.model",
+                clientType = SpringKafkaClientType.FULL,
+                topicPropertyPrefix = "custom.topics",
+            ),
+            GeneratorConfigurationRequest.springKafka(
+                packageName = "com.example.client",
+                modelPackageName = "com.example.model",
+                mode = "full",
+                topicPropertyPrefix = "custom.topics",
+            ),
+        )
+    }
+
+    @Test
+    fun `spring kafka request defaults to simple mode and default topic prefix`() {
+        assertEquals(
+            GeneratorConfigurationRequest.SpringKafka(
+                packageName = "com.example.client",
+                clientType = SpringKafkaClientType.SIMPLE,
+                topicPropertyPrefix = GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
+            ),
+            GeneratorConfigurationRequest.springKafka(packageName = "com.example.client"),
+        )
+    }
+
+    @Test
+    fun `quarkus kafka request is created only when client output is configured`() {
+        assertNull(GeneratorConfigurationRequest.quarkusKafka())
+        assertNull(
+            GeneratorConfigurationRequest.quarkusKafka(
+                enabled = false,
+                packageName = "com.example.client",
+                modelPackageName = "com.example.model",
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.QuarkusKafka(
+                packageName = "com.example.client",
+                modelPackageName = "com.example.model",
+            ),
+            GeneratorConfigurationRequest.quarkusKafka(
+                packageName = "com.example.client",
+                modelPackageName = "com.example.model",
+            ),
+        )
+    }
+}

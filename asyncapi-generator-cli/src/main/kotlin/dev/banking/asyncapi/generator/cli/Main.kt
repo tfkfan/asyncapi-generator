@@ -156,58 +156,35 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     }
 
     private fun modelRequest(): GeneratorConfigurationRequest.Models? =
-        if (modelsPackage != null || modelsAnnotation != null) {
-            GeneratorConfigurationRequest.Models(
-                packageName = modelsPackage,
-                annotation = modelsAnnotation,
-            )
-        } else {
-            null
-        }
+        GeneratorConfigurationRequest.models(
+            packageName = modelsPackage,
+            annotation = modelsAnnotation,
+        )
 
     private fun schemaRequest(): GeneratorConfigurationRequest.Schemas =
         GeneratorConfigurationRequest.Schemas(
             avroProjection =
-                if (schemasAvroProjection || schemasAvroProjectionPackage != null) {
-                    GeneratorConfigurationRequest.AvroProjection(packageName = schemasAvroProjectionPackage)
-                } else {
-                    null
-                },
+                GeneratorConfigurationRequest.avroProjection(
+                    enabled = true.takeIf { schemasAvroProjection },
+                    packageName = schemasAvroProjectionPackage,
+                ),
         )
 
     private fun clientRequest(): GeneratorConfigurationRequest.Clients =
         GeneratorConfigurationRequest.Clients(
             springKafka =
-                if (
-                    clientsSpringKafka ||
-                    clientsSpringKafkaPackage != null ||
-                    clientsSpringKafkaModelPackage != null ||
-                    clientsSpringKafkaMode != null ||
-                    clientsSpringKafkaTopicPropertyPrefix != null
-                ) {
-                    GeneratorConfigurationRequest.SpringKafka(
-                        packageName = clientsSpringKafkaPackage,
-                        modelPackageName = clientsSpringKafkaModelPackage,
-                        clientType = clientsSpringKafkaMode ?: SpringKafkaClientType.SIMPLE,
-                        topicPropertyPrefix =
-                            clientsSpringKafkaTopicPropertyPrefix
-                                ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
-                    )
-                } else {
-                    null
-                },
+                GeneratorConfigurationRequest.springKafka(
+                    enabled = true.takeIf { clientsSpringKafka },
+                    packageName = clientsSpringKafkaPackage,
+                    modelPackageName = clientsSpringKafkaModelPackage,
+                    mode = clientsSpringKafkaMode?.configurationValue,
+                    topicPropertyPrefix = clientsSpringKafkaTopicPropertyPrefix,
+                ),
             quarkusKafka =
-                if (
-                    clientsQuarkusKafka ||
-                    clientsQuarkusKafkaPackage != null ||
-                    clientsQuarkusKafkaModelPackage != null
-                ) {
-                    GeneratorConfigurationRequest.QuarkusKafka(
-                        packageName = clientsQuarkusKafkaPackage,
-                        modelPackageName = clientsQuarkusKafkaModelPackage,
-                    )
-                } else {
-                    null
-                },
+                GeneratorConfigurationRequest.quarkusKafka(
+                    enabled = true.takeIf { clientsQuarkusKafka },
+                    packageName = clientsQuarkusKafkaPackage,
+                    modelPackageName = clientsQuarkusKafkaModelPackage,
+                ),
         )
 }

@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 
 /**
  * Maven model generation configuration.
@@ -15,16 +14,11 @@ class MavenModelGenerationConfiguration {
     var annotation: String? = null
 
     fun toRequest(): GeneratorConfigurationRequest.Models? =
-        if (enabled == false) {
-            null
-        } else if (enabled == true || packageName != null || annotation != null) {
-            GeneratorConfigurationRequest.Models(
-                packageName = packageName,
-                annotation = annotation,
-            )
-        } else {
-            null
-        }
+        GeneratorConfigurationRequest.models(
+            enabled = enabled,
+            packageName = packageName,
+            annotation = annotation,
+        )
 }
 
 /**
@@ -53,13 +47,10 @@ class MavenAvroProjectionConfiguration {
     var packageName: String? = null
 
     fun toRequest(): GeneratorConfigurationRequest.AvroProjection? =
-        if (enabled == false) {
-            null
-        } else if (enabled == true || packageName != null) {
-            GeneratorConfigurationRequest.AvroProjection(packageName = packageName)
-        } else {
-            null
-        }
+        GeneratorConfigurationRequest.avroProjection(
+            enabled = enabled,
+            packageName = packageName,
+        )
 }
 
 /**
@@ -93,30 +84,13 @@ class MavenSpringKafkaConfiguration {
     var topicPropertyPrefix: String? = null
 
     fun toRequest(): GeneratorConfigurationRequest.SpringKafka? =
-        if (enabled == false) {
-            null
-        } else if (
-            enabled == true ||
-            packageName != null ||
-            modelPackageName != null ||
-            mode != null ||
-            topicPropertyPrefix != null
-        ) {
-            GeneratorConfigurationRequest.SpringKafka(
-                packageName = packageName,
-                modelPackageName = modelPackageName,
-                clientType =
-                    SpringKafkaClientType.fromConfigurationValue(
-                        value = mode,
-                        path = "clients.springKafka.mode",
-                    ),
-                topicPropertyPrefix =
-                    topicPropertyPrefix
-                        ?: GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
-            )
-        } else {
-            null
-        }
+        GeneratorConfigurationRequest.springKafka(
+            enabled = enabled,
+            packageName = packageName,
+            modelPackageName = modelPackageName,
+            mode = mode,
+            topicPropertyPrefix = topicPropertyPrefix,
+        )
 }
 
 /**
@@ -131,14 +105,9 @@ class MavenQuarkusKafkaConfiguration {
     var modelPackageName: String? = null
 
     fun toRequest(): GeneratorConfigurationRequest.QuarkusKafka? =
-        if (enabled == false) {
-            null
-        } else if (enabled == true || packageName != null || modelPackageName != null) {
-            GeneratorConfigurationRequest.QuarkusKafka(
-                packageName = packageName,
-                modelPackageName = modelPackageName,
-            )
-        } else {
-            null
-        }
+        GeneratorConfigurationRequest.quarkusKafka(
+            enabled = enabled,
+            packageName = packageName,
+            modelPackageName = modelPackageName,
+        )
 }
