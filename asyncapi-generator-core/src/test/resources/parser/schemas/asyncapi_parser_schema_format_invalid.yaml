@@ -4,21 +4,6 @@ info:
   version: 1.0.0
 components:
   schemas:
-    UnsupportedJsonSchemaFormat:
-      schemaFormat: application/schema+json;version=draft-07
-      schema:
-        type: object
-    UnsupportedAvroSchemaFormat:
-      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
-      schema:
-        type: record
-        name: UserCreated
-        fields: []
-    UnsupportedProtobufSchemaFormat:
-      schemaFormat: application/vnd.google.protobuf;version=3
-      schema: |
-        syntax = "proto3";
-        message UserCreated {}
     UnknownSchemaFormat:
       schemaFormat: application/unknown
       schema:
