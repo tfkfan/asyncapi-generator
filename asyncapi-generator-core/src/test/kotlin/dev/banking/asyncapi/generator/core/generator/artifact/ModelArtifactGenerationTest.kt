@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -77,5 +78,33 @@ class ModelArtifactGenerationTest {
                 .resolve("com/example/client/header/TopicUserEventsHeadersUserSignup.java")
                 .exists(),
         )
+    }
+
+    @Test
+    fun `generate model artifacts writes Java record artifacts when configured`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val artifactWriter =
+            FileSystemGeneratedArtifactWriter(
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+            )
+
+        generation.generateModelArtifacts(
+            task =
+                GenerationTask.ModelArtifacts(
+                    language = GeneratorName.JAVA,
+                    packageName = "com.example.model",
+                    javaModelType = JavaModelType.RECORD,
+                ),
+            generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
+            sourceOutputDirectory = sourceOutputDirectory,
+            artifactWriter = artifactWriter,
+        )
+
+        val user = sourceOutputDirectory.resolve("com/example/model/User.java")
+        assertTrue(user.exists())
+        assertTrue(user.readText().contains("public record User("))
+        assertFalse(resourceOutputDirectory.resolve("com/example/model/User.java").exists())
     }
 }

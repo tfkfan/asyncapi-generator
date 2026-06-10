@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.java.model.PropertyModel
 import org.junit.jupiter.api.Test
@@ -100,5 +101,40 @@ class JavaGeneratorTest {
         assertTrue(interfaceOutput.exists())
         assertTrue(enumOutput.readText().contains("public enum Status"))
         assertTrue(interfaceOutput.readText().contains("public interface Command"))
+    }
+
+    @Test
+    fun `render uses Java record output when configured`() {
+        val generationModel =
+            listOf(
+                GeneratorItem.ClassModel(
+                    name = "User",
+                    packageName = "com.example.model",
+                    description = emptyList(),
+                    properties =
+                        listOf(
+                            PropertyModel(
+                                name = "id",
+                                description = emptyList(),
+                                typeName = "String",
+                                getterName = "getId",
+                                setterName = "setId",
+                                annotations = emptyList(),
+                            ),
+                        ),
+                ),
+            )
+        val generator =
+            JavaGenerator(
+                packageName = "com.example.model",
+                outputDir = tempDir.toFile(),
+                generationModel = generationModel,
+                javaModelType = JavaModelType.RECORD,
+            )
+
+        val result = generator.render()
+
+        assertEquals(1, result.artifacts.size)
+        assertTrue(result.artifacts.single().content.contains("public record User("))
     }
 }

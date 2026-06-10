@@ -1,0 +1,26 @@
+package {{packageName}};
+
+{{#imports}}
+import {{.}};
+{{/imports}}
+
+/**
+{{#classDocLines}}
+ * {{{.}}}
+{{/classDocLines}}
+{{#fields}}
+ * @param {{name}}{{#docFirstLine}} {{{.}}}{{/docFirstLine}}
+{{#docTailLines}}
+ *        {{{.}}}
+{{/docTailLines}}
+{{/fields}}
+ */
+public record {{className}}{{#hasFields}}(
+{{#fields}}
+    {{#annotations}}
+    {{{.}}}
+    {{/annotations}}
+    {{{type}}} {{name}}{{componentSeparator}}{{{componentSpacer}}}
+{{/fields}}
+){{/hasFields}}{{^hasFields}}(){{/hasFields}}{{implementsClause}} {
+}

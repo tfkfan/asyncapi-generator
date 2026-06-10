@@ -14,9 +14,7 @@ class GenerateNoArgAnnotationTest : AbstractKotlinGeneratorClass() {
             yaml = File("src/test/resources/generator/asyncapi_nullable_types.yaml"),
             generated = "NullableObject.kt",
             modelPackage = "dev.banking.asyncapi.generator.core.model.generated.noarg",
-            configOptions = mapOf(
-                "model.annotation" to "com.example.NoArg"
-            )
+            modelAnnotation = "com.example.NoArg",
         )
         assertTrue(generated.contains("import com.example.NoArg"))
         assertTrue(generated.contains("@NoArg"))

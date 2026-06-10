@@ -33,24 +33,20 @@ object MavenTestHelper {
         writeField("resourceOutputDirectory", value)
     }
 
-    fun Mojo.modelPackage(value: Any) {
-        writeField("modelPackage", value)
+    fun Mojo.models(value: MavenModelGenerationConfiguration?) {
+        writeField("models", value)
     }
 
-    fun Mojo.clientPackage(value: Any?) {
-        writeField("clientPackage", value)
+    fun Mojo.schemas(value: MavenSchemaGenerationConfiguration?) {
+        writeField("schemas", value)
     }
 
-    fun Mojo.schemaPackage(value: Any?) {
-        writeField("schemaPackage", value)
+    fun Mojo.clients(value: MavenClientGenerationConfiguration?) {
+        writeField("clients", value)
     }
 
     fun Mojo.generatorName(value: String) {
         writeField("generatorName", value)
-    }
-
-    fun Mojo.configOptions(value: Map<String, String>) {
-        writeField("configOptions", value)
     }
 
     private fun Mojo.writeField(name: String, value: Any?) {
@@ -58,4 +54,68 @@ object MavenTestHelper {
         field.isAccessible = true
         field.set(this, value)
     }
+
+    fun models(
+        packageName: String? = null,
+        annotation: String? = null,
+        javaModelType: String? = null,
+        enabled: Boolean? = null,
+    ): MavenModelGenerationConfiguration =
+        MavenModelGenerationConfiguration().apply {
+            this.packageName = packageName
+            this.annotation = annotation
+            this.javaModelType = javaModelType
+            this.enabled = enabled
+        }
+
+    fun schemas(
+        avroProjection: MavenAvroProjectionConfiguration? = null,
+    ): MavenSchemaGenerationConfiguration =
+        MavenSchemaGenerationConfiguration().apply {
+            this.avroProjection = avroProjection
+        }
+
+    fun avroProjection(
+        packageName: String? = null,
+        enabled: Boolean? = null,
+    ): MavenAvroProjectionConfiguration =
+        MavenAvroProjectionConfiguration().apply {
+            this.packageName = packageName
+            this.enabled = enabled
+        }
+
+    fun clients(
+        springKafka: MavenSpringKafkaConfiguration? = null,
+        quarkusKafka: MavenQuarkusKafkaConfiguration? = null,
+    ): MavenClientGenerationConfiguration =
+        MavenClientGenerationConfiguration().apply {
+            this.springKafka = springKafka
+            this.quarkusKafka = quarkusKafka
+        }
+
+    fun springKafka(
+        packageName: String? = null,
+        modelPackageName: String? = null,
+        mode: String? = null,
+        topicPropertyPrefix: String? = null,
+        enabled: Boolean? = null,
+    ): MavenSpringKafkaConfiguration =
+        MavenSpringKafkaConfiguration().apply {
+            this.packageName = packageName
+            this.modelPackageName = modelPackageName
+            this.mode = mode
+            this.topicPropertyPrefix = topicPropertyPrefix
+            this.enabled = enabled
+        }
+
+    fun quarkusKafka(
+        packageName: String? = null,
+        modelPackageName: String? = null,
+        enabled: Boolean? = null,
+    ): MavenQuarkusKafkaConfiguration =
+        MavenQuarkusKafkaConfiguration().apply {
+            this.packageName = packageName
+            this.modelPackageName = modelPackageName
+            this.enabled = enabled
+        }
 }

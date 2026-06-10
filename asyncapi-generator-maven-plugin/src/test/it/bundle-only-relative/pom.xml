@@ -22,7 +22,7 @@
                             <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
                             <outputFile>bundled/relative-bundled.yaml</outputFile>
                             <generatorName>kotlin</generatorName>
-                            <!-- no modelPackage/clientPackage/schemaPackage -->
+                            <!-- no models/clients/schemas output blocks -->
                         </configuration>
                     </execution>
                 </executions>

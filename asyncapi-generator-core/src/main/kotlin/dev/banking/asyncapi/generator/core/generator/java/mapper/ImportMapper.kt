@@ -12,10 +12,13 @@ class ImportMapper(
     fun computeImports(
         currentClassName: String,
         fields: List<PropertyModel>,
+        includeObjects: Boolean = true,
     ): List<String> {
         val imports = linkedSetOf<String>()
 
-        imports.add("java.util.Objects")
+        if (includeObjects) {
+            imports.add("java.util.Objects")
+        }
         imports.add("java.io.Serializable")
 
         fields.forEach { field ->

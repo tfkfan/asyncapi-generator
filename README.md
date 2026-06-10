@@ -7,8 +7,8 @@ The project is currently in BETA.
 ## Supported generators
 
 - Kotlin - Data classes with Jakarta Validation annotations
-- Java - POJOs with Jakarta Validation annotations
-- Spring Kafka - Producer and Consumer templates for both Kotlin and Java
+- Java - POJOs or records with Jakarta Validation annotations
+- Spring Kafka - Client source artifacts for both Kotlin and Java
 - Avro - Schema generation from AsyncAPI schemas
 
 The current documentation provided is still a draft, found in `docs/` folder at the repository root.
@@ -36,14 +36,22 @@ Example usage in your `pom.xml`:
             <configuration>
                 <generatorName>kotlin</generatorName> <!-- options: kotlin, java - default kotlin -->
                 <inputFile>path/to/my/asyncapi_specification.yaml</inputFile>
-                <modelPackage>my.package.path.model</modelPackage> <!-- package name for data class/POJO -->
-                <clientPackage>my.package.path.client</clientPackage> <!-- package name for kafka client - default modelPackage-->
-                <schemaPackage>my.package.path.schema</schemaPackage> <!-- package name for avro schema - default modePackage -->
-                <configuration>
-                    <generateModels>true</generateModels> <!-- can skip models - default is true -->
-                    <generateSpringKafkaClient>true</generateSpringKafkaClient> <!-- default is false -->
-                    <generateAvroSchema>true</generateAvroSchema> <!-- default is false -->
-                </configuration>
+                <models>
+                    <packageName>my.package.path.model</packageName>
+                </models>
+                <clients>
+                    <springKafka>
+                        <packageName>my.package.path.client</packageName>
+                        <!-- Optional: defaults to models.packageName when models are configured -->
+                        <modelPackageName>my.package.path.model</modelPackageName>
+                        <mode>simple</mode> <!-- options: full, simple - default simple -->
+                    </springKafka>
+                </clients>
+                <schemas>
+                    <avroProjection>
+                        <packageName>my.package.path.schema</packageName>
+                    </avroProjection>
+                </schemas>
             </configuration>
         </execution>
     </executions>
@@ -64,16 +72,22 @@ plugins {
 asyncapiGenerate {
     inputFile.set(file("src/main/resources/asyncapi.yaml"))
     generatorName.set("kotlin") // options: kotlin, java - default kotlin
-    modelPackage.set("my.package.path.model")
-    clientPackage.set("my.package.path.client")   // default: modelPackage
-    schemaPackage.set("my.package.path.schema")   // default: modelPackage
-    configOptions.set(
-        mapOf(
-            "generateModels" to "true",            // default: true
-            "generateSpringKafkaClient" to "true", // default: false
-            "generateAvroSchema" to "true"         // default: false
-        )
-    )
+    models {
+        packageName.set("my.package.path.model")
+    }
+    clients {
+        springKafka {
+            packageName.set("my.package.path.client")
+            // Optional: defaults to models.packageName when models are configured
+            modelPackageName.set("my.package.path.model")
+            mode.set("simple") // options: full, simple - default simple
+        }
+    }
+    schemas {
+        avroProjection {
+            packageName.set("my.package.path.schema")
+        }
+    }
 }
 
 tasks.named("compileKotlin") {
@@ -91,14 +105,22 @@ plugins {
 asyncapiGenerate {
     inputFile = file('src/main/resources/asyncapi.yaml')
     generatorName = 'kotlin'
-    modelPackage = 'my.package.path.model'
-    clientPackage = 'my.package.path.client'
-    schemaPackage = 'my.package.path.schema'
-    configOptions = [
-        generateModels             : 'true',
-        generateSpringKafkaClient  : 'true',
-        generateAvroSchema         : 'true'
-    ]
+    models {
+        packageName = 'my.package.path.model'
+    }
+    clients {
+        springKafka {
+            packageName = 'my.package.path.client'
+            // Optional: defaults to models.packageName when models are configured
+            modelPackageName = 'my.package.path.model'
+            mode = 'simple' // options: full, simple - default simple
+        }
+    }
+    schemas {
+        avroProjection {
+            packageName = 'my.package.path.schema'
+        }
+    }
 }
 
 tasks.named('compileJava') {
@@ -112,163 +134,69 @@ The plugin wires generated sources into the `main` source set automatically when
 ./gradlew generateAsyncApi
 ```
 
+### Java Model Type
+
+Java model generation defaults to regular classes. For projects that prefer immutable constructor-based payload models, configure `models.javaModelType` as `record`.
+
+Maven:
+
+```xml
+<configuration>
+    <generatorName>java</generatorName>
+    <inputFile>path/to/my/asyncapi_specification.yaml</inputFile>
+    <models>
+        <packageName>my.package.path.model</packageName>
+        <javaModelType>record</javaModelType> <!-- options: class, record - default class -->
+    </models>
+</configuration>
+```
+
+Gradle Kotlin DSL:
+
+```kotlin
+asyncapiGenerate {
+    inputFile.set(file("src/main/resources/asyncapi.yaml"))
+    generatorName.set("java")
+    models {
+        packageName.set("my.package.path.model")
+        javaModelType.set("record") // options: class, record - default class
+    }
+}
+```
+
+Gradle Groovy DSL:
+
+```groovy
+asyncapiGenerate {
+    inputFile = file('src/main/resources/asyncapi.yaml')
+    generatorName = 'java'
+    models {
+        packageName = 'my.package.path.model'
+        javaModelType = 'record' // options: class, record - default class
+    }
+}
+```
+
+The same option is available from the CLI as `--models-java-model-type record`. Java records are only supported when `generatorName` is `java`.
+
 ### Spring Kafka Clients
 
-For the spring kafka clients, we generate the Producer and Consumer depending on the operation that the event message has in the specification.
-If not operation is specified, we generate both. 
+Spring Kafka output is configured under `clients.springKafka`.
 
-#### Producer
+Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.springKafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
 
-A spring kafka producer is generated by the 'ChannelName' as the producer, with 'Producer' as a suffix.
+The current generator has two modes:
 
-Example:
-```yaml
-channels:
-  customerUpdated:
-    address: customer.updated.v1
-    messages:
-      customerRead:
-        $ref: '#/components/messages/customerReadPayload'
-    description: My description
-```
+- `mode = "full"` generates Spring Boot-oriented client artifacts. This includes producer classes, listener classes, handler interfaces, an auto-configuration class, and the Spring Boot auto-configuration import resource. Generated producers and listeners use topic property keys, for example `kafka.topics.customerUpdated`, instead of hard-coding topic names directly in the generated source.
+- `mode = "simple"` generates lightweight producer and consumer source artifacts without Spring Boot auto-configuration. The application owns how those generated types are instantiated and connected to Spring Kafka infrastructure.
 
-This yaml will generate a `CustomerUpdatedProducer` class, that accepts as payload, a 'message' `customerReadPayload`. It can looks something like,
+When `mode` is omitted, the generator uses `simple`.
 
-```kotlin
-/**
- * Producer for topic 'customer.updated.v1'
- */
-@Component
-class CustomerUpdatedProducer(
-    private val kafkaTemplate: KafkaTemplate<String, Any>
-) {
-    private val log = LoggerFactory.getLogger(CustomerUpdatedProducer::class.java)
+The generated output depends on the channel direction from the AsyncAPI operations. Producer-oriented channels generate producer artifacts. Consumer-oriented channels generate consumer, listener, or handler artifacts depending on the selected mode. When the channel direction is not declared, the generator treats the channel as both producer and consumer.
 
-    fun sendCustomerReadPayload(key: String, message: CustomerReadPayload) {
-        log.info("Sending CustomerReadPayload to topic=customer.updated.v1, key={}", key)
-        kafkaTemplate.send(ProducerRecord("customer.updated.v1", key, message))
-    }
-}
-```
+The Spring Kafka client surface is still being redesigned for the next major version. The generated artifacts should currently be treated as a source-generation contract, not as final application architecture guidance.
 
-And this class can be injected into the application service class, and used.
-
-#### Consumer
-
-A spring kafka consumer is a bit different. Here, we will generate a `KafkaListener` which the application does not have to 'run' anywhere, it
-will simply pick up event message from the specified topic. The consumer will generate to entities,
-
-- A interface with suffix 'Handler'
-- A class that inject said interface 'Handler' and has a 'listen' method
-
-Example:
-```yaml
-channels:
-  customerContactInfoUpdate:
-    address: customer.contact-info-update.v1
-    # This channel handles messages of two different types of message
-    messages:
-      updateEmail:
-        $ref: '#/components/messages/updateEmailPayload'
-      updatePhoneNumber:
-        $ref: '#/components/messages/updatePhoneNumberPayload'
-    description: My deacription
-```
-
-This yaml will generate an interface `CustomerContactInfoUpdateHandler` and `CustomerContactIntoUpdateListener`, which will look something like,
-
-```kotlin
-/**
- * Handler for messages on topic 'customer.contact-info-update.v1'
- */
-interface CustomerContactInfoUpdateHandler {
-    fun onCustomerEmailPayload(message: KafkaMessage<CustomerEmailPayload>)
-    fun onCustomerPhoneNumberPayload(message: KafkaMessage<CustomerPhoneNumberPayload>)
-}
-```
-
-and
-
-```kotlin
-/**
- * Spring Kafka Listener for topic 'customer.contact-info-update.v1'
- */
-@Component
-@ConditionalOnBean(CustomerContactInfoUpdateHandler::class)
-class CustomerContactInfoUpdateListener(
-    private val handler: CustomerContactInfoUpdateHandler
-) {
-
-    private val log = LoggerFactory.getLogger(CustomerContactInfoUpdateListener::class.java)
-
-    @KafkaListener(topics = ["customer.contact-info-update.v1"], groupId = "\${spring.kafka.consumer.group-id}")
-    fun listen(record: ConsumerRecord<String, Any>) {
-        val payload = record.value()
-
-        // Convert headers to Map<String, Any>
-        val headers = record.headers().associate { it.key() to String(it.value()) }
-
-        when (payload) {
-            is CustomerEmailPayload -> {
-                log.debug("Dispatching CustomerEmailPayload from topic customer.contact-info-update.v1")
-
-                // Wrap in KafkaMessage
-                val message = KafkaMessage(
-                    payload = payload,
-                    key = record.key(),
-                    headers = headers,
-                    topic = record.topic(),
-                    partition = record.partition(),
-                    offset = record.offset(),
-                    timestamp = record.timestamp()
-                )
-
-                handler.onCustomerEmailPayload(message)
-            }
-            is CustomerPhoneNumberPayload -> {
-                log.debug("Dispatching CustomerPhoneNumberPayload from topic customer.contact-info-update.v1")
-
-                // Wrap in KafkaMessage
-                val message = KafkaMessage(
-                    payload = payload,
-                    key = record.key(),
-                    headers = headers,
-                    topic = record.topic(),
-                    partition = record.partition(),
-                    offset = record.offset(),
-                    timestamp = record.timestamp()
-                )
-
-                handler.onCustomerPhoneNumberPayload(message)
-            }
-            else -> {
-                log.warn("Received unknown message type on topic customer.contact-info-update.v1: {}", payload::class.java.name)
-            }
-        }
-    }
-}
-```
-
-The way this can be used, is through a service in the application that implements the 'Handler' interface, and is able to do something with the received message.
-
-Example:
-```kotlin
-@Service
-class CustomerUpdatedService : CustomerUpdatedHandler {
-
-    private val log = log()
-
-    override fun onCustomerReadPayload(message: KafkaMessage<CustomerReadPayload>) {
-        log.info("Worked, received customer update message: {}", message)
-    }
-}
-```
-
-One of the reasons this is the implementation, is that we needed a way to 'activate' the listener. There can be use-cases where you inherit some generated code from
-a AsyncAPI specification, but are only interested in parts of it. If we would generate the `KafkaListener` directly, it could create false positive and metrics because
-the application would be receive the messages and doing anything with them. By having this 'implement interface' step, we avoid this.
-
-## Features supported
+## Features supported 
 
 ### Parser
 

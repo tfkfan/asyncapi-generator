@@ -1,19 +1,21 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.avroProjection
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clients
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.codegenOutputDirectory
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.configOptions
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputFile
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelPackage
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.models
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.resourceOutputDirectory
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaPackage
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemas
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.springKafka
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -28,7 +30,7 @@ class AsyncApiGeneratorMojoTest {
             inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            modelPackage("com.example.model")
+            models(models(packageName = "com.example.model"))
             generatorName("kotlin")
         }.execute()
         val output = File("target/generated-sources/asyncapi/com/example/model")
@@ -43,14 +45,9 @@ class AsyncApiGeneratorMojoTest {
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            modelPackage("com.example.kafka.model")
-            clientPackage("com.example.kafka.client")
+            models(models(packageName = "com.example.kafka.model"))
+            clients(clients(springKafka = springKafka(packageName = "com.example.kafka.client")))
             generatorName("kotlin")
-            configOptions(
-                mapOf(
-                    "client.type" to "spring-kafka"
-                )
-            )
         }.execute()
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
@@ -63,17 +60,54 @@ class AsyncApiGeneratorMojoTest {
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            modelPackage("com.example.kafka.model")
-            clientPackage("com.example.kafka.client")
+            models(models(packageName = "com.example.kafka.model"))
+            clients(clients(springKafka = springKafka(packageName = "com.example.kafka.client")))
             generatorName("java")
-            configOptions(
-                mapOf(
-                    "client.type" to "spring-kafka"
-                )
-            )
         }.execute()
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
+    }
+
+    @Test
+    fun `should accept java record model type for java model generation`() {
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
+            models(models(packageName = "com.example.record.model", javaModelType = "record"))
+            generatorName("java")
+        }.execute()
+
+        val modelDir = File("target/generated-sources/asyncapi/com/example/record/model")
+        assertTrue(modelDir.exists(), "Model directory should exist")
+        val generatedRecord = modelDir.resolve("User.java")
+        assertTrue(generatedRecord.readText().contains("public record User("))
+    }
+
+    @Test
+    fun `should generate kafka client with explicit model package when models are not generated`() {
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-client-only"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-client-only"))
+            clients(
+                clients(
+                    springKafka =
+                        springKafka(
+                            packageName = "com.example.kafka.client",
+                            modelPackageName = "com.example.kafka.model",
+                        ),
+                ),
+            )
+            generatorName("kotlin")
+        }.execute()
+
+        val clientDir = File("target/generated-sources/asyncapi-client-only/com/example/kafka/client")
+        val modelDir = File("target/generated-sources/asyncapi-client-only/com/example/kafka/model")
+        assertTrue(clientDir.exists(), "Client directory should exist")
+        assertTrue(!modelDir.exists(), "Model directory should not exist when model generation is not configured")
     }
 
     @Test
@@ -87,7 +121,7 @@ class AsyncApiGeneratorMojoTest {
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             outputFile(File("target/generated-sources/asyncapi/bundled/asyncapi.bundled.yaml"))
-            modelPackage("com.example.bundled")
+            models(models(packageName = "com.example.bundled"))
             generatorName("kotlin")
         }.execute()
 
@@ -96,20 +130,15 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should generate avro schema when schema type is avro`() {
+    fun `should generate avro schema when schema mode is avro projection`() {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            modelPackage("com.example.avro.model")
-            schemaPackage("com.example.avro.schema")
+            models(models(packageName = "com.example.avro.model"))
+            schemas(schemas(avroProjection = avroProjection(packageName = "com.example.avro.schema")))
             generatorName("kotlin")
-            configOptions(
-                mapOf(
-                    "schema.type" to "avro"
-                )
-            )
         }.execute()
         val schemaDir = File("target/generated-resources/asyncapi/com/example/avro/schema")
         assertTrue(schemaDir.exists(), "Schema directory should exist")
@@ -127,7 +156,7 @@ class AsyncApiGeneratorMojoTest {
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             outputFile(File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.yaml"))
             generatorName("kotlin")
-            // no modelPackage/clientPackage/schemaPackage set
+            // no models/clients/schemas output blocks set
         }.execute()
         assertTrue(bundledFile.exists(), "Bundled output file should exist")
         assertTrue(bundledFile.length() > 0, "Bundled output file should not be empty")
@@ -142,7 +171,7 @@ class AsyncApiGeneratorMojoTest {
             inputFile(File("src/test/resources/non_existent.yaml"))
             codegenOutputDirectory(outputPath("target/should-fail"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            modelPackage("com.fail")
+            models(models(packageName = "com.fail"))
         }
         assertThrows<MojoExecutionException> {
             mojo.execute()
@@ -156,11 +185,54 @@ class AsyncApiGeneratorMojoTest {
             inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
             codegenOutputDirectory(outputPath("target/should-fail-gen"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            modelPackage("com.fail")
+            models(models(packageName = "com.fail"))
             generatorName("invalid-lang")
+        }
+        val exception =
+            assertThrows<MojoExecutionException> {
+                mojo.execute()
+            }
+
+        assertEquals(
+            "Invalid generatorName 'invalid-lang'. Supported values: kotlin, java",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `should fail when spring kafka mode is invalid`() {
+        val mojo = AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
+            codegenOutputDirectory(outputPath("target/should-fail-client-mode"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
+            models(models(packageName = "com.fail"))
+            clients(clients(springKafka = springKafka(packageName = "com.fail.client", mode = "basic")))
+            generatorName("kotlin")
         }
         assertThrows<MojoExecutionException> {
             mojo.execute()
         }
+    }
+
+    @Test
+    fun `should fail when java model type is invalid`() {
+        val mojo = AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
+            codegenOutputDirectory(outputPath("target/should-fail-java-model-type"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
+            models(models(packageName = "com.fail", javaModelType = "data"))
+            generatorName("java")
+        }
+        val exception =
+            assertThrows<MojoExecutionException> {
+                mojo.execute()
+            }
+
+        assertEquals(
+            "Invalid models.javaModelType 'data'. Supported values: class, record",
+            exception.message,
+        )
     }
 }

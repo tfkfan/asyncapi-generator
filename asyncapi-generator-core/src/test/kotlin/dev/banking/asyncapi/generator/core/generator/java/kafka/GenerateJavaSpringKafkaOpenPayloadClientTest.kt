@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.java.kafka
 
 import dev.banking.asyncapi.generator.core.generator.AbstractJavaGeneratorClass
+import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertFalse
@@ -54,7 +55,7 @@ class GenerateJavaSpringKafkaOpenPayloadClientTest : AbstractJavaGeneratorClass(
             clientPackage = clientPackage,
             generateModels = true,
             generateSpringKafkaClient = true,
-            configOptions = mapOf("client.type" to "spring-kafka-simple"),
+            springKafkaClientType = SpringKafkaClientType.SIMPLE,
         )
 
         val outputDir = File("target/generated-sources/asyncapi")

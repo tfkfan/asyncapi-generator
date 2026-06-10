@@ -19,11 +19,12 @@
                         <configuration>
                             <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
                             <resourceOutputDirectory>${project.build.directory}/custom-resources</resourceOutputDirectory>
-                            <schemaPackage>com.example.avro</schemaPackage>
                             <generatorName>kotlin</generatorName>
-                            <configOptions>
-                                <schema.type>avro</schema.type>
-                            </configOptions>
+                            <schemas>
+                                <avroProjection>
+                                    <packageName>com.example.avro</packageName>
+                                </avroProjection>
+                            </schemas>
                         </configuration>
                     </execution>
                 </executions>

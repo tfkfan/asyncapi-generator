@@ -72,6 +72,87 @@ class JavaModelArtifactGeneratorTest {
     }
 
     @Test
+    fun `record render returns source artifact with package-relative path and content`() {
+        val generator = JavaRecordGenerator(tempDir.toFile(), "com.example.model")
+        val classModel =
+            GeneratorItem.ClassModel(
+                name = "User",
+                packageName = "com.example.model",
+                description = emptyList(),
+                properties =
+                    listOf(
+                        PropertyModel(
+                            name = "id",
+                            description = listOf("User identifier."),
+                            typeName = "String",
+                            getterName = "getId",
+                            setterName = "setId",
+                            annotations = listOf("@NotNull"),
+                        ),
+                    ),
+                implementsInterfaces = listOf("Serializable"),
+            )
+
+        val artifact = generator.render(classModel)
+
+        assertEquals(GeneratedArtifactKind.SOURCE, artifact.kind)
+        assertEquals("com/example/model/User.java", artifact.relativePath)
+        assertTrue(artifact.content.contains("package com.example.model;"))
+        assertTrue(artifact.content.contains("public record User("))
+        assertTrue(artifact.content.contains("@param id User identifier."))
+        assertTrue(artifact.content.contains("@NotNull"))
+        assertTrue(artifact.content.contains("String id"))
+        assertTrue(artifact.content.contains("implements Serializable"))
+        assertTrue(!artifact.content.contains("java.util.Objects"))
+        assertTrue(!artifact.content.contains("void setId"))
+    }
+
+    @Test
+    fun `record generate writes rendered artifact to output directory`() {
+        val generator = JavaRecordGenerator(tempDir.toFile(), "com.example.model")
+        val classModel =
+            GeneratorItem.ClassModel(
+                name = "User",
+                packageName = "com.example.model",
+                description = emptyList(),
+                properties =
+                    listOf(
+                        PropertyModel(
+                            name = "id",
+                            description = emptyList(),
+                            typeName = "String",
+                            getterName = "getId",
+                            setterName = "setId",
+                            annotations = emptyList(),
+                        ),
+                    ),
+            )
+
+        generator.generate(classModel)
+
+        val output = tempDir.resolve("com/example/model/User.java").toFile()
+        assertTrue(output.exists())
+        assertTrue(output.readText().contains("public record User"))
+    }
+
+    @Test
+    fun `record render uses compact component list for model without properties`() {
+        val generator = JavaRecordGenerator(tempDir.toFile(), "com.example.model")
+        val classModel =
+            GeneratorItem.ClassModel(
+                name = "EmptyPayload",
+                packageName = "com.example.model",
+                description = emptyList(),
+                properties = emptyList(),
+                implementsInterfaces = listOf("Serializable"),
+            )
+
+        val artifact = generator.render(classModel)
+
+        assertTrue(artifact.content.contains("public record EmptyPayload() implements Serializable"))
+    }
+
+    @Test
     fun `enum render returns source artifact with package-relative path and content`() {
         val generator = JavaEnumGenerator(tempDir.toFile())
         val enumModel =

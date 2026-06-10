@@ -1,7 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
+import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovalFormat
+import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovals
 import dev.banking.asyncapi.generator.core.generator.AbstractAvroGeneratorClass
-import org.approvaltests.Approvals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -24,6 +25,10 @@ class AvroSchemaApprovalTest : AbstractAvroGeneratorClass() {
             )
 
         assertTrue(generated.isNotBlank())
-        Approvals.verify(generated)
+        GeneratorApprovals.verify(
+            generated = generated,
+            format = GeneratorApprovalFormat.AVRO,
+            scenario = "task-schema",
+        )
     }
 }

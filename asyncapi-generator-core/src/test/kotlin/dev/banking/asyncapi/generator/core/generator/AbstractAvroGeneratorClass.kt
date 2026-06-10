@@ -2,8 +2,11 @@ package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import java.io.File
 
 abstract class AbstractAvroGeneratorClass {
@@ -21,21 +24,21 @@ abstract class AbstractAvroGeneratorClass {
     ): String {
         val bundled = bundlerFixtures.bundledDocument(yaml)
 
-        val generatorOptions = GeneratorOptions(
-            generatorName = GeneratorName.KOTLIN,
-            modelPackage = packageName,
-            clientPackage = packageName,
-            schemaPackage = packageName,
-            codegenOutputDirectory = codegenOutputDirectory,
-            resourceOutputDirectory = resourceOutputDirectory,
-            generateModels = false,
-            generateSpringKafkaClient = false,
-            generateAvroSchema = true,
-        )
+        val generatorConfiguration =
+            GeneratorConfiguration(
+                language = GeneratorName.KOTLIN,
+                output =
+                    GeneratorOutputConfiguration(
+                        sourceOutputDirectory = codegenOutputDirectory,
+                        resourceOutputDirectory = resourceOutputDirectory,
+                    ),
+                models = ModelGeneration.Disabled,
+                schemas = listOf(SchemaGeneration.AvroProjection(packageName)),
+            )
 
         generator.generate(
             asyncApiDocument = bundled,
-            generatorOptions = generatorOptions,
+            generatorConfiguration = generatorConfiguration,
         )
 
         if (schema != null) {

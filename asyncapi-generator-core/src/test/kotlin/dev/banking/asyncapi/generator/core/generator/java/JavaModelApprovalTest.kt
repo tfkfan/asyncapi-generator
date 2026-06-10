@@ -1,7 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
+import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovalFormat
+import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovals
 import dev.banking.asyncapi.generator.core.generator.AbstractJavaGeneratorClass
-import org.approvaltests.Approvals
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -24,6 +26,30 @@ class JavaModelApprovalTest : AbstractJavaGeneratorClass() {
             )
 
         assertTrue(generated.isNotBlank())
-        Approvals.verify(generated)
+        GeneratorApprovals.verify(
+            generated = generated,
+            format = GeneratorApprovalFormat.JAVA,
+            scenario = "simple-transaction-class",
+        )
+    }
+
+    @Test
+    fun approves_generated_java_record_model() {
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_simple_transaction_type.yaml"),
+                generated = "SimpleTransactionType.java",
+                codegenOutputDirectory = tempDir.resolve("record-sources").toFile(),
+                resourceOutputDirectory = tempDir.resolve("record-resources").toFile(),
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.transaction",
+                javaModelType = JavaModelType.RECORD,
+            )
+
+        assertTrue(generated.isNotBlank())
+        GeneratorApprovals.verify(
+            generated = generated,
+            format = GeneratorApprovalFormat.JAVA,
+            scenario = "simple-transaction-record",
+        )
     }
 }
