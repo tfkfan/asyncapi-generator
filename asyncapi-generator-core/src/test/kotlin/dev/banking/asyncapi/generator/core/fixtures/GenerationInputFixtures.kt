@@ -178,18 +178,49 @@ internal class GenerationInputFixtures {
                             mapOf(
                                 "UserCreated" to
                                     SchemaInterface.MultiFormatSchemaInline(
-                                        MultiFormatSchema(
-                                            schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
-                                            schema =
-                                                mapOf(
-                                                    "type" to "record",
-                                                    "name" to "UserCreated",
-                                                    "fields" to emptyList<Any>(),
-                                                ),
-                                        ),
+                                        nativeAvroUserCreatedSchema(),
                                     ),
                             ),
                     ),
+                ),
+        )
+
+    fun documentWithMultiFormatMessagePayload(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Test API", version = "1.0.0"),
+            channels =
+                mapOf(
+                    "userEvents" to
+                        ChannelInterface.ChannelInline(
+                            Channel(
+                                address = "user.events",
+                                messages =
+                                    mapOf(
+                                        "userCreated" to
+                                            MessageInterface.MessageInline(
+                                                Message(
+                                                    name = "UserCreated",
+                                                    payload =
+                                                        SchemaInterface.MultiFormatSchemaInline(
+                                                            nativeAvroUserCreatedSchema(),
+                                                        ),
+                                                ),
+                                            ),
+                                    ),
+                            ),
+                        ),
+                ),
+        )
+
+    private fun nativeAvroUserCreatedSchema(): MultiFormatSchema =
+        MultiFormatSchema(
+            schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
+            schema =
+                mapOf(
+                    "type" to "record",
+                    "name" to "UserCreated",
+                    "fields" to emptyList<Any>(),
                 ),
         )
 }
