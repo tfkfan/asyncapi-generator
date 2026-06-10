@@ -196,7 +196,7 @@ The generated output depends on the channel direction from the AsyncAPI operatio
 
 The Spring Kafka client surface is still being redesigned for the next major version. The generated artifacts should currently be treated as a source-generation contract, not as final application architecture guidance.
 
-## Features supported
+## Features supported 
 
 ### Parser
 
