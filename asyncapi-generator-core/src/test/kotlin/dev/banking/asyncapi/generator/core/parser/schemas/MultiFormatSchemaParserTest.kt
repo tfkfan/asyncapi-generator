@@ -45,6 +45,40 @@ class MultiFormatSchemaParserTest : ParserTestSupport() {
     }
 
     @Test
+    fun `parse native avro schema format throws UnsupportedSchemaFormat`() {
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
+            "components",
+            "schemas",
+            "UnsupportedAvroSchemaFormat",
+        )
+        assertParseFailure<AsyncApiParseException.UnsupportedSchemaFormat>(
+            "SchemaFormat: application/vnd.apache.avro+json;version=1.9.0 is not supported.",
+            "asyncapi_parser_schema_format_invalid.yaml",
+            "asyncapi_parser_schema_format_invalid.root.components.schemas.UnsupportedAvroSchemaFormat",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse native protobuf schema format throws UnsupportedSchemaFormat`() {
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
+            "components",
+            "schemas",
+            "UnsupportedProtobufSchemaFormat",
+        )
+        assertParseFailure<AsyncApiParseException.UnsupportedSchemaFormat>(
+            "SchemaFormat: application/vnd.google.protobuf;version=3 is not supported.",
+            "asyncapi_parser_schema_format_invalid.yaml",
+            "asyncapi_parser_schema_format_invalid.root.components.schemas.UnsupportedProtobufSchemaFormat",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
     fun `parse unknown schema format throws UnexpectedSchemaFormat`() {
         val schemaNode = readNode(
             "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",

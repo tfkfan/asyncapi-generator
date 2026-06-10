@@ -1,11 +1,9 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
-import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnsupportedSchemaFormat
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 
 /**
  * [MultiFormatSchemaParser] currently acts as a **validator** for schema format choices.
@@ -35,46 +33,12 @@ class MultiFormatSchemaParser(
 ) {
 
     fun validateFormat(format: String, path: String) {
-        when {
-            isAsyncApiFormat(format) -> return
-            isJsonSchemaDraftFormat(format) -> throw UnsupportedSchemaFormat(format, path, asyncApiContext)
-            isAvroFormat(format) -> throw UnsupportedSchemaFormat(format, path, asyncApiContext)
-            isOpenApiFormat(format) -> throw UnsupportedSchemaFormat(format, path, asyncApiContext)
-            isRamlFormat(format) -> throw UnsupportedSchemaFormat(format, path, asyncApiContext)
-            isProtobufFormat(format) -> throw UnsupportedSchemaFormat(format, path, asyncApiContext)
-            else -> throw UnexpectedSchemaFormat(format, path, asyncApiContext)
+        val schemaFormat =
+            SchemaFormat.fromValue(format)
+                ?: throw UnexpectedSchemaFormat(format, path, asyncApiContext)
+        if (schemaFormat.isAsyncApiSchemaObject) {
+            return
         }
-    }
-
-    private fun isAsyncApiFormat(format: String): Boolean {
-        return format == AsyncApiConstants.ASYNCAPI_V_3_0_0 ||
-            format == AsyncApiConstants.ASYNCAPI_V_3_0_0_JSON ||
-            format == AsyncApiConstants.ASYNCAPI_V_3_0_0_YAML
-    }
-
-    private fun isJsonSchemaDraftFormat(format: String): Boolean {
-        return format == AsyncApiConstants.JSON_SCHEMA_DRAFT_07_JSON ||
-            format == AsyncApiConstants.JSON_SCHEMA_DRAFT_07_YAML
-    }
-
-    private fun isAvroFormat(format: String): Boolean {
-        return format == AsyncApiConstants.AVRO_V_1_9_0 ||
-            format == AsyncApiConstants.AVRO_V_1_9_0_JSON ||
-            format == AsyncApiConstants.AVRO_V_1_9_0_YAML
-    }
-
-    private fun isOpenApiFormat(format: String): Boolean {
-        return format == AsyncApiConstants.OPENAPI_V_3_0_0 ||
-            format == AsyncApiConstants.OPENAPI_V_3_0_0_JSON ||
-            format == AsyncApiConstants.OPENAPI_V_3_0_0_YAML
-    }
-
-    private fun isRamlFormat(format: String): Boolean {
-        return format == AsyncApiConstants.RAML_V_1_0_YAML
-    }
-
-    private fun isProtobufFormat(format: String): Boolean {
-        return format == AsyncApiConstants.PROTOBUF_V_2 ||
-            format == AsyncApiConstants.PROTOBUF_V_3
+        throw UnsupportedSchemaFormat(format, path, asyncApiContext)
     }
 }
