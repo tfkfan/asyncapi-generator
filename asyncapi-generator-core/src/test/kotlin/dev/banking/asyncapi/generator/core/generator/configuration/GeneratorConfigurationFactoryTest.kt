@@ -143,6 +143,27 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create enables native Avro when schema mode is configured`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    schemas =
+                        GeneratorConfigurationRequest.Schemas(
+                            nativeAvro =
+                                GeneratorConfigurationRequest.NativeAvro(
+                                    generateSpecificRecords = false,
+                                ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = false)),
+            configuration.schemas,
+        )
+    }
+
+    @Test
     fun `create returns no configured output when no output requests are configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(

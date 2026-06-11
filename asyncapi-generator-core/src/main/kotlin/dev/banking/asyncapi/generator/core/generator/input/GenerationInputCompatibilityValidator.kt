@@ -35,6 +35,7 @@ class GenerationInputCompatibilityValidator {
                         multiFormatSchemas = generationInput.multiFormatSchemas,
                     )
                 is GenerationTask.HeaderModelArtifacts,
+                is GenerationTask.NativeAvroArtifacts,
                 is GenerationTask.QuarkusKafkaClient,
                 -> Unit
             }

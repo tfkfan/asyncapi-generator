@@ -34,6 +34,13 @@ object GeneratorConfigurationFactory {
                     request.schemas.avroProjection?.packageName?.let { packageName ->
                         add(SchemaGeneration.AvroProjection(packageName))
                     }
+                    request.schemas.nativeAvro?.let { nativeAvro ->
+                        add(
+                            SchemaGeneration.NativeAvro(
+                                generateSpecificRecords = nativeAvro.generateSpecificRecords,
+                            ),
+                        )
+                    }
                 },
             clients =
                 buildList {

@@ -37,4 +37,8 @@ sealed interface GenerationTask {
     data class AvroSchemaArtifacts(
         val packageName: String,
     ) : GenerationTask
+
+    data class NativeAvroArtifacts(
+        val generateSpecificRecords: Boolean = true,
+    ) : GenerationTask
 }

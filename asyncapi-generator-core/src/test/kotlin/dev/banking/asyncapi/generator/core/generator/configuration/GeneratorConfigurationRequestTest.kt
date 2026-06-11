@@ -49,6 +49,26 @@ class GeneratorConfigurationRequestTest {
     }
 
     @Test
+    fun `native avro request is created only when schema output is configured`() {
+        assertNull(GeneratorConfigurationRequest.nativeAvro())
+        assertNull(
+            GeneratorConfigurationRequest.nativeAvro(
+                enabled = false,
+                generateSpecificRecords = true,
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.NativeAvro(generateSpecificRecords = true),
+            GeneratorConfigurationRequest.nativeAvro(enabled = true),
+        )
+        assertEquals(
+            GeneratorConfigurationRequest.NativeAvro(generateSpecificRecords = false),
+            GeneratorConfigurationRequest.nativeAvro(generateSpecificRecords = false),
+        )
+    }
+
+    @Test
     fun `spring kafka request is created only when client output is configured`() {
         assertNull(GeneratorConfigurationRequest.springKafka())
         assertNull(

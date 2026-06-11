@@ -62,6 +62,12 @@ class GenerationPlanner {
                     when (schema) {
                         is SchemaGeneration.AvroProjection ->
                             add(GenerationTask.AvroSchemaArtifacts(schema.packageName))
+                        is SchemaGeneration.NativeAvro ->
+                            add(
+                                GenerationTask.NativeAvroArtifacts(
+                                    generateSpecificRecords = schema.generateSpecificRecords,
+                                ),
+                            )
                     }
                 }
             },

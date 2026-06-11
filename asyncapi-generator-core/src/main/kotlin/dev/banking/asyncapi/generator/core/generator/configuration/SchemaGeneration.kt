@@ -4,8 +4,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * Typed schema artifact generation configuration.
  *
  * `AvroProjection` represents AsyncAPI Schema Object to `.avsc` projection.
- * Native Avro payload generation will be modeled separately when Multi Format
- * Schema support is implemented.
+ * `NativeAvro` represents native Avro `schemaFormat` payload generation.
  *
  * Expected behavior is covered by:
  * - `GenerationPlannerTest`
@@ -13,5 +12,9 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 sealed interface SchemaGeneration {
     data class AvroProjection(
         val packageName: String,
+    ) : SchemaGeneration
+
+    data class NativeAvro(
+        val generateSpecificRecords: Boolean = true,
     ) : SchemaGeneration
 }

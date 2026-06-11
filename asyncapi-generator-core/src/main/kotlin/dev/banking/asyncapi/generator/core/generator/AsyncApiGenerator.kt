@@ -70,6 +70,8 @@ class AsyncApiGenerator {
                     )
                 is GenerationTask.QuarkusKafkaClient ->
                     log.info("Generate ${task.language.name.titlecase()} Quarkus Kafka Client is not yet implemented. Skipping..")
+                is GenerationTask.NativeAvroArtifacts ->
+                    log.info("Generate Native Avro artifacts is not yet implemented. Skipping..")
                 is GenerationTask.AvroSchemaArtifacts ->
                     avroSchemaArtifactGeneration.generate(
                         task = task,
