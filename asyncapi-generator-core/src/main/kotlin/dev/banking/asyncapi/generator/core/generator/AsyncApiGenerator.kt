@@ -44,6 +44,7 @@ class AsyncApiGenerator {
             FileSystemGeneratedArtifactWriter(
                 sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
                 resourceOutputDirectory = generatorConfiguration.output.resourceOutputDirectory,
+                javaSourceOutputDirectory = generatorConfiguration.output.javaSourceOutputDirectory,
             )
 
         generationPlan.tasks.forEach { task ->

@@ -60,9 +60,15 @@ abstract class AsyncApiModelsExtension @Inject constructor(objects: ObjectFactor
 abstract class AsyncApiSchemasExtension @Inject constructor(objects: ObjectFactory) {
     val avroProjection: AsyncApiAvroProjectionExtension =
         objects.newInstance(AsyncApiAvroProjectionExtension::class.java)
+    val nativeAvro: AsyncApiNativeAvroExtension =
+        objects.newInstance(AsyncApiNativeAvroExtension::class.java)
 
     fun avroProjection(action: Action<AsyncApiAvroProjectionExtension>) {
         action.execute(avroProjection)
+    }
+
+    fun nativeAvro(action: Action<AsyncApiNativeAvroExtension>) {
+        action.execute(nativeAvro)
     }
 }
 
@@ -75,6 +81,17 @@ abstract class AsyncApiSchemasExtension @Inject constructor(objects: ObjectFacto
 abstract class AsyncApiAvroProjectionExtension @Inject constructor(objects: ObjectFactory) {
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
     val packageName: Property<String> = objects.property(String::class.java)
+}
+
+/**
+ * Gradle native Avro schema generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiPluginTest`
+ */
+abstract class AsyncApiNativeAvroExtension @Inject constructor(objects: ObjectFactory) {
+    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+    val generateSpecificRecords: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
 }
 
 /**

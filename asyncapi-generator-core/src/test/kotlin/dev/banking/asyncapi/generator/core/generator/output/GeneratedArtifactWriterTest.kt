@@ -34,6 +34,36 @@ class GeneratedArtifactWriterTest {
     }
 
     @Test
+    fun `filesystem writer writes java source artifacts under java source output directory`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val writer =
+            FileSystemGeneratedArtifactWriter(
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+                javaSourceOutputDirectory = javaSourceOutputDirectory,
+            )
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/User.java",
+                    content = "public class User {}",
+                    kind = GeneratedArtifactKind.JAVA_SOURCE,
+                ),
+            ),
+        )
+
+        assertEquals(
+            "public class User {}",
+            javaSourceOutputDirectory.resolve("com/example/User.java").readText(),
+        )
+        assertFalse(sourceOutputDirectory.resolve("com/example/User.java").exists())
+        assertFalse(resourceOutputDirectory.resolve("com/example/User.java").exists())
+    }
+
+    @Test
     fun `filesystem writer writes resource artifacts under resource output directory`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()

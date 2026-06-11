@@ -19,11 +19,13 @@ class NativeAvroArtifactGenerationTest {
     @Test
     fun `generate writes native Avro schema artifacts through writer`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
         val artifactWriter =
             FileSystemGeneratedArtifactWriter(
                 sourceOutputDirectory = sourceOutputDirectory,
                 resourceOutputDirectory = resourceOutputDirectory,
+                javaSourceOutputDirectory = javaSourceOutputDirectory,
             )
 
         generation.generate(
@@ -33,8 +35,9 @@ class NativeAvroArtifactGenerationTest {
         )
 
         assertTrue(resourceOutputDirectory.resolve("com/example/avro/UserCreated.avsc").exists())
-        assertTrue(sourceOutputDirectory.resolve("com/example/avro/UserCreated.java").exists())
+        assertTrue(javaSourceOutputDirectory.resolve("com/example/avro/UserCreated.java").exists())
         assertFalse(sourceOutputDirectory.resolve("com/example/avro/UserCreated.avsc").exists())
+        assertFalse(sourceOutputDirectory.resolve("com/example/avro/UserCreated.java").exists())
         assertFalse(resourceOutputDirectory.resolve("com/example/avro/UserCreated.java").exists())
     }
 }

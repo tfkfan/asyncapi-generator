@@ -5,8 +5,9 @@ import java.io.File
 /**
  * Filesystem-backed writer for generated artifacts.
  *
- * Source artifacts are written under [sourceOutputDirectory]. Resource and
- * schema artifacts are written under [resourceOutputDirectory].
+ * Source artifacts are written under [sourceOutputDirectory]. Java source
+ * artifacts are written under [javaSourceOutputDirectory]. Resource and schema
+ * artifacts are written under [resourceOutputDirectory].
  *
  * Expected behavior is covered by:
  * - `GeneratedArtifactWriterTest`
@@ -14,6 +15,7 @@ import java.io.File
 class FileSystemGeneratedArtifactWriter(
     private val sourceOutputDirectory: File,
     private val resourceOutputDirectory: File,
+    private val javaSourceOutputDirectory: File = sourceOutputDirectory,
 ) : GeneratedArtifactWriter {
     override fun write(result: GenerationResult) {
         result.artifacts.forEach(::writeArtifact)
@@ -23,6 +25,7 @@ class FileSystemGeneratedArtifactWriter(
         val outputRoot =
             when (artifact.kind) {
                 GeneratedArtifactKind.SOURCE -> sourceOutputDirectory
+                GeneratedArtifactKind.JAVA_SOURCE -> javaSourceOutputDirectory
                 GeneratedArtifactKind.RESOURCE -> resourceOutputDirectory
                 GeneratedArtifactKind.SCHEMA -> resourceOutputDirectory
             }

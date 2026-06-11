@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -60,6 +61,20 @@ class GeneratorConfigurationFactoryTest {
             ),
             configuration.models,
         )
+    }
+
+    @Test
+    fun `create maps java source output directory when configured`() {
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                ),
+            )
+
+        assertEquals(javaSourceOutputDirectory, configuration.output.javaSourceOutputDirectory)
     }
 
     @Test
@@ -410,6 +425,7 @@ class GeneratorConfigurationFactoryTest {
 
     private fun request(
         language: GeneratorName = GeneratorName.KOTLIN,
+        javaSourceOutputDirectory: File = tempDir.resolve("sources").toFile(),
         models: GeneratorConfigurationRequest.Models? = null,
         schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),
         clients: GeneratorConfigurationRequest.Clients = GeneratorConfigurationRequest.Clients(),
@@ -417,6 +433,7 @@ class GeneratorConfigurationFactoryTest {
         GeneratorConfigurationRequest(
             language = language,
             sourceOutputDirectory = tempDir.resolve("sources").toFile(),
+            javaSourceOutputDirectory = javaSourceOutputDirectory,
             resourceOutputDirectory = tempDir.resolve("resources").toFile(),
             models = models,
             schemas = schemas,

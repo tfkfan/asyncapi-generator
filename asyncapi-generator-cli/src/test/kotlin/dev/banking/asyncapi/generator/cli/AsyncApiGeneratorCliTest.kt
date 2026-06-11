@@ -114,6 +114,28 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
+    fun `should generate native avro schema and specific record source`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_native_avro.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
+                "--schemas-native-avro",
+                "-g", "kotlin",
+            )
+        )
+
+        val schemaFile = resourceDir.resolve("com/example/avro/UserCreated.avsc")
+        val specificRecordFile = codegenDir.resolve("src/main/java/com/example/avro/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Avro schema output should exist")
+        assertTrue(specificRecordFile.exists(), "SpecificRecord source output should exist")
+        assertTrue(specificRecordFile.readText().contains("extends org.apache.avro.specific.SpecificRecordBase"))
+    }
+
+    @Test
     fun `should allow bundle-only output with no packages`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()

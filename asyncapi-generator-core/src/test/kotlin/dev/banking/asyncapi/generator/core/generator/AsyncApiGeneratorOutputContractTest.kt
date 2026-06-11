@@ -71,6 +71,7 @@ class AsyncApiGeneratorOutputContractTest {
     @Test
     fun `generate writes native Avro schema and SpecificRecord artifacts to output directories`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
@@ -78,14 +79,16 @@ class AsyncApiGeneratorOutputContractTest {
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
                     schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
                 ),
         )
 
         assertTrue(resourceOutputDirectory.resolve("UserCreated.avsc").exists())
-        assertTrue(sourceOutputDirectory.resolve("UserCreated.java").exists())
+        assertTrue(javaSourceOutputDirectory.resolve("UserCreated.java").exists())
         assertFalse(sourceOutputDirectory.resolve("UserCreated.avsc").exists())
+        assertFalse(sourceOutputDirectory.resolve("UserCreated.java").exists())
         assertFalse(resourceOutputDirectory.resolve("UserCreated.java").exists())
     }
 
@@ -173,6 +176,7 @@ class AsyncApiGeneratorOutputContractTest {
     private fun generatorConfiguration(
         sourceOutputDirectory: File,
         resourceOutputDirectory: File,
+        javaSourceOutputDirectory: File = sourceOutputDirectory,
         models: ModelGeneration = ModelGeneration.Disabled,
         schemas: List<SchemaGeneration> = emptyList(),
         clients: List<ClientGeneration> = emptyList(),
@@ -182,6 +186,7 @@ class AsyncApiGeneratorOutputContractTest {
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
                 ),
             models = models,

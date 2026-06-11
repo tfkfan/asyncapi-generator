@@ -5,6 +5,8 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clients
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.codegenOutputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.javaSourceOutputDirectory
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeAvro
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.models
@@ -142,6 +144,25 @@ class AsyncApiGeneratorMojoTest {
         }.execute()
         val schemaDir = File("target/generated-resources/asyncapi/com/example/avro/schema")
         assertTrue(schemaDir.exists(), "Schema directory should exist")
+    }
+
+    @Test
+    fun `should generate native avro schema and specific record source`() {
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_native_avro.yaml"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-native-avro"))
+            javaSourceOutputDirectory(outputPath("target/generated-sources/asyncapi-native-avro-java"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-native-avro"))
+            schemas(schemas(nativeAvro = nativeAvro(enabled = true)))
+            generatorName("kotlin")
+        }.execute()
+
+        val schemaFile = File("target/generated-resources/asyncapi-native-avro/com/example/avro/UserCreated.avsc")
+        val specificRecordFile = File("target/generated-sources/asyncapi-native-avro-java/com/example/avro/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Avro schema output should exist")
+        assertTrue(specificRecordFile.exists(), "SpecificRecord source output should exist")
+        assertTrue(specificRecordFile.readText().contains("extends org.apache.avro.specific.SpecificRecordBase"))
     }
 
     @Test

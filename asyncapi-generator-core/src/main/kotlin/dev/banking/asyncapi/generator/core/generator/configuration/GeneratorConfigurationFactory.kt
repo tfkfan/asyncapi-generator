@@ -19,6 +19,7 @@ object GeneratorConfigurationFactory {
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = request.sourceOutputDirectory,
+                    javaSourceOutputDirectory = request.javaSourceOutputDirectory,
                     resourceOutputDirectory = request.resourceOutputDirectory,
                 ),
             models =

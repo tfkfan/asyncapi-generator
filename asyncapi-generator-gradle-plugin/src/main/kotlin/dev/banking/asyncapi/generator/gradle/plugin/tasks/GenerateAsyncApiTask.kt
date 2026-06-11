@@ -60,6 +60,14 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
+    abstract val nativeAvroEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val nativeAvroGenerateSpecificRecords: Property<Boolean>
+
+    @get:Input
+    @get:Optional
     abstract val springKafkaEnabled: Property<Boolean>
 
     @get:Input
@@ -132,12 +140,14 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                 JAVA -> "src/main/java"
         }
         val codegenSourceRoot = codegenOutputDirectory.get().asFile.resolve(sourceRootName)
+        val javaSourceRoot = codegenOutputDirectory.get().asFile.resolve("src/main/java")
 
         val generatorConfiguration =
             GeneratorConfigurationFactory.create(
                 GeneratorConfigurationRequest(
                     language = targetLanguage,
                     sourceOutputDirectory = codegenSourceRoot,
+                    javaSourceOutputDirectory = javaSourceRoot,
                     resourceOutputDirectory = resourceOutputDirectory.get().asFile,
                     models =
                         modelRequest(
@@ -150,6 +160,8 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                         schemaRequest(
                             avroProjectionEnabled = avroProjectionEnabled.orNull,
                             avroProjectionPackageName = avroProjectionPackageName.orNull,
+                            nativeAvroEnabled = nativeAvroEnabled.orNull,
+                            nativeAvroGenerateSpecificRecords = nativeAvroGenerateSpecificRecords.orNull,
                         ),
                     clients =
                         clientRequest(
@@ -186,12 +198,19 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     private fun schemaRequest(
         avroProjectionEnabled: Boolean?,
         avroProjectionPackageName: String?,
+        nativeAvroEnabled: Boolean?,
+        nativeAvroGenerateSpecificRecords: Boolean?,
     ): GeneratorConfigurationRequest.Schemas =
         GeneratorConfigurationRequest.Schemas(
             avroProjection =
                 GeneratorConfigurationRequest.avroProjection(
                     enabled = avroProjectionEnabled,
                     packageName = avroProjectionPackageName,
+                ),
+            nativeAvro =
+                GeneratorConfigurationRequest.nativeAvro(
+                    enabled = nativeAvroEnabled,
+                    generateSpecificRecords = nativeAvroGenerateSpecificRecords,
                 ),
         )
 

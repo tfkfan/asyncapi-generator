@@ -33,7 +33,7 @@ class NativeAvroGeneratorTest {
                 generateSpecificRecords = true,
             )
 
-        val sourceArtifact = result.artifacts.single { it.kind == GeneratedArtifactKind.SOURCE }
+        val sourceArtifact = result.artifacts.single { it.kind == GeneratedArtifactKind.JAVA_SOURCE }
         assertEquals("com/example/avro/UserCreated.java", sourceArtifact.relativePath)
         assertTrue(sourceArtifact.content.contains("package com.example.avro;"))
         assertTrue(sourceArtifact.content.contains("public class UserCreated"))

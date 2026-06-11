@@ -84,7 +84,7 @@ class NativeAvroGenerator(
                     GeneratedArtifact(
                         relativePath = destinationDirectory.relativeUnixPathTo(sourceFile),
                         content = Files.readString(sourceFile),
-                        kind = GeneratedArtifactKind.SOURCE,
+                        kind = GeneratedArtifactKind.JAVA_SOURCE,
                     )
                 }
         } catch (ex: IOException) {
