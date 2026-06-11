@@ -45,6 +45,12 @@
             <artifactId>compiler</artifactId>
         </dependency>
 
+        <!-- avro -->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

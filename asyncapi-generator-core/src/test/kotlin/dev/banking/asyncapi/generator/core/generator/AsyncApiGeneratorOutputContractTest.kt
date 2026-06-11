@@ -69,6 +69,25 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate writes native Avro schema artifacts to resource output directory`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = false)),
+                ),
+        )
+
+        assertTrue(resourceOutputDirectory.resolve("UserCreated.avsc").exists())
+        assertFalse(sourceOutputDirectory.resolve("UserCreated.avsc").exists())
+    }
+
+    @Test
     fun `generate rejects multi format component schemas before writing model artifacts`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()

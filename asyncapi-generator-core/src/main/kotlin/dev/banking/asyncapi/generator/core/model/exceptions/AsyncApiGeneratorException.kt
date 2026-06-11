@@ -55,4 +55,18 @@ sealed class AsyncApiGeneratorException(
                 appendLine()
             }.trimEnd(),
         )
+
+    class InvalidNativeAvroSchema(
+        payloadName: String,
+        schemaFormat: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Native Avro generation failed for payload '$payloadName'.")
+                appendLine("The payload uses schemaFormat '$schemaFormat', but its schema is not valid Avro.")
+                appendLine("Reason: $reason")
+                appendLine()
+            }.trimEnd(),
+        )
 }
