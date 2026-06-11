@@ -83,4 +83,18 @@ sealed class AsyncApiGeneratorException(
                 appendLine()
             }.trimEnd(),
         )
+
+    class UnsupportedNativeAvroPayloadType(
+        payloadName: String,
+        schemaFormat: String,
+        schemaType: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Native Avro payload '$payloadName' cannot be used as a generated client type.")
+                appendLine("The payload uses schemaFormat '$schemaFormat' with Avro schema type '$schemaType'.")
+                appendLine("Generated client APIs currently require a named Avro record, enum, or fixed schema.")
+                appendLine()
+            }.trimEnd(),
+        )
 }

@@ -64,4 +64,30 @@ class GenerateKotlinSpringKafkaSimpleTest : AbstractKotlinGeneratorClass() {
         val headerDir = outputDir.resolve("dev/banking/test/userservice/v1/client/header")
         assertFalse(headerDir.exists(), "Simple spring kafka client should not generate header classes")
     }
+
+    @Test
+    fun `should generate simple spring kafka client with native avro payload type`() {
+        val yaml = File("src/test/resources/generator/asyncapi_native_avro_spring_kafka_client.yaml")
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
+
+        generateElement(
+            yaml = yaml,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = false,
+            generateSpringKafkaClient = true,
+            springKafkaClientType = SpringKafkaClientType.SIMPLE,
+        )
+
+        val outputDir = File("target/generated-sources/asyncapi")
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
+        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreated.kt").readText()
+
+        assertTrue(consumerContent.contains("import com.example.avro.UserCreated"))
+        assertTrue(consumerContent.contains("ConsumerRecord<String, UserCreated>"))
+        assertTrue(producerContent.contains("import com.example.avro.UserCreated"))
+        assertTrue(producerContent.contains("KafkaTemplate<String, UserCreated>"))
+    }
 }

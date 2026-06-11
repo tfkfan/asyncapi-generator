@@ -24,6 +24,7 @@ import kotlin.io.path.deleteIfExists
  */
 class NativeAvroGenerator(
     private val objectMapper: ObjectMapper = ObjectMapper(),
+    private val schemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(objectMapper),
 ) {
     fun render(
         schemas: Map<String, MultiFormatSchema>,
@@ -100,28 +101,7 @@ class NativeAvroGenerator(
     private fun parseSchema(
         payloadName: String,
         schema: MultiFormatSchema,
-    ): Schema =
-        try {
-            Schema.Parser().parse(schemaJson(schema.schema))
-        } catch (ex: RuntimeException) {
-            throw InvalidNativeAvroSchema(
-                payloadName = payloadName,
-                schemaFormat = schema.schemaFormat,
-                reason = ex.message ?: ex::class.simpleName.orEmpty(),
-            )
-        }
-
-    private fun schemaJson(schema: Any?): String {
-        if (schema == null) {
-            throw IllegalArgumentException("Missing Avro schema content")
-        }
-
-        if (schema is String && schema.trim().startsWithJsonContainer()) {
-            return schema.trim()
-        }
-
-        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema)
-    }
+    ): Schema = schemaParser.parse(payloadName, schema)
 
     private fun prettySchemaJson(schema: Schema): String =
         objectMapper
@@ -139,9 +119,6 @@ class NativeAvroGenerator(
             -> schema.name
             else -> payloadName
         }
-
-    private fun String.startsWithJsonContainer(): Boolean =
-        startsWith("{") || startsWith("[") || startsWith("\"")
 
     private fun Schema.supportsSpecificRecordGeneration(): Boolean =
         type == Schema.Type.RECORD ||

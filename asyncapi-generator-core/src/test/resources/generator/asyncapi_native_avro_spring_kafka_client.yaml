@@ -1,0 +1,25 @@
+asyncapi: '3.0.0'
+info:
+  title: Native Avro Spring Kafka Client Test API
+  version: '1.0.0'
+channels:
+  userEvents:
+    address: user.events
+    messages:
+      userCreated:
+        name: UserCreated
+        payload:
+          $ref: '#/components/schemas/UserCreated'
+components:
+  schemas:
+    UserCreated:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        type: record
+        name: UserCreated
+        namespace: com.example.avro
+        fields:
+          - name: userId
+            type: string
+          - name: email
+            type: string

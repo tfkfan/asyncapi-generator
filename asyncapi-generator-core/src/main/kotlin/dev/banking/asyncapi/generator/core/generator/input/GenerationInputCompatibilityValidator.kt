@@ -25,7 +25,7 @@ class GenerationInputCompatibilityValidator {
                         multiFormatSchemas = generationInput.multiFormatSchemas,
                     )
                 is GenerationTask.SpringKafkaClient ->
-                    rejectMultiFormatMessages(
+                    rejectUnsupportedMultiFormatMessages(
                         output = "Spring Kafka client generation",
                         generationInput = generationInput,
                     )
@@ -54,7 +54,7 @@ class GenerationInputCompatibilityValidator {
         )
     }
 
-    private fun rejectMultiFormatMessages(
+    private fun rejectUnsupportedMultiFormatMessages(
         output: String,
         generationInput: GenerationInput,
     ) {
@@ -62,6 +62,7 @@ class GenerationInputCompatibilityValidator {
             generationInput.channels
                 .asSequence()
                 .flatMap { channel -> channel.multiFormatMessages.asSequence() }
+                .filterNot { message -> message.schema.format.isNativeAvro }
                 .firstOrNull() ?: return
 
         throw UnsupportedPayloadSchemaFormat(

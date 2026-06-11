@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -58,31 +59,54 @@ class SchemaBundler {
     ): SchemaInterface {
         val reference = schemaInterface.reference
         val keepAsReference = isComponentSchemaRef(reference.ref)
+        val referencedModel = reference.requireModel<Any>()
 
         if (context.hasVisited(reference)) {
             return if (keepAsReference) {
                 schemaInterface
             } else {
-                SchemaInterface.SchemaInline(reference.requireModel<Schema>())
+                referencedModel.toInlineSchemaInterface()
             }
         }
 
         if (keepAsReference) {
-            ReferenceBundler.bundleReferencedModel<Schema>(
-                reference = reference,
-                context = context,
-            ) { schema, nextContext ->
-                bundleSchema(schema, nextContext)
+            when (referencedModel) {
+                is Schema ->
+                    ReferenceBundler.bundleReferencedModel<Schema>(
+                        reference = reference,
+                        context = context,
+                    ) { schema, nextContext ->
+                        bundleSchema(schema, nextContext)
+                    }
+                is MultiFormatSchema ->
+                    ReferenceBundler.inlineIfUnvisited(reference, context)
+                else ->
+                    throw IllegalArgumentException("Schema reference ${reference.ref} resolved to unsupported model")
             }
             return schemaInterface
         }
 
-        val bundled = bundleSchema(
-            schema = reference.requireModel(),
-            context = context.enter(reference),
-        )
-        return SchemaInterface.SchemaInline(bundled)
+        return when (referencedModel) {
+            is Schema ->
+                SchemaInterface.SchemaInline(
+                    bundleSchema(
+                        schema = referencedModel,
+                        context = context.enter(reference),
+                    ),
+                )
+            is MultiFormatSchema ->
+                SchemaInterface.MultiFormatSchemaInline(referencedModel)
+            else ->
+                throw IllegalArgumentException("Schema reference ${reference.ref} resolved to unsupported model")
+        }
     }
+
+    private fun Any.toInlineSchemaInterface(): SchemaInterface =
+        when (this) {
+            is Schema -> SchemaInterface.SchemaInline(this)
+            is MultiFormatSchema -> SchemaInterface.MultiFormatSchemaInline(this)
+            else -> throw IllegalArgumentException("Schema reference resolved to unsupported model")
+        }
 
     private fun bundleSchema(schema: Schema, context: BundlingContext): Schema {
         val bundledItems = schema.items?.let { bundle(it, context) }

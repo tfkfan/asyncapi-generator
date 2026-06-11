@@ -139,33 +139,29 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
-    fun `generate rejects multi format message payloads before writing spring kafka artifacts`() {
+    fun `generate writes spring kafka artifacts for native avro message payloads`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
-        val error =
-            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                generator.generate(
-                    asyncApiDocument = generationInputFixtures.documentWithMultiFormatMessagePayload(),
-                    generatorConfiguration =
-                        generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
-                            clients =
-                                listOf(
-                                    ClientGeneration.SpringKafka(
-                                        packageName = "com.example.kafka",
-                                        modelPackageName = "com.example.model",
-                                        clientType = SpringKafkaClientType.SIMPLE,
-                                    ),
-                                ),
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithMultiFormatMessagePayload(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    clients =
+                        listOf(
+                            ClientGeneration.SpringKafka(
+                                packageName = "com.example.kafka",
+                                modelPackageName = "com.example.model",
+                                clientType = SpringKafkaClientType.SIMPLE,
+                            ),
                         ),
-                )
-            }
+                ),
+        )
 
-        assertTrue(error.message!!.contains("Spring Kafka client generation cannot consume payload 'UserCreatedPayload'"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertTrue(sourceOutputDirectory.resolve("com/example/kafka/producer/UserEventsProducerUserCreated.kt").exists())
+        assertTrue(sourceOutputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt").exists())
     }
 
     private fun bundledDocument() =
