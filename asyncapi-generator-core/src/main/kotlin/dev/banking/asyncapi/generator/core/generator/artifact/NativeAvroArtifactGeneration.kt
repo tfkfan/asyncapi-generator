@@ -15,11 +15,15 @@ class NativeAvroArtifactGeneration {
     private val nativeAvroGenerator = NativeAvroGenerator()
 
     fun generate(
-        @Suppress("UNUSED_PARAMETER")
         task: GenerationTask.NativeAvroArtifacts,
         generationInput: GenerationInput,
         artifactWriter: GeneratedArtifactWriter,
     ) {
-        artifactWriter.write(nativeAvroGenerator.render(generationInput.multiFormatSchemas))
+        artifactWriter.write(
+            nativeAvroGenerator.render(
+                schemas = generationInput.multiFormatSchemas,
+                generateSpecificRecords = task.generateSpecificRecords,
+            ),
+        )
     }
 }

@@ -27,12 +27,14 @@ class NativeAvroArtifactGenerationTest {
             )
 
         generation.generate(
-            task = GenerationTask.NativeAvroArtifacts(generateSpecificRecords = false),
+            task = GenerationTask.NativeAvroArtifacts(generateSpecificRecords = true),
             generationInput = fixtures.generationInputWithNativeAvroSchema(),
             artifactWriter = artifactWriter,
         )
 
         assertTrue(resourceOutputDirectory.resolve("com/example/avro/UserCreated.avsc").exists())
+        assertTrue(sourceOutputDirectory.resolve("com/example/avro/UserCreated.java").exists())
         assertFalse(sourceOutputDirectory.resolve("com/example/avro/UserCreated.avsc").exists())
+        assertFalse(resourceOutputDirectory.resolve("com/example/avro/UserCreated.java").exists())
     }
 }

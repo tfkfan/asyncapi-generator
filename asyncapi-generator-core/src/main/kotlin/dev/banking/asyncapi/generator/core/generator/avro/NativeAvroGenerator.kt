@@ -6,11 +6,18 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidNativeAvroSchema
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NativeAvroSpecificRecordGenerationFailed
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import org.apache.avro.Schema
+import org.apache.avro.compiler.specific.SpecificCompiler
+import java.io.File
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.deleteIfExists
 
 /**
- * Renders native Avro `schemaFormat` payloads into `.avsc` schema artifacts.
+ * Renders native Avro `schemaFormat` payloads into `.avsc` and SpecificRecord artifacts.
  *
  * Expected behavior is covered by:
  * - `NativeAvroGeneratorTest`
@@ -18,30 +25,76 @@ import org.apache.avro.Schema
 class NativeAvroGenerator(
     private val objectMapper: ObjectMapper = ObjectMapper(),
 ) {
-    fun render(schemas: Map<String, MultiFormatSchema>): GenerationResult =
-        GenerationResult(
+    fun render(
+        schemas: Map<String, MultiFormatSchema>,
+        generateSpecificRecords: Boolean = false,
+    ): GenerationResult {
+        val parsedSchemas =
             schemas
                 .filter { (_, schema) -> schema.format.isNativeAvro }
-                .map { (payloadName, schema) -> renderSchema(payloadName, schema) },
-        )
+                .map { (payloadName, schema) ->
+                    ParsedNativeAvroSchema(
+                        payloadName = payloadName,
+                        schema = schema,
+                        avroSchema = parseSchema(payloadName, schema),
+                    )
+                }
 
-    private fun renderSchema(
-        payloadName: String,
-        schema: MultiFormatSchema,
-    ): GeneratedArtifact {
-        val avroSchema = parseSchema(payloadName, schema)
-        val fileName = "${artifactName(payloadName, avroSchema)}.avsc"
+        val schemaArtifacts = parsedSchemas.map(::renderSchemaArtifact)
+        val specificRecordArtifacts =
+            if (generateSpecificRecords) {
+                parsedSchemas.flatMap(::renderSpecificRecordArtifacts)
+            } else {
+                emptyList()
+            }
+
+        return GenerationResult(schemaArtifacts + specificRecordArtifacts)
+    }
+
+    private fun renderSchemaArtifact(parsedSchema: ParsedNativeAvroSchema): GeneratedArtifact {
+        val fileName = "${artifactName(parsedSchema.payloadName, parsedSchema.avroSchema)}.avsc"
         val relativePath =
             GeneratedArtifactPaths.fromNamespace(
-                namespace = avroSchema.namespace.orEmpty(),
+                namespace = parsedSchema.avroSchema.namespace.orEmpty(),
                 fileName = fileName,
             )
 
         return GeneratedArtifact(
             relativePath = relativePath,
-            content = prettySchemaJson(avroSchema) + System.lineSeparator(),
+            content = prettySchemaJson(parsedSchema.avroSchema) + System.lineSeparator(),
             kind = GeneratedArtifactKind.SCHEMA,
         )
+    }
+
+    private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List<GeneratedArtifact> {
+        if (!parsedSchema.avroSchema.supportsSpecificRecordGeneration()) {
+            return emptyList()
+        }
+
+        val sourceSchemaFile = Files.createTempFile("asyncapi-native-avro-", ".avsc")
+        val destinationDirectory = Files.createTempDirectory("asyncapi-native-avro-specific-records-")
+
+        try {
+            Files.writeString(sourceSchemaFile, prettySchemaJson(parsedSchema.avroSchema))
+            SpecificCompiler(parsedSchema.avroSchema)
+                .compileToDestination(sourceSchemaFile.toFile(), destinationDirectory.toFile())
+
+            return generatedJavaFiles(destinationDirectory)
+                .map { sourceFile ->
+                    GeneratedArtifact(
+                        relativePath = destinationDirectory.relativeUnixPathTo(sourceFile),
+                        content = Files.readString(sourceFile),
+                        kind = GeneratedArtifactKind.SOURCE,
+                    )
+                }
+        } catch (ex: IOException) {
+            throw specificRecordGenerationFailed(parsedSchema, ex)
+        } catch (ex: RuntimeException) {
+            throw specificRecordGenerationFailed(parsedSchema, ex)
+        } finally {
+            sourceSchemaFile.deleteIfExists()
+            destinationDirectory.toFile().deleteRecursively()
+        }
     }
 
     private fun parseSchema(
@@ -89,4 +142,36 @@ class NativeAvroGenerator(
 
     private fun String.startsWithJsonContainer(): Boolean =
         startsWith("{") || startsWith("[") || startsWith("\"")
+
+    private fun Schema.supportsSpecificRecordGeneration(): Boolean =
+        type == Schema.Type.RECORD ||
+            type == Schema.Type.ENUM ||
+            type == Schema.Type.FIXED
+
+    private fun generatedJavaFiles(directory: Path): List<Path> =
+        Files.walk(directory).use { paths ->
+            paths
+                .filter { path -> Files.isRegularFile(path) && path.fileName.toString().endsWith(".java") }
+                .sorted()
+                .toList()
+        }
+
+    private fun Path.relativeUnixPathTo(file: Path): String =
+        relativize(file).toString().replace(File.separatorChar, '/')
+
+    private fun specificRecordGenerationFailed(
+        parsedSchema: ParsedNativeAvroSchema,
+        ex: Exception,
+    ): NativeAvroSpecificRecordGenerationFailed =
+        NativeAvroSpecificRecordGenerationFailed(
+            payloadName = parsedSchema.payloadName,
+            schemaFormat = parsedSchema.schema.schemaFormat,
+            reason = ex.message ?: ex::class.simpleName.orEmpty(),
+        )
+
+    private data class ParsedNativeAvroSchema(
+        val payloadName: String,
+        val schema: MultiFormatSchema,
+        val avroSchema: Schema,
+    )
 }

@@ -69,4 +69,18 @@ sealed class AsyncApiGeneratorException(
                 appendLine()
             }.trimEnd(),
         )
+
+    class NativeAvroSpecificRecordGenerationFailed(
+        payloadName: String,
+        schemaFormat: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("SpecificRecord generation failed for native Avro payload '$payloadName'.")
+                appendLine("The payload uses schemaFormat '$schemaFormat'.")
+                appendLine("Reason: $reason")
+                appendLine()
+            }.trimEnd(),
+        )
 }

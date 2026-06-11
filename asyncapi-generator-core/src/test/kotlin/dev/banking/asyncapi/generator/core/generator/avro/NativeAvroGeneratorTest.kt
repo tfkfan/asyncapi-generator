@@ -26,6 +26,21 @@ class NativeAvroGeneratorTest {
     }
 
     @Test
+    fun `render returns SpecificRecord source artifacts when enabled`() {
+        val result =
+            generator.render(
+                schemas = fixtures.generationInputWithNativeAvroSchema().multiFormatSchemas,
+                generateSpecificRecords = true,
+            )
+
+        val sourceArtifact = result.artifacts.single { it.kind == GeneratedArtifactKind.SOURCE }
+        assertEquals("com/example/avro/UserCreated.java", sourceArtifact.relativePath)
+        assertTrue(sourceArtifact.content.contains("package com.example.avro;"))
+        assertTrue(sourceArtifact.content.contains("public class UserCreated"))
+        assertTrue(sourceArtifact.content.contains("extends org.apache.avro.specific.SpecificRecordBase"))
+    }
+
+    @Test
     fun `render ignores non Avro multi format schemas`() {
         val result =
             generator.render(

@@ -69,7 +69,7 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
-    fun `generate writes native Avro schema artifacts to resource output directory`() {
+    fun `generate writes native Avro schema and SpecificRecord artifacts to output directories`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
@@ -79,12 +79,14 @@ class AsyncApiGeneratorOutputContractTest {
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = false)),
+                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
                 ),
         )
 
         assertTrue(resourceOutputDirectory.resolve("UserCreated.avsc").exists())
+        assertTrue(sourceOutputDirectory.resolve("UserCreated.java").exists())
         assertFalse(sourceOutputDirectory.resolve("UserCreated.avsc").exists())
+        assertFalse(resourceOutputDirectory.resolve("UserCreated.java").exists())
     }
 
     @Test
