@@ -19,6 +19,7 @@ object GeneratorConfigurationFactory {
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = request.sourceOutputDirectory,
+                    javaSourceOutputDirectory = request.javaSourceOutputDirectory,
                     resourceOutputDirectory = request.resourceOutputDirectory,
                 ),
             models =
@@ -33,6 +34,13 @@ object GeneratorConfigurationFactory {
                 buildList {
                     request.schemas.avroProjection?.packageName?.let { packageName ->
                         add(SchemaGeneration.AvroProjection(packageName))
+                    }
+                    request.schemas.nativeAvro?.let { nativeAvro ->
+                        add(
+                            SchemaGeneration.NativeAvro(
+                                generateSpecificRecords = nativeAvro.generateSpecificRecords,
+                            ),
+                        )
                     }
                 },
             clients =

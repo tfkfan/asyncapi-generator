@@ -76,12 +76,14 @@ class GenerationOutputContractTest {
     @Test
     fun `generation result filters artifacts by kind`() {
         val source = artifact("com/example/User.kt", GeneratedArtifactKind.SOURCE)
+        val javaSource = artifact("com/example/User.java", GeneratedArtifactKind.JAVA_SOURCE)
         val schema = artifact("com/example/schema/User.avsc", GeneratedArtifactKind.SCHEMA)
         val resource = artifact("META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports", GeneratedArtifactKind.RESOURCE)
 
-        val result = GenerationResult.of(source, schema, resource)
+        val result = GenerationResult.of(source, javaSource, schema, resource)
 
         assertEquals(listOf(source), result.artifactsOfKind(GeneratedArtifactKind.SOURCE))
+        assertEquals(listOf(javaSource), result.artifactsOfKind(GeneratedArtifactKind.JAVA_SOURCE))
         assertEquals(listOf(schema), result.artifactsOfKind(GeneratedArtifactKind.SCHEMA))
         assertEquals(listOf(resource), result.artifactsOfKind(GeneratedArtifactKind.RESOURCE))
     }

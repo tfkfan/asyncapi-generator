@@ -18,6 +18,7 @@ data class GeneratorConfigurationRequest(
     val language: GeneratorName,
     val sourceOutputDirectory: File,
     val resourceOutputDirectory: File,
+    val javaSourceOutputDirectory: File = sourceOutputDirectory,
     val models: Models? = null,
     val schemas: Schemas = Schemas(),
     val clients: Clients = Clients(),
@@ -30,10 +31,15 @@ data class GeneratorConfigurationRequest(
 
     data class Schemas(
         val avroProjection: AvroProjection? = null,
+        val nativeAvro: NativeAvro? = null,
     )
 
     data class AvroProjection(
         val packageName: String? = null,
+    )
+
+    data class NativeAvro(
+        val generateSpecificRecords: Boolean = true,
     )
 
     data class Clients(
@@ -85,6 +91,17 @@ data class GeneratorConfigurationRequest(
                 enabled == false -> null
                 enabled == true || packageName != null ->
                     AvroProjection(packageName = packageName)
+                else -> null
+            }
+
+        fun nativeAvro(
+            enabled: Boolean? = null,
+            generateSpecificRecords: Boolean? = null,
+        ): NativeAvro? =
+            when {
+                enabled == false -> null
+                enabled == true || generateSpecificRecords != null ->
+                    NativeAvro(generateSpecificRecords = generateSpecificRecords ?: true)
                 else -> null
             }
 

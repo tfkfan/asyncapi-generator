@@ -44,6 +44,25 @@ class GenerationPlannerTest {
     }
 
     @Test
+    fun `plan includes native Avro artifact task when enabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = false)),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.NativeAvroArtifacts(
+                    generateSpecificRecords = false,
+                ),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
     fun `plan includes model annotation on model artifact task when configured`() {
         val plan =
             planner.plan(

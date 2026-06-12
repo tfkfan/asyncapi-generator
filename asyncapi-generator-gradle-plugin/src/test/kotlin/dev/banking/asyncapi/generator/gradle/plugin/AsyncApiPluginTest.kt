@@ -401,6 +401,39 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should generate native avro schema and specific record source`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_avro.yaml")
+        val yamlFile = File(yamlUrl.toURI())
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
+                  generatorName.set("kotlin")
+                  schemas {
+                      nativeAvro {
+                          enabled.set(true)
+                      }
+                  }
+              }"""
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val schemaFile = File(projectDir, "build/generated-resources/asyncapi/com/example/avro/UserCreated.avsc")
+        val specificRecordFile = File(projectDir, "build/generated/asyncapi/src/main/java/com/example/avro/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Avro schema output should exist")
+        assertTrue(specificRecordFile.exists(), "SpecificRecord source output should exist")
+        assertTrue(specificRecordFile.readText().contains("extends org.apache.avro.specific.SpecificRecordBase"))
+    }
+
+    @Test
     fun `should fail if input file is missing`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
 

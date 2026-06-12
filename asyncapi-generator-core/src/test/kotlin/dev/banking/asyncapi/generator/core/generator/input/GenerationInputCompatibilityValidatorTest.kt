@@ -86,11 +86,36 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `rejects multi format messages for spring kafka client generation`() {
+    fun `allows native avro multi format messages for spring kafka client generation`() {
+        validator.validate(
+            generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.SpringKafkaClient(
+                            language = GeneratorName.KOTLIN,
+                            clientType = SpringKafkaClientType.SIMPLE,
+                            clientPackage = "com.example.kafka",
+                            modelPackage = "com.example.model",
+                            topicPropertyPrefix = "kafka.topics",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `rejects non avro multi format messages for spring kafka client generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
                 validator.validate(
-                    generationInput = generationInputWithMultiFormatMessage(),
+                    generationInput =
+                        generationInputWithMultiFormatMessage(
+                            MultiFormatSchema(
+                                schemaFormat = "application/vnd.google.protobuf;version=3",
+                                schema = "message UserCreated {}",
+                            ),
+                        ),
                     generationPlan =
                         GenerationPlan(
                             listOf(
@@ -118,7 +143,7 @@ class GenerationInputCompatibilityValidatorTest {
             channels = emptyList(),
         )
 
-    private fun generationInputWithMultiFormatMessage(): GenerationInput =
+    private fun generationInputWithMultiFormatMessage(schema: MultiFormatSchema): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
             polymorphicRelationships = emptyMap(),
@@ -135,7 +160,7 @@ class GenerationInputCompatibilityValidatorTest {
                                 AnalyzedMultiFormatMessage(
                                     messageName = "UserCreated",
                                     payloadName = "UserCreated",
-                                    schema = nativeAvroSchema(),
+                                    schema = schema,
                                 ),
                             ),
                     ),

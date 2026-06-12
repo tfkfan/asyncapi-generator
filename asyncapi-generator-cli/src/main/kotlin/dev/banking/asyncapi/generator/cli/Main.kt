@@ -68,6 +68,19 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         help = "Package for generated Avro projection schemas",
     )
 
+    private val schemasNativeAvro by option(
+        "--schemas-native-avro",
+        help = "Enable native Avro schema artifact generation",
+    ).flag(default = false)
+
+    private val schemasNativeAvroGenerateSpecificRecords by option(
+        "--schemas-native-avro-generate-specific-records",
+        help = "Generate Apache Avro Java SpecificRecord classes for native Avro schemas (default: true)",
+    ).choice(
+        "true" to true,
+        "false" to false,
+    )
+
     private val clientsSpringKafka by option(
         "--clients-spring-kafka",
         help = "Enable Spring Kafka client generation",
@@ -141,14 +154,16 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                 "src/main/kotlin"
             } else {
                 "src/main/java"
-            }
+        }
         val sourceRoot = codegenOutputDirectory.resolve(sourceRootName)
+        val javaSourceRoot = codegenOutputDirectory.resolve("src/main/java")
         val generatorConfiguration =
             try {
                 GeneratorConfigurationFactory.create(
                     GeneratorConfigurationRequest(
                         language = generator,
                         sourceOutputDirectory = sourceRoot,
+                        javaSourceOutputDirectory = javaSourceRoot,
                         resourceOutputDirectory = resourceOutputDirectory,
                         models = modelRequest(),
                         schemas = schemaRequest(),
@@ -177,6 +192,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                 GeneratorConfigurationRequest.avroProjection(
                     enabled = true.takeIf { schemasAvroProjection },
                     packageName = schemasAvroProjectionPackage,
+                ),
+            nativeAvro =
+                GeneratorConfigurationRequest.nativeAvro(
+                    enabled = true.takeIf { schemasNativeAvro },
+                    generateSpecificRecords = schemasNativeAvroGenerateSpecificRecords,
                 ),
         )
 

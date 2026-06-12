@@ -67,6 +67,8 @@ internal enum class GeneratorApprovalFormat(
     JAVA("java", "java"),
     KOTLIN("kotlin", "kt"),
     AVRO("avro", "avsc"),
+    NATIVE_AVRO_SCHEMA("native-avro/schema", "avsc"),
+    NATIVE_AVRO_SPECIFIC_RECORD("native-avro/specific-record", "java"),
 }
 
 private class GeneratorApprovalNamer(

@@ -43,6 +43,12 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     )
     private lateinit var resourceOutputDirectory: File
 
+    @Parameter(
+        property = "javaSourceOutputDirectory",
+        defaultValue = "\${project.build.directory}/generated-sources/asyncapi-java",
+    )
+    private var javaSourceOutputDirectory: File? = null
+
     @Parameter
     private var models: MavenModelGenerationConfiguration? = null
 
@@ -80,12 +86,15 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                     path = "generatorName",
                 )
             val modelRequest = models?.toRequest()
+            val resolvedJavaSourceOutputDirectory =
+                javaSourceOutputDirectory ?: defaultJavaSourceOutputDirectory()
 
             val generatorConfiguration =
                 GeneratorConfigurationFactory.create(
                     GeneratorConfigurationRequest(
                         language = targetLanguage,
                         sourceOutputDirectory = codegenOutputDirectory,
+                        javaSourceOutputDirectory = resolvedJavaSourceOutputDirectory,
                         resourceOutputDirectory = resourceOutputDirectory,
                         models = modelRequest,
                         schemas = schemas?.toRequest() ?: GeneratorConfigurationRequest.Schemas(),
@@ -96,6 +105,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 generator.generate(bundled, generatorConfiguration)
             }
             project.addCompileSourceRoot(codegenOutputDirectory.absolutePath)
+            project.addCompileSourceRoot(resolvedJavaSourceOutputDirectory.absolutePath)
             log.info("asyncapi-generator-maven-plugin completed successfully")
         } catch (e: MojoExecutionException) {
             throw e
@@ -105,4 +115,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             throw MojoExecutionException(e.message, e)
         }
     }
+
+    private fun defaultJavaSourceOutputDirectory(): File =
+        codegenOutputDirectory.parentFile?.resolve("asyncapi-java") ?: codegenOutputDirectory
 }

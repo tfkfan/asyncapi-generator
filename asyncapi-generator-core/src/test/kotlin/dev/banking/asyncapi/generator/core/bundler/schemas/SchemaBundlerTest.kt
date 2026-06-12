@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.bundler.schemas
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.assertj.core.api.Assertions.assertThat
@@ -74,4 +75,41 @@ class SchemaBundlerTest {
         assertThat(schemaReference.inline).isFalse()
         assertThat(schemaReference.model).isSameAs(schema)
     }
+
+    @Test
+    fun `bundle keeps component multi format schema references without casting to schema`() {
+        val schema = nativeAvroSchema()
+        val schemaReference = Reference("#/components/schemas/UserCreated", model = schema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
+
+        assertThat(bundled).isSameAs(schemaInterface)
+        assertThat(schemaReference.inline).isTrue()
+        assertThat(schemaReference.model).isSameAs(schema)
+    }
+
+    @Test
+    fun `bundle inlines non-component multi format schema references`() {
+        val schema = nativeAvroSchema()
+        val schemaReference = Reference("schemas.yaml#/shared/UserCreated", model = schema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
+
+        assertThat(bundled).isEqualTo(SchemaInterface.MultiFormatSchemaInline(schema))
+        assertThat(schemaReference.inline).isFalse()
+    }
+
+    private fun nativeAvroSchema(): MultiFormatSchema =
+        MultiFormatSchema(
+            schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
+            schema =
+                mapOf(
+                    "type" to "record",
+                    "name" to "UserCreated",
+                    "namespace" to "com.example.avro",
+                    "fields" to emptyList<Any>(),
+                ),
+        )
 }

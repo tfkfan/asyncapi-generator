@@ -2,6 +2,9 @@ package dev.banking.asyncapi.generator.core.generator.java.factory
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroPayloadTypeResolver
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
@@ -12,31 +15,26 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 class JavaSpringKafkaSimpleModelFactory(
     private val clientPackage: String,
     private val modelPackage: String,
+    private val nativeAvroPayloadTypeResolver: NativeAvroPayloadTypeResolver = NativeAvroPayloadTypeResolver(),
 ) {
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         val items = mutableListOf<GeneratorItem>()
         val baseName = MapperUtil.toPascalCase(channel.channelName)
         val producerPackage = "$clientPackage.producer"
         val consumerPackage = "$clientPackage.consumer"
+        val payloads = channel.payloads()
 
         val baseImports =
-            if (clientPackage != modelPackage) {
-                channel.messages.mapNotNull { msg ->
-                    val type = resolvePayloadType(msg)
-                    if (isPrimitive(type)) null else "$modelPackage.$type"
-                }
-            } else {
-                emptyList()
-            }
+            payloads.mapNotNull { payload -> payload.importName }
 
         if (channel.isConsumer) {
             val consumerName = "${baseName}Consumer"
             val imports = (baseImports + "org.apache.kafka.clients.consumer.ConsumerRecord").distinct().sorted()
             val methods =
-                channel.messages.map { msg ->
+                payloads.map { payload ->
                     GeneratorItem.HandlerMethod(
-                        methodName = "on${msg.messageName}",
-                        payloadType = resolvePayloadType(msg),
+                        methodName = "on${payload.messageName}",
+                        payloadType = payload.payloadType,
                     )
                 }
             items.add(
@@ -55,14 +53,13 @@ class JavaSpringKafkaSimpleModelFactory(
                 (baseImports + "org.apache.kafka.clients.producer.ProducerRecord" + "org.springframework.kafka.core.KafkaTemplate")
                     .distinct()
                     .sorted()
-            channel.messages.forEach { msg ->
-                val payloadType = resolvePayloadType(msg)
+            payloads.forEach { payload ->
                 val sendMethod =
                     GeneratorItem.SendMethod(
-                        methodName = "send${msg.messageName}",
-                        payloadType = payloadType,
+                        methodName = "send${payload.messageName}",
+                        payloadType = payload.payloadType,
                     )
-                val producerName = "${baseName}Producer${msg.messageName}"
+                val producerName = "${baseName}Producer${payload.messageName}"
                 items.add(
                     GeneratorItem.KafkaProducerClass(
                         name = producerName,
@@ -70,7 +67,7 @@ class JavaSpringKafkaSimpleModelFactory(
                         description = DocumentationUtils.toJavaDocLines("Producer for topic '${channel.topic}'"),
                         topic = channel.topic,
                         sendMethods = listOf(sendMethod),
-                        kafkaValueType = payloadType,
+                        kafkaValueType = payload.payloadType,
                         imports = imports,
                         topicPropertyKey = "",
                     ),
@@ -80,6 +77,32 @@ class JavaSpringKafkaSimpleModelFactory(
 
         return items
     }
+
+    private fun AnalyzedChannel.payloads(): List<KafkaPayload> =
+        messages.map(::payload) + multiFormatMessages.mapNotNull(::nativeAvroPayload)
+
+    private fun payload(msg: AnalyzedMessage): KafkaPayload {
+        val type = resolvePayloadType(msg)
+        return KafkaPayload(
+            messageName = msg.messageName,
+            payloadType = type,
+            importName =
+                if (isPrimitive(type)) {
+                    null
+                } else {
+                    "$modelPackage.$type"
+                },
+        )
+    }
+
+    private fun nativeAvroPayload(msg: AnalyzedMultiFormatMessage): KafkaPayload? =
+        nativeAvroPayloadTypeResolver.resolve(msg)?.let { payloadType ->
+            KafkaPayload(
+                messageName = msg.messageName,
+                payloadType = payloadType.typeName,
+                importName = payloadType.importName,
+            )
+        }
 
     private fun resolvePayloadType(msg: AnalyzedMessage): String =
         if (isOpenPayloadSchema(msg.schema)) {

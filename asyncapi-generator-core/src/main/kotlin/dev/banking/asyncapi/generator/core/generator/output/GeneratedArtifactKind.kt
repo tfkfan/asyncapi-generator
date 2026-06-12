@@ -8,6 +8,7 @@ package dev.banking.asyncapi.generator.core.generator.output
  */
 enum class GeneratedArtifactKind {
     SOURCE,
+    JAVA_SOURCE,
     RESOURCE,
     SCHEMA,
 }

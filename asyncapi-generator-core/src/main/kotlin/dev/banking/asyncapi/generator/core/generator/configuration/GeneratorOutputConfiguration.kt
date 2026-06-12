@@ -12,4 +12,5 @@ import java.io.File
 data class GeneratorOutputConfiguration(
     val sourceOutputDirectory: File,
     val resourceOutputDirectory: File,
+    val javaSourceOutputDirectory: File = sourceOutputDirectory,
 )

@@ -33,6 +33,10 @@ object MavenTestHelper {
         writeField("resourceOutputDirectory", value)
     }
 
+    fun Mojo.javaSourceOutputDirectory(value: Any) {
+        writeField("javaSourceOutputDirectory", value)
+    }
+
     fun Mojo.models(value: MavenModelGenerationConfiguration?) {
         writeField("models", value)
     }
@@ -70,9 +74,11 @@ object MavenTestHelper {
 
     fun schemas(
         avroProjection: MavenAvroProjectionConfiguration? = null,
+        nativeAvro: MavenNativeAvroConfiguration? = null,
     ): MavenSchemaGenerationConfiguration =
         MavenSchemaGenerationConfiguration().apply {
             this.avroProjection = avroProjection
+            this.nativeAvro = nativeAvro
         }
 
     fun avroProjection(
@@ -82,6 +88,15 @@ object MavenTestHelper {
         MavenAvroProjectionConfiguration().apply {
             this.packageName = packageName
             this.enabled = enabled
+        }
+
+    fun nativeAvro(
+        enabled: Boolean? = null,
+        generateSpecificRecords: Boolean? = null,
+    ): MavenNativeAvroConfiguration =
+        MavenNativeAvroConfiguration().apply {
+            this.enabled = enabled
+            this.generateSpecificRecords = generateSpecificRecords
         }
 
     fun clients(

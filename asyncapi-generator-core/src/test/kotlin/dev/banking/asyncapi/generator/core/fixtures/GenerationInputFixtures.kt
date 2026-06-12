@@ -74,6 +74,17 @@ internal class GenerationInputFixtures {
         )
     }
 
+    fun generationInputWithNativeAvroSchema(): GenerationInput =
+        GenerationInput(
+            schemas = emptyMap(),
+            multiFormatSchemas =
+                mapOf(
+                    "UserCreated" to nativeAvroUserCreatedSchema(namespace = "com.example.avro"),
+                ),
+            polymorphicRelationships = emptyMap(),
+            channels = emptyList(),
+        )
+
     fun documentWithMessageHeaders(): AsyncApiDocument =
         AsyncApiDocument(
             asyncapi = "3.0.0",
@@ -213,14 +224,30 @@ internal class GenerationInputFixtures {
                 ),
         )
 
-    private fun nativeAvroUserCreatedSchema(): MultiFormatSchema =
+    private fun nativeAvroUserCreatedSchema(namespace: String? = null): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
             schema =
-                mapOf(
+                linkedMapOf<String, Any>(
                     "type" to "record",
                     "name" to "UserCreated",
-                    "fields" to emptyList<Any>(),
-                ),
+                ).apply {
+                    if (namespace != null) {
+                        put("namespace", namespace)
+                    }
+                    put(
+                        "fields",
+                        listOf(
+                            linkedMapOf(
+                                "name" to "userId",
+                                "type" to "string",
+                            ),
+                            linkedMapOf(
+                                "name" to "email",
+                                "type" to "string",
+                            ),
+                        ),
+                    )
+                },
         )
 }

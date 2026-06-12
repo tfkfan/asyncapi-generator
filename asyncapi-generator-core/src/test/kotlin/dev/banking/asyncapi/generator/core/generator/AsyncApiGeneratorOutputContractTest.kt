@@ -69,6 +69,30 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate writes native Avro schema and SpecificRecord artifacts to output directories`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
+                ),
+        )
+
+        assertTrue(resourceOutputDirectory.resolve("UserCreated.avsc").exists())
+        assertTrue(javaSourceOutputDirectory.resolve("UserCreated.java").exists())
+        assertFalse(sourceOutputDirectory.resolve("UserCreated.avsc").exists())
+        assertFalse(sourceOutputDirectory.resolve("UserCreated.java").exists())
+        assertFalse(resourceOutputDirectory.resolve("UserCreated.java").exists())
+    }
+
+    @Test
     fun `generate rejects multi format component schemas before writing model artifacts`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
@@ -115,33 +139,29 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
-    fun `generate rejects multi format message payloads before writing spring kafka artifacts`() {
+    fun `generate writes spring kafka artifacts for native avro message payloads`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
-        val error =
-            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                generator.generate(
-                    asyncApiDocument = generationInputFixtures.documentWithMultiFormatMessagePayload(),
-                    generatorConfiguration =
-                        generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
-                            clients =
-                                listOf(
-                                    ClientGeneration.SpringKafka(
-                                        packageName = "com.example.kafka",
-                                        modelPackageName = "com.example.model",
-                                        clientType = SpringKafkaClientType.SIMPLE,
-                                    ),
-                                ),
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithMultiFormatMessagePayload(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    clients =
+                        listOf(
+                            ClientGeneration.SpringKafka(
+                                packageName = "com.example.kafka",
+                                modelPackageName = "com.example.model",
+                                clientType = SpringKafkaClientType.SIMPLE,
+                            ),
                         ),
-                )
-            }
+                ),
+        )
 
-        assertTrue(error.message!!.contains("Spring Kafka client generation cannot consume payload 'UserCreatedPayload'"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertTrue(sourceOutputDirectory.resolve("com/example/kafka/producer/UserEventsProducerUserCreated.kt").exists())
+        assertTrue(sourceOutputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt").exists())
     }
 
     private fun bundledDocument() =
@@ -152,6 +172,7 @@ class AsyncApiGeneratorOutputContractTest {
     private fun generatorConfiguration(
         sourceOutputDirectory: File,
         resourceOutputDirectory: File,
+        javaSourceOutputDirectory: File = sourceOutputDirectory,
         models: ModelGeneration = ModelGeneration.Disabled,
         schemas: List<SchemaGeneration> = emptyList(),
         clients: List<ClientGeneration> = emptyList(),
@@ -161,6 +182,7 @@ class AsyncApiGeneratorOutputContractTest {
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
                 ),
             models = models,
