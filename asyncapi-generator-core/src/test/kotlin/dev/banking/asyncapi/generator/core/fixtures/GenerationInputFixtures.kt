@@ -235,7 +235,19 @@ internal class GenerationInputFixtures {
                     if (namespace != null) {
                         put("namespace", namespace)
                     }
-                    put("fields", emptyList<Any>())
+                    put(
+                        "fields",
+                        listOf(
+                            linkedMapOf(
+                                "name" to "userId",
+                                "type" to "string",
+                            ),
+                            linkedMapOf(
+                                "name" to "email",
+                                "type" to "string",
+                            ),
+                        ),
+                    )
                 },
         )
 }

@@ -84,7 +84,7 @@ class NativeAvroGenerator(
                 .map { sourceFile ->
                     GeneratedArtifact(
                         relativePath = destinationDirectory.relativeUnixPathTo(sourceFile),
-                        content = Files.readString(sourceFile),
+                        content = Files.readString(sourceFile).trimEnd() + System.lineSeparator(),
                         kind = GeneratedArtifactKind.JAVA_SOURCE,
                     )
                 }
